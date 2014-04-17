@@ -1,0 +1,12 @@
+*.iws
+*.tmproj
+*.iml
+.idea
+.DS_Store
+
+# Eclipse files
+/.settings
+/.classpath
+/.project
+/eclipse/
+/target-eclipse
