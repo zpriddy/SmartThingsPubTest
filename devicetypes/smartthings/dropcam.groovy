@@ -1,21 +1,14 @@
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Foscam", namespace: "smartthings", author: "SmartThings") {
-		capability "Image Capture"
+	definition (name: "Dropcam", namespace: "smartthings", author: "SmartThings") {
 		capability "Actuator"
-		capability "Sensor"
+		capability "Image Capture"
 	}
 
 	simulator {
 		status "image": "raw:C45F5708D89A4F3CB1A7EEEE2E0C73D900, image:C45F5708D89A4F3CB1A7EEEE2E0C73D9, result:00"
 
 		reply "take C45F5708D89A4F3CB1A7EEEE2E0C73D9": "raw:C45F5708D89A4F3CB1A7EEEE2E0C73D900, image:C45F5708D89A4F3CB1A7EEEE2E0C73D9, result:00"
-	}
-
-	preferences {
-		input "username", "text", title: "Username", description: "Your Drop Cam Username", required: true
-		input "password", "password", title: "Password", description: "Your Drop Cam Password", required: true
-		input "uuid", "text", title: "Device ID", description: "Your Drop Cam ID", required: true
 	}
 
 	tiles {
@@ -36,90 +29,42 @@ metadata {
 	}
 }
 
-def updated() {
-	log.debug "In updated handler for Drop cam"
+def uninstalled() {
+	parent.removeChildFromSettings(this)
 }
 
-def parse(Map response) {
-	def result = []
-	if (response.status == 403) {
-		// forbidden and either missing cookie or it's expired, get a new one
-		result << login()
-	} else if (response.status == 200) {
-		if (response.headers.'Content-Type'.contains("image/jpeg")) {
-			def imageBytes = response.data
-			if (imageBytes) {
-				storeImage(getPictureName(), imageBytes)
-			}
-		} else if (response.headers.'Content-Type'.contains("application/json")) {
-			def cookie = response.headers.'Set-Cookie'?.split(";")[0]
-			if (cookie) {
-				updateCookie(cookie)
-				result << takePicture()
-			}
-		}
+// parse events into attributes
+def parse(String description)
+{
+	log.debug "Parsing '${description}'"
+	// TODO: handle 'image' attribute
+	// TODO: handle '' attribute
+
+}
+
+// handle commands
+def take()
+{
+	log.debug "Executing 'take'"
+
+	def dni = device.deviceNetworkId
+	log.debug "Executing 'take' with dni $dni"
+
+
+	log.debug "Executing 'take' with dni $dni and parent $parent with app ${parent.installedSmartApp}"
+
+	def imageBytes = parent.takePicture(dni, null)
+
+	log.debug "got bytes"
+
+	if(imageBytes)
+	{
+		storeImage(getPictureName(), imageBytes)
 	}
-	result
 }
 
-def take() {
-	takePicture()
-}
-
-private getPictureName() {
+private getPictureName()
+{
 	def pictureUuid = java.util.UUID.randomUUID().toString().replaceAll('-', '')
-	getCameraUuid() + "_$pictureUuid" + ".jpg"
-}
-
-private getCookieValue() {
-	state.cookie
-}
-
-private getCameraUuid() {
-	settings.uuid
-}
-
-private getImageWidth() {
-	settings.image_width ?: 1280
-}
-
-private getUsername() {
-	settings.username
-}
-
-private getPassword() {
-	settings.password
-}
-
-private updateCookie(String cookie) {
-	state.cookie = cookie
-	device.updateDataValue("cookie", cookie)
-}
-
-private validUserAgent() {
-	"curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8x zlib/1.2.5"
-}
-
-private takePicture() {
-	rest(
-			method: 'GET',
-			endpoint: "https://nexusapi.dropcam.com",
-			path: "/get_image",
-			query: [width: getImageWidth(), uuid: getCameraUuid()],
-			headers: [Cookie: getCookieValue(), 'User-Agent': validUserAgent()],
-			requestContentType: "application/x-www-form-urlencoded",
-			synchronous: true
-	)
-}
-
-private login() {
-	rest(
-			method: 'POST',
-			endpoint: "https://www.dropcam.com",
-			path: "/api/v1/login.login",
-			body: [username: getUsername(), password: getPassword()],
-			headers: ['User-Agent': validUserAgent()],
-			requestContentType: "application/x-www-form-urlencoded",
-			synchronous: true
-	)
+	return device.deviceNetworkId + "_$pictureUuid" + ".jpg"
 }
