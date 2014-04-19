@@ -6,7 +6,7 @@
  *  Date: 2014-02-15
  */
 preferences {
-	page(name: "auth", title: "Nest Login", install: false, nextPage:"devices") {
+	page(name: "auth", title: "Nest Login", install: false, uninstall: true, nextPage:"devices") {
 		section("Log in to your Nest account") {
 			input "username", "text", title: "Email Address", required: true, autoCorrect:false
 			input "password", "password", title: "Password", required: true, autoCorrect:false
