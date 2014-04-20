@@ -31,6 +31,12 @@
  *
  *  Update7:2014-04-01
  *          Renamed to 'Quirky (Connect)' and updated device names
+ *
+ *  Update8:2014-04-08 (dlieberman)
+ *         Stubbed out Spotter
+ *
+ *  Update9:2014-04-08 (twackford)
+ *         resubscribe to events on each poll
  */
 
 import java.text.DecimalFormat
@@ -378,7 +384,7 @@ def getDeviceList()
 					'subsPath': "/powerstrips/${it.powerstrip_id}/subscriptions"
 				])
 			}
-			/* stubbing out these out for later release
+
 			if ( it.sensor_pod_id ) {
 				deviceList["${it.sensor_pod_id}"] = it.name
 				state.deviceDataArr.push(['name'   : it.name,
@@ -392,6 +398,7 @@ def getDeviceList()
 				])
 			}
 
+			/* stubbing out these out for later release
 			if ( it.piggy_bank_id ) {
 				deviceList["${it.piggy_bank_id}"] = it.name
 				state.deviceDataArr.push(['name'   : it.name,
@@ -452,36 +459,24 @@ def uninstalled()
 	removeChildDevices(getChildDevices())
 }
 
-def removeWinkSubscriptions()
-{
-	log.debug "In removeSubscriptions"
+def updateWinkSubscriptions()
+{	//since we don't know when wink subscription dies, we'll delete and recreate on every poll
+	log.debug "In updateWinkSubscriptions"
 
 	state.deviceDataArr.each() {
 		if (it.subsPath) {
 			def path = it.subsPath
+			def suffix = it.subsSuff
 			apiGet(it.subsPath) { response ->
 				response.data.data.each {
 					if ( it.subscription_id ) {
 						deleteWinkSubscription(path + "/", it.subscription_id)
+						createWinkSubscription(path, suffix)
 					}
 				}
 			}
 		}
 	}
-}
-
-def deleteWinkSubscription(path, subscriptionId)
-{
-	log.debug "Deleting the wink subscription ${subscriptionId}"
-
-	httpDelete([
-		uri : apiUrl(),
-		path: path + subscriptionId,
-		headers : [ 'Authorization' : 'Bearer ' + state.vendorAccessToken ]
-	],)
-		{	response ->
-			log.debug "Subscription ${subscriptionId} deleted"
-		}
 }
 
 def createWinkSubscription(path, suffix)
@@ -499,6 +494,39 @@ def createWinkSubscription(path, suffix)
 		{ 	response ->
 			log.debug "Created subscription ID ${response.data.data.subscription_id}"
 		}
+}
+
+def deleteWinkSubscription(path, subscriptionId)
+{
+	log.debug "Deleting the wink subscription ${subscriptionId}"
+
+	httpDelete([
+		uri : apiUrl(),
+		path: path + subscriptionId,
+		headers : [ 'Authorization' : 'Bearer ' + state.vendorAccessToken ]
+	],)
+		{	response ->
+			log.debug "Subscription ${subscriptionId} deleted"
+		}
+}
+
+
+def removeWinkSubscriptions()
+{
+	log.debug "In removeSubscriptions"
+
+	state.deviceDataArr.each() {
+		if (it.subsPath) {
+			def path = it.subsPath
+			apiGet(it.subsPath) { response ->
+				response.data.data.each {
+					if ( it.subscription_id ) {
+						deleteWinkSubscription(path + "/", it.subscription_id)
+					}
+				}
+			}
+		}
+	}
 }
 
 def buildCallbackUrl(suffix)
@@ -631,6 +659,7 @@ def poll(childDevice)
 			break
 
 	}
+	updateWinkSubscriptions()
 }
 
 def cToF(temp) {
