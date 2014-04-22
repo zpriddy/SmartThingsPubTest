@@ -68,7 +68,7 @@ def initialize() {
 			def existingDevice = getChildDevice(nestId)
 			if(!existingDevice) {
 				log.debug "Creating child"
-				def childDevice = addChildDevice("dianoga7", "Nest Thermostat", nestId, null, [name: "Nest.${nestId}", label: device.name, completedSetup: true])
+				def childDevice = addChildDevice("dianoga", "Nest Thermostat", nestId, null, [name: "Nest.${nestId}", label: device.name, completedSetup: true])
 			} else {
 				log.debug "Device $nestId already exists"
 			}

@@ -6,7 +6,7 @@
  *  Date: 2014-02-15
  */
 metadata {
-	definition (name: "Nest Thermostat", namespace: "dianoga7", author: "Brian Steere") {
+	definition (name: "Nest Thermostat", namespace: "dianoga", author: "Brian Steere") {
 		capability "Actuator"
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
