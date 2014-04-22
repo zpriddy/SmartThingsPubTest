@@ -21,7 +21,7 @@
  */
 
 preferences {
-	section("Allow IFTTT Staging to control these things...") {
+	section("Allow IFTTT to control these things...") {
 		input "switches", "capability.switch", title: "Which Switches?", multiple: true, required: false
 		input "motionSensors", "capability.motionSensor", title: "Which Motion Sensors?", multiple: true, required: false
 		input "contactSensors", "capability.contactSensor", title: "Which Contact Sensors?", multiple: true, required: false
