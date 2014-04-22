@@ -42,9 +42,9 @@ def listAvailableCameras() {
 				input(name: "cameras", title:"", type: "enum", required:false, multiple:true, metadata:[values:cameras])
 			}
 			section("Turn on which Lights when taking pictures")
-			{
-				input "switches", "capability.switch", multiple: true, required:false
-			}
+				{
+					input "switches", "capability.switch", multiple: true, required:false
+				}
 		}
 	}
 	else
