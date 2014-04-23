@@ -1,5 +1,5 @@
 metadata {
-	definition(name: "Danalock", author: "SmartThings") {
+	definition(name: "Danalock", namespace: "smartthings", author: "SmartThings") {
 		capability "Lock"
 		capability "Battery"
 		capability "Polling"
