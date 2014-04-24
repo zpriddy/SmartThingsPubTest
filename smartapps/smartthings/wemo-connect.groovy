@@ -510,7 +510,7 @@ private def parseDiscoveryMessage(String description) {
 		}
 		else if (part.startsWith('body')) {
 			part -= "body:"
-			def valueString = part.trim(	)
+			def valueString = part.trim()
 			if (valueString) {
 				device.body = valueString
 			}
