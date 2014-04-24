@@ -36,6 +36,33 @@ Commands:
 */
 metadata 
 {
+	// Automatically generated. Make future change here.
+	definition (name: "Microchip Test Board", namespace: "smartthings", author: "superuser") {
+		capability "Refresh"
+		capability "Switch"
+
+		attribute "display", "string"
+		attribute "led1", "string"
+		attribute "led2", "string"
+		attribute "sw1", "string"
+		attribute "sw2", "string"
+		attribute "backlight", "string"
+		attribute "mfg", "string"
+		attribute "device", "string"
+		attribute "version", "string"
+		attribute "sub", "string"
+
+		command "discover"
+		command "setText"
+		command "led1on"
+		command "led1off"
+		command "led2on"
+		command "led2off"
+		command "backlighton"
+		command "backlightoff"
+		command "subscribe"
+	}
+
 	preferences 
 	{
 		input "displayText", "text", title: "Display Text (optional)", required: false
