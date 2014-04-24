@@ -1,6 +1,6 @@
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Button Capability", namespace: "capability", author: "SmartThings") {
+	definition (name: "Button Capability", namespace: "capabilities", author: "SmartThings") {
 		capability "Button"
 	}
 
