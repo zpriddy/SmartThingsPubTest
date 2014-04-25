@@ -2,7 +2,7 @@
  *  Wemo Service Manager
  *
  *  Author: superuser
- *  Date: 2014-01-03
+ *  Date: 2013-09-06
  */
 preferences {
 	page(name:"firstPage", title:"Wemo Device Setup", content:"firstPage")
@@ -20,7 +20,7 @@ private discoverMotion()
 
 private discoverAllWemoTypes()
 {
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1", physicalgraph.device.Protocol.LAN))
+	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1/urn:Belkin:device:lightswitch:1", physicalgraph.device.Protocol.LAN))
 }
 
 private getFriendlyName(String deviceNetworkId) {
@@ -33,7 +33,8 @@ HOST: ${deviceNetworkId}
 private verifyDevices() {
 	def switches = getWemoSwitches().findAll { it?.value?.verified != true }
 	def motions = getWemoMotions().findAll { it?.value?.verified != true }
-	def devices = switches + motions
+	def lightSwitches = getWemoLightSwitches().findAll { it?.value?.verified != true }
+	def devices = switches + motions + lightSwitches
 	devices.each {
 		getFriendlyName((it.value.ip + ":" + it.value.port))
 	}
@@ -42,7 +43,7 @@ private verifyDevices() {
 def firstPage()
 {
 	if(canInstallLabs())
-    {
+	{
 		int refreshCount = !state.refreshCount ? 0 : state.refreshCount as int
 		state.refreshCount = refreshCount + 1
 		def refreshInterval = 5
@@ -64,13 +65,17 @@ def firstPage()
 			verifyDevices()
 		}
 
+
+
 		def switchesDiscovered = switchesDiscovered()
 		def motionsDiscovered = motionsDiscovered()
+		def lightSwitchesDiscovered = lightSwitchesDiscovered()
 
-		return dynamicPage(name:"firstPage", title:"Discovery Started!", nextPage:"", refreshInterval: refreshInterval, install:true, uninstall: true) {
-			section("Please wait while we discover your WeMo. Discovery can take five minutes or more, so sit back and relax! Select your device below once discovered.") {
+		return dynamicPage(name:"firstPage", title:"Discovery Started!", nextPage:"", refreshInterval: refreshInterval, install:true, uninstall: selectedSwitches != null || selectedMotions != null) {
+			section("Select a device...") {
 				input "selectedSwitches", "enum", required:false, title:"Select Wemo Switches \n(${switchesDiscovered.size() ?: 0} found)", multiple:true, options:switchesDiscovered
 				input "selectedMotions", "enum", required:false, title:"Select Wemo Motions \n(${motionsDiscovered.size() ?: 0} found)", multiple:true, options:motionsDiscovered
+				input "selectedLightSwitches", "enum", required:false, title:"Select Wemo Light Switches \n(${lightSwitchesDiscovered.size() ?: 0} found)", multiple:true, options:lightSwitchesDiscovered
 			}
 		}
 	}
@@ -85,15 +90,14 @@ To update your Hub, access Location Settings in the Main Menu (tap the gear next
 				paragraph "$upgradeNeeded"
 			}
 		}
-
 	}
-
 }
 
 def devicesDiscovered() {
 	def switches = getWemoSwitches()
 	def motions = getWemoMotions()
-	def devices = switches + motions
+	def lightSwitches = getWemoLightSwitches()
+	def devices = switches + motions + lightSwitches
 	def list = []
 
 	list = devices?.collect{ [app.id, it.ssdpUSN].join('.') }
@@ -121,6 +125,19 @@ def motionsDiscovered() {
 	map
 }
 
+def lightSwitchesDiscovered() {
+	//def vmotions = switches.findAll { it?.verified == true }
+	//log.trace "MOTIONS HERE: ${vmotions}"
+	def lightSwitches = getWemoLightSwitches().findAll { it?.value?.verified == true }
+	def map = [:]
+	lightSwitches.each {
+		def value = it.value.name ?: "WeMo Light Switch ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
+		def key = it.value.ip + ":" + it.value.port
+		map["${key}"] = value
+	}
+	map
+}
+
 def getWemoSwitches()
 {
 	if (!state.switches) { state.switches = [:] }
@@ -133,13 +150,19 @@ def getWemoMotions()
 	state.motions
 }
 
+def getWemoLightSwitches()
+{
+	if (!state.lightSwitches) { state.lightSwitches = [:] }
+	state.lightSwitches
+}
+
 def installed() {
 	log.debug "Installed with settings: ${settings}"
 	initialize()
 
 	runIn(5, "subscribeToDevices") //initial subscriptions delayed by 5 seconds
 	runIn(300, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 5 minutes
-	
+
 	// SUBSCRIBE responses come back with TIMEOUT-1801 (30 minutes), so we refresh things a bit before they expire (29 minutes)
 	runIn(1740, "refresh", [overwrite: false])
 }
@@ -220,6 +243,27 @@ def addMotions() {
 	}
 }
 
+def addLightSwitches() {
+	def lightSwitches = getWemoLightSwitches()
+
+	selectedLightSwitches.each { dni ->
+		def d = getChildDevice(dni)
+
+		if(!d)
+		{
+			def newWemoLightSwitch = lightSwitches.find { (it.value.ip + ":" + it.value.port) == dni }
+			d = addChildDevice("smartthings", "Wemo Light Switch", dni, newWemoLightSwitch?.value?.hub, ["label":newWemoLightSwitch?.value?.name ?: "Wemo Light Switch", "data":["mac": newWemoLightSwitch?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
+
+			log.debug "created ${d.displayName} with id $dni"
+			//d.subscribe()
+		}
+		else
+		{
+		   log.debug "found ${d.displayName} with id $dni already exists"
+		}
+	}
+}
+
 def initialize() {
 	// remove location subscription afterwards
 	 unsubscribe()
@@ -233,6 +277,11 @@ def initialize() {
 	if (selectedMotions)
 	{
 		addMotions()
+	}
+
+	if (selectedLightSwitches)
+	{
+		addLightSwitches()
 	}
 }
 
@@ -291,7 +340,7 @@ def locationHandler(evt) {
 		else
 		{ // just update the values
 
-			log.debug "Device was already found in state..."
+		   log.debug "Device was already found in state..."
 
 			def d = motions."${parsedEvent.ssdpUSN.toString()}"
 			boolean deviceChangedValues = false
@@ -314,6 +363,44 @@ def locationHandler(evt) {
 					}
 				}
 			}
+		}
+
+	}
+	else if (parsedEvent?.ssdpTerm?.contains("Belkin:device:lightswitch")) {
+
+		def lightSwitches = getWemoLightSwitches()
+
+		if (!(lightSwitches."${parsedEvent.ssdpUSN.toString()}"))
+		{ //if it doesn't already exist
+			lightSwitches << ["${parsedEvent.ssdpUSN.toString()}":parsedEvent]
+		}
+		else
+		{ // just update the values
+
+			log.debug "Device was already found in state..."
+
+			def d = lightSwitches."${parsedEvent.ssdpUSN.toString()}"
+			boolean deviceChangedValues = false
+
+			if(d.ip != parsedEvent.ip || d.port != parsedEvent.port) {
+				d.ip = parsedEvent.ip
+				d.port = parsedEvent.port
+				deviceChangedValues = true
+				log.debug "Device's port or ip changed..."
+			}
+
+			if (deviceChangedValues) {
+				def children = getChildDevices()
+				log.debug "Found children ${children}"
+				children.each {
+					if (it.getDeviceDataByName("mac") == parsedEvent.mac) {
+						log.debug "updating dni for device ${it} with mac ${parsedEvent.mac}"
+						it.setDeviceNetworkId((parsedEvent.ip + ":" + parsedEvent.port)) //could error if device with same dni already exists
+						it.subscribe()
+					}
+				}
+			}
+
 		}
 
 	}
@@ -344,6 +431,20 @@ def locationHandler(evt) {
 			if (wemoMotion)
 			{
 				wemoMotion.value << [name:body?.device?.friendlyName?.text(), verified: true]
+			}
+			else
+			{
+				log.error "/setup.xml returned a wemo device that didn't exist"
+			}
+		}
+
+		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:lightswitch")) //?:1
+		{
+			def lightSwitches = getWemoLightSwitches()
+			def wemoLightSwitch = lightSwitches.find {it?.key?.contains(body?.device?.UDN?.text())}
+			if (wemoLightSwitch)
+			{
+				wemoLightSwitch.value << [name:body?.device?.friendlyName?.text(), verified: true]
 			}
 			else
 			{
@@ -471,8 +572,6 @@ def now() {
 	new Date().getTime()
 }*/
 
-
-
 private Boolean canInstallLabs()
 {
 	return hasAllHubsOver("000.011.00603")
@@ -487,4 +586,3 @@ private List getRealHubFirmwareVersions()
 {
 	return location.hubs*.firmwareVersionString.findAll { it }
 }
-

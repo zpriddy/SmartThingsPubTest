@@ -385,6 +385,7 @@ def getDeviceList()
 				])
 			}
 
+			/* stubbing out these out for later release
 			if ( it.sensor_pod_id ) {
 				deviceList["${it.sensor_pod_id}"] = it.name
 				state.deviceDataArr.push(['name'   : it.name,
@@ -398,7 +399,6 @@ def getDeviceList()
 				])
 			}
 
-			/* stubbing out these out for later release
 			if ( it.piggy_bank_id ) {
 				deviceList["${it.piggy_bank_id}"] = it.name
 				state.deviceDataArr.push(['name'   : it.name,
