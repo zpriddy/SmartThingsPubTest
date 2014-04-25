@@ -10,9 +10,11 @@
 metadata {
 	// Automatically generated. Make future change here.
 	definition (name: "Wemo Light Switch", namespace: "smartthings", author: "adam") {
+		capability "Actuator"
 		capability "Switch"
 		capability "Polling"
 		capability "Refresh"
+		capability "Sensor"
 
 		command "subscribe"
 		command "resubscribe"
@@ -26,15 +28,17 @@ metadata {
 	// UI tile definitions
 	tiles {
 		standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
-			state "off", label: '${name}', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff"
-			state "on", label: '${name}', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#79b821"
+			state "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#79b821", nextState:"turningOff"
+			state "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
+			state "turningOn", label:'${name}', icon:"st.switches.switch.on", backgroundColor:"#79b821"
+			state "turningOff", label:'${name}', icon:"st.switches.switch.off", backgroundColor:"#ffffff"
 		}
         standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 
 		main "switch"
-		details (["switch", "refresh", "subscribe"])
+		details (["switch", "refresh"])
 	}
 }
 
@@ -92,6 +96,7 @@ def parse(String description) {
 
 ////////////////////////////
 private getTime() {
+	// This is essentially System.currentTimeMillis()/1000, but System is disallowed by the sandbox.
 	((new GregorianCalendar().time.time / 1000l).toInteger()).toString()
 }
 
@@ -154,10 +159,8 @@ Content-Length: 333
 
 ////////////////////////////
 def refresh() {
-	//technically the status comes back in a subscribe but the sid also changes
-    //so we may miss the update therefore I am also calling a 5 second delay poll just to be safe
-   	parent.delayPoll()
-	subscribe()
+	log.debug "Executing WeMo Light Switch 'subscribe', then 'timeSyncResponse', then 'poll'"
+	[subscribe(), timeSyncResponse(), poll()]
 }
 
 ////////////////////////////
@@ -205,6 +208,7 @@ SID: uuid:${sid}
 ////////////////////////////
 //TODO: Use UTC Timezone
 def timeSyncResponse() {
+log.debug "Executing 'timeSyncResponse()'"
 new physicalgraph.device.HubAction("""POST /upnp/control/timesync1 HTTP/1.1
 Content-Type: text/xml; charset="utf-8"
 SOAPACTION: "urn:Belkin:service:timesync:1#TimeSync"

@@ -33,12 +33,9 @@ metadata {
 		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		/*standardTile("subscribe", "device.switch", inactiveLabel: false, decoration: "flat") {
-			state "default", label:'[re]subscribe', action:"subscribe", icon:"st.unknown.thing.thing-circle"
-		}*/
 
 		main "switch"
-		details (["switch", "refresh", "subscribe"])
+		details (["switch", "refresh"])
 	}
 }
 

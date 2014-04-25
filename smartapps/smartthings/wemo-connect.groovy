@@ -33,8 +33,8 @@ HOST: ${deviceNetworkId}
 private verifyDevices() {
 	def switches = getWemoSwitches().findAll { it?.value?.verified != true }
 	def motions = getWemoMotions().findAll { it?.value?.verified != true }
-	def inwalls = getWemoInWall().findAll { it?.value?.verified != true }
-	def devices = switches + motions + inwalls
+	def lightSwitches = getWemoLightSwitches().findAll { it?.value?.verified != true }
+	def devices = switches + motions + lightSwitches
 	devices.each {
 		getFriendlyName((it.value.ip + ":" + it.value.port))
 	}
@@ -69,14 +69,13 @@ def firstPage()
 
 		def switchesDiscovered = switchesDiscovered()
 		def motionsDiscovered = motionsDiscovered()
-
-		def inWallDiscovered = inWallDiscovered()
+		def lightSwitchesDiscovered = lightSwitchesDiscovered()
 
 		return dynamicPage(name:"firstPage", title:"Discovery Started!", nextPage:"", refreshInterval: refreshInterval, install:true, uninstall: selectedSwitches != null || selectedMotions != null) {
 			section("Select a device...") {
 				input "selectedSwitches", "enum", required:false, title:"Select Wemo Switches \n(${switchesDiscovered.size() ?: 0} found)", multiple:true, options:switchesDiscovered
 				input "selectedMotions", "enum", required:false, title:"Select Wemo Motions \n(${motionsDiscovered.size() ?: 0} found)", multiple:true, options:motionsDiscovered
-				input "selectedInWall", "enum", required:false, title:"Select Wemo InWall \n(${inWallDiscovered.size() ?: 0} found)", multiple:true, options:inWallDiscovered
+				input "selectedLightSwitches", "enum", required:false, title:"Select Wemo Light Switches \n(${lightSwitchesDiscovered.size() ?: 0} found)", multiple:true, options:lightSwitchesDiscovered
 			}
 		}
 	}
@@ -97,7 +96,8 @@ To update your Hub, access Location Settings in the Main Menu (tap the gear next
 def devicesDiscovered() {
 	def switches = getWemoSwitches()
 	def motions = getWemoMotions()
-	def devices = switches + motions
+	def lightSwitches = getWemoLightSwitches()
+	def devices = switches + motions + lightSwitches
 	def list = []
 
 	list = devices?.collect{ [app.id, it.ssdpUSN].join('.') }
@@ -125,12 +125,12 @@ def motionsDiscovered() {
 	map
 }
 
-def inWallDiscovered() {
+def lightSwitchesDiscovered() {
 	//def vmotions = switches.findAll { it?.verified == true }
 	//log.trace "MOTIONS HERE: ${vmotions}"
-	def inwall = getWemoInWall().findAll { it?.value?.verified == true }
+	def lightSwitches = getWemoLightSwitches().findAll { it?.value?.verified == true }
 	def map = [:]
-	inwall.each {
+	lightSwitches.each {
 		def value = it.value.name ?: "WeMo Light Switch ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
 		def key = it.value.ip + ":" + it.value.port
 		map["${key}"] = value
@@ -150,10 +150,10 @@ def getWemoMotions()
 	state.motions
 }
 
-def getWemoInWall()
+def getWemoLightSwitches()
 {
-	if (!state.inwall) { state.inwall = [:] }
-	state.inwall
+	if (!state.lightSwitches) { state.lightSwitches = [:] }
+	state.lightSwitches
 }
 
 def installed() {
@@ -243,16 +243,16 @@ def addMotions() {
 	}
 }
 
-def addInWall() {
-	def inwall = getWemoInWall()
+def addLightSwitches() {
+	def lightSwitches = getWemoLightSwitches()
 
-	selectedInWall.each { dni ->
+	selectedLightSwitches.each { dni ->
 		def d = getChildDevice(dni)
 
 		if(!d)
 		{
-			def newWemoInWall = inwall.find { (it.value.ip + ":" + it.value.port) == dni }
-			d = addChildDevice("smartthings", "Wemo Light Switch", dni, newWemoInWall?.value?.hub, ["label":newWemoInWall?.value?.name ?: "Wemo Light Switch", "data":["mac": newWemoInWall?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
+			def newWemoLightSwitch = lightSwitches.find { (it.value.ip + ":" + it.value.port) == dni }
+			d = addChildDevice("smartthings", "Wemo Light Switch", dni, newWemoLightSwitch?.value?.hub, ["label":newWemoLightSwitch?.value?.name ?: "Wemo Light Switch", "data":["mac": newWemoLightSwitch?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
 
 			log.debug "created ${d.displayName} with id $dni"
 			//d.subscribe()
@@ -279,9 +279,9 @@ def initialize() {
 		addMotions()
 	}
 
-	if (selectedInWall)
+	if (selectedLightSwitches)
 	{
-		addInWall()
+		addLightSwitches()
 	}
 }
 
@@ -368,18 +368,18 @@ def locationHandler(evt) {
 	}
 	else if (parsedEvent?.ssdpTerm?.contains("Belkin:device:lightswitch")) {
 
-		def inwalls = getWemoInWall()
+		def lightSwitches = getWemoLightSwitches()
 
-		if (!(inwalls."${parsedEvent.ssdpUSN.toString()}"))
+		if (!(lightSwitches."${parsedEvent.ssdpUSN.toString()}"))
 		{ //if it doesn't already exist
-			inwalls << ["${parsedEvent.ssdpUSN.toString()}":parsedEvent]
+			lightSwitches << ["${parsedEvent.ssdpUSN.toString()}":parsedEvent]
 		}
 		else
 		{ // just update the values
 
 			log.debug "Device was already found in state..."
 
-			def d = inwalls."${parsedEvent.ssdpUSN.toString()}"
+			def d = lightSwitches."${parsedEvent.ssdpUSN.toString()}"
 			boolean deviceChangedValues = false
 
 			if(d.ip != parsedEvent.ip || d.port != parsedEvent.port) {
@@ -440,11 +440,11 @@ def locationHandler(evt) {
 
 		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:lightswitch")) //?:1
 		{
-			def inwalls = getWemoInWall()
-			def wemoInWall = inwalls.find {it?.key?.contains(body?.device?.UDN?.text())}
-			if (wemoInWall)
+			def lightSwitches = getWemoLightSwitches()
+			def wemoLightSwitch = lightSwitches.find {it?.key?.contains(body?.device?.UDN?.text())}
+			if (wemoLightSwitch)
 			{
-				wemoInWall.value << [name:body?.device?.friendlyName?.text(), verified: true]
+				wemoLightSwitch.value << [name:body?.device?.friendlyName?.text(), verified: true]
 			}
 			else
 			{
