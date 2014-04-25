@@ -642,7 +642,7 @@ def playTrackAtVolume(String uri, volume) {
 		result << setLocalLevel(volume as Integer)
 		result << setTrack(uri, metaData)
 		result << sonosAction("Play")
-		result
+		result.flatten()
 	}, {it.playTrack(uri, metaData)})
 }
 
@@ -651,7 +651,7 @@ def playTrack(String uri, metaData="") {
 	coordinate({
 		def result = setTrack(uri, metaData)
 		result << sonosAction("Play")
-		result
+		result.flatten()
 	}, {it.playTrack(uri, metaData)})
 }
 
@@ -661,7 +661,7 @@ def playTrack(Map trackData) {
 		def result = setTrack(trackData)
 		//result << delayAction(1000)
 		result << sonosAction("Play")
-		result
+		result.flatten()
 	}, {it.playTrack(trackData)})
 }
 
