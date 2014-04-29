@@ -33,13 +33,12 @@ def updated() {
 }
 
 def initialize() {
-    weatherDevices.poll()
-    runIn(3600, scheduledEvent, [overwrite: false])
+    scheduledEvent()
 }
 
 def scheduledEvent() {
 	log.trace "scheduledEvent()"
     runIn(3600, scheduledEvent, [overwrite: false])
-	weatherDevices.poll()
+	weatherDevices.refresh()
     state.lastRun = new Date().toSystemFormat()
 }
