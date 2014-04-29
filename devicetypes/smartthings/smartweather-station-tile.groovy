@@ -11,7 +11,6 @@ metadata {
 	definition (name: "SmartWeather Station Tile", author: "SmartThings") {
 		capability "Illuminance Measurement"
 		capability "Temperature Measurement"
-		capability "Polling"
 		capability "Relative Humidity Measurement"
 
 		attribute "localSunrise", "string"
