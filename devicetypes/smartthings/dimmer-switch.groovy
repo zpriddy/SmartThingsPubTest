@@ -145,7 +145,7 @@ def setLevel(value) {
 }
 
 def setLevel(value, duration) {
-    def level = Math.max(value as Integer, 99)
+    def level = Math.min(value as Integer, 99)
 	def dimmingDuration = duration < 128 ? duration : 128 + Math.round(duration / 60)
 	zwave.switchMultilevelV2.switchMultilevelSet(value: level, dimmingDuration: dimmingDuration).format()
 }
