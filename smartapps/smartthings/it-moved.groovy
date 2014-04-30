@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "It Moved",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Send a text when movement is detected",
+    category: "Fun & Social",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text_accelerometer.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text_accelerometer@2x.png"
+)
+
 preferences {
 	section("When movement is detected...") {
 		input "accelerationSensor", "capability.accelerationSensor", title: "Where?"

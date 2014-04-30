@@ -4,6 +4,16 @@
  *  Author: superuser
  *  Date: 2013-09-06
  */
+definition(
+    name: "Wemo (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Allows you to integrate your WeMo Switch and Wemo Motion sensor with SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wemo.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wemo@2x.png"
+)
+
 preferences {
 	page(name:"firstPage", title:"Wemo Device Setup", content:"firstPage")
 }

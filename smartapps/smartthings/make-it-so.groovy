@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-06
  */
+definition(
+    name: "Make It So",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Saves the states of a specified set switches and thermostat setpoints and restores them at each mode change. To use 1) Set the mode, 2) Change switches and setpoint to where you want them for that mode, and 3) Install or update the app. Changing to that mode or touching the app will set the devices to the saved state.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_thermo-switch.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_thermo-switch@2x.png"
+)
+
 preferences {
 	section("Switches") {
 		input "switches", "capability.switch", multiple: true, required: false

@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Text Me When There's Motion and I'm Not Here",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Send a text message when there is motion while you are away.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/intruder_motion-presence.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/intruder_motion-presence@2x.png"
+)
+
 preferences {
 	section("When there's movement...") {
 		input "motion1", "capability.motionSensor", title: "Where?"

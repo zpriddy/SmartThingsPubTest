@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Turn It On When I'm Here",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn something on when you arrive and back off when you leave.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_presence-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_presence-outlet@2x.png"
+)
+
 preferences {
 	section("When I arrive and leave..."){
 		input "presence1", "capability.presenceSensor", title: "Who?", multiple: true

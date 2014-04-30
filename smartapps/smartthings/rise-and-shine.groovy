@@ -5,6 +5,16 @@
  *  Date: 2013-03-07
  */
 
+definition(
+    name: "Rise and Shine",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes mode when someone wakes up after a set time in the morning.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/rise-and-shine.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/rise-and-shine@2x.png"
+)
+
 preferences {
 	section("When there's motion on any of these sensors") {
 		input "motionSensors", "capability.motionSensor", multiple: true

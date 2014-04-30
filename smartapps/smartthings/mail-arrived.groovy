@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Mail Arrived",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Send a text when mail arrives in your mailbox using SmartSense Multi on your mailbox door.  Note:  battery life may be impacted in cold climates.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/mail_contact.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/mail_contact@2x.png"
+)
+
 preferences {
 	section("When mail arrives...") {
 		input "accelerationSensor", "capability.accelerationSensor", title: "Where?"

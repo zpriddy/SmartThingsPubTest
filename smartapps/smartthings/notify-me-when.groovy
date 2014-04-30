@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-20
  */
+definition(
+    name: "Notify Me When",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Get a push notification or text message when any of a variety of SmartThings is activated.  Supports motion, contact, acceleration, moisture and presence sensors as well as switches.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/window_contact.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/window_contact@2x.png"
+)
+
 preferences {
 	section("Choose one or more, when..."){
 		input "motion", "capability.motionSensor", title: "Motion Here", required: false, multiple: true

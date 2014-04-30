@@ -4,6 +4,16 @@
  *  Author: SmartThings
  */
 
+definition(
+    name: "Big Turn ON",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when the SmartApp is tapped or activated.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet@2x.png"
+)
+
 preferences {
 	section("When I touch the app, turn on...") {
 		input "switches", "capability.switch", multiple: true

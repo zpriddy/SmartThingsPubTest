@@ -5,6 +5,16 @@
  *
  *  Date: 2014-02-15
  */
+definition(
+    name: "Nest (Connect)",
+    namespace: "dianoga",
+    author: "Brian Steere",
+    description: "Service Manager for Nest Thermostats",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/nest.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/nest@2x.png"
+)
+
 preferences {
 	page(name: "auth", title: "Nest Login", install: false, uninstall: true, nextPage:"devices") {
 		section("Log in to your Nest account") {
