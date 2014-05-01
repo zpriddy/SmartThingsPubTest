@@ -5,6 +5,19 @@
  *	Date: 2013-09-27
  */
 metadata {
+	// Automatically generated. Make future change here.
+	definition (name: "Smart Body Analyzer", namespace: "smartthings", author: "SmartThings") {
+		capability "Polling"
+
+		attribute "weight", "string"
+		attribute "leanMass", "string"
+		attribute "fatRatio", "string"
+		attribute "fatMass", "string"
+		attribute "pulse", "string"
+
+		command "storeGraphImage"
+	}
+
 	simulator {
 		// TODO: define status and reply messages here
 	}
