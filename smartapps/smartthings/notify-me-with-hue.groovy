@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2014-01-20
  */
+definition(
+    name: "Notify Me With Hue",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes the color and brightness of Philips Hue bulbs when any of a variety of SmartThings is activated.  Supports motion, contact, acceleration, moisture and presence sensors as well as switches.",
+    category: "Reviewers",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/hue.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/hue@2x.png"
+)
+
 preferences {
 
 	section("Control these bulbs...") {

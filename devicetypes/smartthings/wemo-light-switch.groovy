@@ -9,7 +9,7 @@
 
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Wemo Light Switch", namespace: "smartthings", author: "adam") {
+	definition (name: "Wemo Light Switch", namespace: "smartthings", author: "SmartThings") {
 		capability "Actuator"
 		capability "Switch"
 		capability "Polling"

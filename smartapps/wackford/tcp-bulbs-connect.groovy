@@ -31,6 +31,16 @@
  ******************************************************************************
  */
 
+definition(
+    name: "Tcp Bulbs (Connect)",
+    namespace: "wackford",
+    author: "SmartThings",
+    description: "Connect your TCP bulbs to SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp@2x.png"
+)
+
 preferences {
 	page(name:"Gateway", title: "Begin Connected by TCP Device Discovery", content: "discoverGateway", nextPage: "bulbDiscovery", install: false)
 	page(name:"bulbDiscovery", title:"TCP Device Setup", content:"bulbDiscovery", refreshTimeout:5)

@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "It's Too Cold",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Monitor the temperature and when it drops below your setting get a text and/or turn on a heater or additional appliance.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch@2x.png"
+)
+
 preferences {
 	section("Monitor the temperature...") {
 		input "temperatureSensor1", "capability.temperatureMeasurement"

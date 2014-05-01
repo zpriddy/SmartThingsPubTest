@@ -4,6 +4,16 @@
  *  Author: bob
  *  Date: 2013-02-06
  */
+definition(
+    name: "The Flasher",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Flashes a set of lights in response to motion, an open/close event, or a switch.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-contact.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-contact@2x.png"
+)
+
 preferences {
 	section("When any of the following devices trigger..."){
 		input "motion", "capability.motionSensor", title: "Motion Sensor?", required: false

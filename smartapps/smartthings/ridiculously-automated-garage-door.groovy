@@ -12,6 +12,16 @@
  *    4) closes door when door was opened due to arrival and interior door is closed.
  */
 
+definition(
+    name: "Ridiculously Automated Garage Door",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Monitors arrival and departure of car(s) and 1) opens door when car arrives, 2) closes door after car has departed (for N minutes), 3) opens door when car door motion is detected, 4) closes door when door was opened due to arrival and interior door is closed.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_contact.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_contact@2x.png"
+)
+
 preferences {
 
 	section("Garage door") {

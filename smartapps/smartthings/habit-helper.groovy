@@ -4,6 +4,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Habit Helper",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Add something you want to be reminded about each day and get a text message to help you form positive habits.",
+    category: "Family",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text@2x.png"
+)
+
 preferences {
 	section("Remind me about..."){
 		input "message1", "text", title: "What?"

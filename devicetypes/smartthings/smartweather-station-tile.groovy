@@ -8,10 +8,9 @@
 // for the UI
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "SmartWeather Station Tile", author: "SmartThings") {
+	definition (name: "SmartWeather Station Tile", namespace: "smartthings", author: "SmartThings") {
 		capability "Illuminance Measurement"
 		capability "Temperature Measurement"
-		capability "Polling"
 		capability "Relative Humidity Measurement"
 
 		attribute "localSunrise", "string"
@@ -189,19 +188,13 @@ def poll() {
 
 		def sunriseDate = ltf.parse("${today} ${a.sunrise.hour}:${a.sunrise.minute}")
 		def sunsetDate = ltf.parse("${today} ${a.sunset.hour}:${a.sunset.minute}")
-		def sunrise = utf.format(sunriseDate)
-		def sunset = utf.format(sunsetDate)
-		if (sunrise != device.currentValue("sunrise")) {
-			//send(name: "sunrise", value: sunrise, displayed: false)
-			//send(name: "sunset", value: sunset, displayed: false)
 
-			def tf = new java.text.SimpleDateFormat("h:mm a")
-			tf.setTimeZone(TimeZone.getTimeZone("GMT${obs.local_tz_offset}"))
-			def localSunrise = "${tf.format(sunriseDate)}"
-			def localSunset = "${tf.format(sunsetDate)}"
-			send(name: "localSunrise", value: localSunrise, descriptionText: "Sunrise today is at $localSunrise", isStateChange: true)
-			send(name: "localSunset", value: localSunset, descriptionText: "Sunset today at is $localSunset", isStateChange: true)
-		}
+        def tf = new java.text.SimpleDateFormat("h:mm a")
+        tf.setTimeZone(TimeZone.getTimeZone("GMT${obs.local_tz_offset}"))
+        def localSunrise = "${tf.format(sunriseDate)}"
+        def localSunset = "${tf.format(sunsetDate)}"
+        send(name: "localSunrise", value: localSunrise, descriptionText: "Sunrise today is at $localSunrise")
+        send(name: "localSunset", value: localSunset, descriptionText: "Sunset today at is $localSunset")
 
 		send(name: "illuminance", value: estimateLux(sunriseDate, sunsetDate, weatherIcon))
 

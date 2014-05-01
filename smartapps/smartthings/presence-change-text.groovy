@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Presence Change Text",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Send me a text message when my presence status changes.",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text_presence.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text_presence@2x.png"
+)
+
 preferences {
 	section("When a presence sensor arrives or departs this location..") {
 		input "presence", "capability.presenceSensor", title: "Which sensor?"

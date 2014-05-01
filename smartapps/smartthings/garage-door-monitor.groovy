@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Garage Door Monitor",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Monitor your garage door and get a text message if it is open too long",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_contact.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_contact@2x.png"
+)
+
 preferences {
 	section("When the garage door is open...") {
 		input "multisensor", "capability.threeAxis", title: "Which?"

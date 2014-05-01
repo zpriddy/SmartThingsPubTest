@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Garage Door Opener",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Open your garage door when a switch is turned on.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/garage_outlet@2x.png"
+)
+
 preferences {
 	section("When the garage door switch is turned on, open the garage door...") {
 		input "switch1", "capability.switch"

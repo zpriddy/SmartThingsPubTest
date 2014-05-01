@@ -8,6 +8,16 @@
  *      JLH - 01-23-2014 - Update for Correct SmartApp URL Format
  *      JLH - 02-15-2014 - Fuller use of ecobee API
  */
+definition(
+    name: "Ecobee (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Connect your Ecobee thermostat to SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/ecobee.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/ecobee@2x.png"
+)
+
 preferences {
 	page(name: "auth", title: "ecobee", nextPage:"deviceList", content:"authPage")
 	page(name: "deviceList", title: "ecobee", content:"ecobeeDeviceList", install:true)

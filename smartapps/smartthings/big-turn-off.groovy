@@ -12,6 +12,7 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet@2x.png"
 )
+
 preferences {
 	section("When I touch the app, turn off...") {
 		input "switches", "capability.switch", multiple: true

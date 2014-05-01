@@ -4,18 +4,18 @@
  *  Author: superuser
  *  Date: 2013-09-06
  */
+definition(
+    name: "Wemo (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Allows you to integrate your WeMo Switch and Wemo Motion sensor with SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wemo.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wemo@2x.png"
+)
+
 preferences {
 	page(name:"firstPage", title:"Wemo Device Setup", content:"firstPage")
-}
-
-private discoverSwitch()
-{
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:controllee:1", physicalgraph.device.Protocol.LAN))
-}
-
-private discoverMotion()
-{
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:sensor:1", physicalgraph.device.Protocol.LAN))
 }
 
 private discoverAllWemoTypes()
@@ -71,7 +71,7 @@ def firstPage()
 		def motionsDiscovered = motionsDiscovered()
 		def lightSwitchesDiscovered = lightSwitchesDiscovered()
 
-		return dynamicPage(name:"firstPage", title:"Discovery Started!", nextPage:"", refreshInterval: refreshInterval, install:true, uninstall: selectedSwitches != null || selectedMotions != null) {
+		return dynamicPage(name:"firstPage", title:"Discovery Started!", nextPage:"", refreshInterval: refreshInterval, install:true, uninstall: selectedSwitches != null || selectedMotions != null || selectedLightSwitches != null) {
 			section("Select a device...") {
 				input "selectedSwitches", "enum", required:false, title:"Select Wemo Switches \n(${switchesDiscovered.size() ?: 0} found)", multiple:true, options:switchesDiscovered
 				input "selectedMotions", "enum", required:false, title:"Select Wemo Motions \n(${motionsDiscovered.size() ?: 0} found)", multiple:true, options:motionsDiscovered
@@ -161,6 +161,7 @@ def installed() {
 	initialize()
 
 	runIn(5, "subscribeToDevices") //initial subscriptions delayed by 5 seconds
+	runIn(10, "refreshDevices") //refresh devices, delayed by 10 seconds
 	runIn(300, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 5 minutes
 
 	// SUBSCRIBE responses come back with TIMEOUT-1801 (30 minutes), so we refresh things a bit before they expire (29 minutes)
@@ -172,6 +173,7 @@ def updated() {
 	initialize()
 
 	runIn(5, "subscribeToDevices") //subscribe again to new/old devices wait 5 seconds
+	runIn(10, "refreshDevices") //refresh devices again, delayed by 10 seconds
 }
 
 def resubscribe() {
@@ -183,7 +185,11 @@ def refresh() {
 	log.debug "refresh() called"
 	//reschedule the refreshes
 	runIn(1740, "refresh", [overwrite: false])
+	refreshDevices()
+}
 
+def refreshDevices() {
+	log.debug "refreshDevices() called"
 	def devices = getAllChildDevices()
 	devices.each { d ->
 		// This is intended to do the same thing the WeMo iOS app does when the "refresh" button is pressed,
@@ -194,6 +200,7 @@ def refresh() {
 }
 
 def subscribeToDevices() {
+	log.debug "subscribeToDevices() called"
 	def devices = getAllChildDevices()
 	devices.each { d ->
 		d.subscribe()
@@ -212,7 +219,6 @@ def addSwitches() {
 			d = addChildDevice("smartthings", "Wemo Switch", dni, newWemoSwitch?.value?.hub, ["label":newWemoSwitch?.value?.name ?: "Wemo Switch", "data":["mac": newWemoSwitch?.value?.mac]]) //, "preferences":["ip": newWemoSwitch.value.ip, "port":newWemoSwitch.value.port, "path":newWemoSwitch.value.ssdpPath, "term":newWemoSwitch.value.ssdpTerm]])
 
 			log.debug "created ${d.displayName} with id $dni"
-			//d.subscribe()
 
 		}
 		else
@@ -234,7 +240,6 @@ def addMotions() {
 			d = addChildDevice("smartthings", "Wemo Motion", dni, newWemoMotion?.value?.hub, ["label":newWemoMotion?.value?.name ?: "Wemo Motion", "data":["mac": newWemoMotion?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
 
 			log.debug "created ${d.displayName} with id $dni"
-			//d.subscribe()
 		}
 		else
 		{
@@ -255,7 +260,6 @@ def addLightSwitches() {
 			d = addChildDevice("smartthings", "Wemo Light Switch", dni, newWemoLightSwitch?.value?.hub, ["label":newWemoLightSwitch?.value?.name ?: "Wemo Light Switch", "data":["mac": newWemoLightSwitch?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
 
 			log.debug "created ${d.displayName} with id $dni"
-			//d.subscribe()
 		}
 		else
 		{

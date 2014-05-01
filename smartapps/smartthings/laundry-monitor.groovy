@@ -8,6 +8,16 @@
  *  Date: 2013-02-21
  */
 
+definition(
+    name: "Laundry Monitor",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Sends a message and (optionally) turns on or blinks a light to indicate that laundry is done.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner%402x.png"
+)
+
 preferences {
 	section("Tell me when this washer/dryer has stopped..."){
 		input "sensor1", "capability.accelerationSensor"

@@ -5,6 +5,16 @@
  *
  *  Date: 2013-04-30
  */
+definition(
+    name: "Sunrise/Sunset",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes mode and controls lights based on local sunrise and sunset times.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/rise-and-shine.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/rise-and-shine@2x.png"
+)
+
 preferences {
 	section ("At sunrise...") {
 		input "sunriseMode", "mode", title: "Change mode to?", required: false
