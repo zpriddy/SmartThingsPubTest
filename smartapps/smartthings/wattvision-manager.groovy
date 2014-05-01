@@ -4,6 +4,19 @@
  *  Author: steve
  *  Date: 2014-02-13
  */
+
+
+// Automatically generated. Make future change here.
+definition(
+    name: "Wattvision Manager",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Wattvision integration",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision%402x.png",
+    oauth: [displayName: "Wattvision", displayLink: "https://www.wattvision.com/"]
+)
+
 preferences {
 	page(name: "rootPage", title: "Wattvision", install: true, uninstall: true) {
 		section {
@@ -15,21 +28,24 @@ preferences {
 
 mappings {
 	path("/access") {
-		actions: [
-			POST: "setApiAccess",
+		actions:
+		[
+			POST  : "setApiAccess",
 			DELETE: "revokeApiAccess"
 		]
 	}
 	path("/devices") {
-		actions: [
+		actions:
+		[
 			GET: "listDevices"
 		]
 	}
 	path("/device/:sensorId") {
-		actions: [
-			GET: "getDevice",
-			PUT: "updateDevice",
-			POST: "createDevice",
+		actions:
+		[
+			GET   : "getDevice",
+			PUT   : "updateDevice",
+			POST  : "createDevice",
 			DELETE: "deleteDevice"
 		]
 	}
@@ -114,12 +130,12 @@ def wattvisionURL(senorId, startDate, endDate) {
 	}
 
 	def params = [
-		"sensor_id": senorId,
-		"api_id": wattvisionApiAccess.id,
-		"api_key": wattvisionApiAccess.key,
-		"type": wattvisionDataType ?: "rate",
+		"sensor_id" : senorId,
+		"api_id"    : wattvisionApiAccess.id,
+		"api_key"   : wattvisionApiAccess.key,
+		"type"      : wattvisionDataType ?: "rate",
 		"start_time": startDate.format(wattvisionDateFormat()),
-		"end_time": endDate.format(wattvisionDateFormat())
+		"end_time"  : endDate.format(wattvisionDateFormat())
 	]
 
 	def parameterString = params.collect { key, value -> "${key.encodeAsURL()}=${value.encodeAsURL()}" }.join("&")
@@ -139,10 +155,10 @@ public wattvisionDateFormat() { "yyyy-MM-dd'T'HH:mm:ss" }
 
 def childMarshaller(child) {
 	return [
-		name: child.name,
-		label: child.label,
+		name     : child.name,
+		label    : child.label,
 		sensor_id: child.deviceNetworkId,
-		location: child.location.name
+		location : child.location.name
 	]
 }
 
@@ -183,7 +199,9 @@ def createDevice() {
 		httpError(403, "Device already exists")
 	}
 
-	def child = addChildDevice("Wattvision", "Wattvision", params.sensorId, null, [name: "Wattvision", label: request.JSON.label])
+	def child = addChildDevice("smartthings", "Wattvision", params.sensorId, null, [name: "Wattvision", label: request.JSON.label])
+
+	child.setGraphUrl(getGraphUrl(params.sensorId));
 
 	getDataForChild(child, null, null)
 
@@ -199,7 +217,7 @@ def setApiAccess() {
 	def body = request.JSON
 	state.wattvisionApiAccess = [
 		url: body.url,
-		id: body.id,
+		id : body.id,
 		key: body.key
 	]
 	render([status: 204, data: " "])
@@ -208,4 +226,12 @@ def setApiAccess() {
 def revokeApiAccess() {
 	state.wattvisionApiAccess = [:]
 	render([status: 204, data: " "])
+}
+
+public getGraphUrl(sensorId) {
+	def apiId = state.wattvisionApiAccess.id
+	def apiKey = state.wattvisionApiAccess.key
+
+	// TODO: allow the changing of type?
+	"http://www.wattvision.com/partners/smartthings/charts?s=${sensorId}&api_id=${apiId}&api_key=${apiKey}&type=w"
 }
