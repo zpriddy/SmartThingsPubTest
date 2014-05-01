@@ -141,7 +141,8 @@ def off() {
 }
 
 def setLevel(value) {
-	delayBetween ([zwave.basicV1.basicSet(value: value).format(), zwave.switchMultilevelV1.switchMultilevelGet().format()], 5000)
+    def level = Math.min(value as Integer, 99)
+	delayBetween ([zwave.basicV1.basicSet(value: level).format(), zwave.switchMultilevelV1.switchMultilevelGet().format()], 5000)
 }
 
 def setLevel(value, duration) {
