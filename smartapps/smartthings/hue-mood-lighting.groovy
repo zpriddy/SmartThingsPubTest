@@ -5,6 +5,16 @@
  *  *
  *  Date: 2014-02-21
  */
+definition(
+    name: "Hue Mood Lighting",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Sets the colors and brightness level of your Philips Hue lights to match your mood.",
+    category: "Reviewers",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/hue.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/hue@2x.png"
+)
+
 preferences {
 	page(name: "mainPage", title: "Adjust the color of your Hue lights to match your mood.", install: true, uninstall: true)
 	page(name: "timeIntervalInput", title: "Only during a certain time") {

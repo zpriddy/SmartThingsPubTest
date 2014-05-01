@@ -4,6 +4,16 @@
  *  Author: luke
  *  Date: 2014-01-28
  */
+definition(
+    name: "Hub IP Notifier",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Listen for local IP changes when your hub registers.",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/MyApps/Cat-MyApps.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/MyApps/Cat-MyApps@2x.png"
+)
+
 preferences {
 	page(name: "pageWithIp", title: "Hub IP Notifier", install: true)
 

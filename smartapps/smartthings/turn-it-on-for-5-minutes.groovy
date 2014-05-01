@@ -4,6 +4,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Turn It On For 5 Minutes",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "When a SmartSense Multi is opened, a switch will be turned on, and then turned off after 5 minutes.",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet@2x.png"
+)
+
 preferences {
 	section("When it opens..."){
 		input "contact1", "capability.contactSensor"

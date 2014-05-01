@@ -5,7 +5,17 @@
  *  Date: 2014-03-10
  */
 
- preferences {
+ definition(
+    name: "Foscam (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Connect and take pictures using your Foscam camera from inside the Smartthings app.",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/foscam.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/foscam@2x.png"
+)
+
+preferences {
 	page(name: "cameraDiscovery", title:"Foscam Camera Setup", content:"cameraDiscovery")
 	page(name: "loginToFoscam", title: "Foscam Login")
 }

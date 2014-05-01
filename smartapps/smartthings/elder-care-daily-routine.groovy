@@ -8,6 +8,16 @@
  *  by a specified time and/or if they have not opened a cabinet or door according to a set schedule. 
  */
 
+definition(
+    name: "Elder Care: Daily Routine",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Stay connected to your loved ones. Get notified if they are not up and moving around by a specified time and/or if they have not opened a cabinet or door according to a set schedule.",
+    category: "Family",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/calendar_contact-accelerometer.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/calendar_contact-accelerometer@2x.png"
+)
+
 preferences {
 	section("Who are you checking on?") {
 		input "person1", "text", title: "Name?"

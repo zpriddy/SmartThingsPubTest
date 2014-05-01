@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Undead Early Warning",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Undead Early Warning",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-UndeadEarlyWarning.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-UndeadEarlyWarning@2x.png"
+)
+
 preferences {
 	section("When the door opens...") {
 		input "contacts", "capability.contactSensor", multiple: true, title: "Where could they come from?"

@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2014-1-29
  */
+definition(
+    name: "Sonos Notify with Sound",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Play a sound or custom message through your Sonos when the mode changes or other events occur.",
+    category: "Reviewers",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+)
+
 preferences {
 	page(name: "mainPage", title: "Play a message on your Sonos when something happens", install: true, uninstall: true)
 	page(name: "chooseTrack", title: "Select a song or station")

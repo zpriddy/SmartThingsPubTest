@@ -65,6 +65,16 @@ private saveSelectedSongs() {
 	}
 }
 
+definition(
+    name: "Sonos Music Modes",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Plays a different selected song or station for each mode.",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+)
+
 preferences {
 	page(name: "mainPage", title: "Play a message on your Sonos when something happens", nextPage: "chooseTrack", uninstall: true)
 	page(name: "chooseTrack", title: "Select a song", install: true)

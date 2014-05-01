@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Virtual Thermostat",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Control a space heater or window air conditioner in conjunction with any temperature sensor, like a SmartSense Multi.",
+    category: "Green Living",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch@2x.png"
+)
+
 preferences {
 	section("Choose a temperature sensor... "){
 		input "sensor", "capability.temperatureMeasurement", title: "Sensor"

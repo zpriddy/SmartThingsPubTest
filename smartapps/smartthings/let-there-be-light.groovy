@@ -4,6 +4,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Let There Be Light!",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when a SmartSense Multi is opened and turn them off when it is closed.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet@2x.png"
+)
+
 preferences {
 	section("When the door opens/closes...") {
 		input "contact1", "capability.contactSensor", title: "Where?"

@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Lights Off, When Closed",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights off when an open/close sensor closes.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet@2x.png"
+)
+
 preferences {
 	section ("When the door closes...") {
 		input "contact1", "capability.contactSensor", title: "Where?"

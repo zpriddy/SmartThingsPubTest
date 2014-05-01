@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-20
  */
+definition(
+    name: "Curling Iron",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turns on an outlet when the user is present and off after a period of time",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch@2x.png"
+)
+
 preferences {
 	section("When someone's around because of...") {
 		input name: "motionSensors", title: "Motion here", type: "capability.motionSensor", multiple: true, required: false

@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Turn It On When It Opens",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn something on when an open/close sensor opens.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet@2x.png"
+)
+
 preferences {
 	section("When the door opens..."){
 		input "contact1", "capability.contactSensor", title: "Where?"

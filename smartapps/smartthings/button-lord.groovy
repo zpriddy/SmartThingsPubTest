@@ -4,6 +4,16 @@
  *	Author: SmartThings
  *	Date: 2013-11-27
  */
+definition(
+    name: "Button Lord",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Control devices with buttons like the minimote",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/MyApps/Cat-MyApps.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/MyApps/Cat-MyApps@2x.png"
+)
+
 preferences {
 	page(name: "selectButton")
 	page(name: "configureButton1")

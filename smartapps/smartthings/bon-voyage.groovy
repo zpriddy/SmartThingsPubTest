@@ -7,6 +7,16 @@
  *  Monitors a set of presence detectors and triggers a mode change when everyone has left.
  */
 
+definition(
+    name: "Bon Voyage",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Monitors a set of SmartSense Presence tags or smartphones and triggers a mode change when everyone has left.  Used in conjunction with Big Turn Off or Make It So to turn off lights, appliances, adjust the thermostat, turn on security apps, and more.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld@2x.png"
+)
+
 preferences {
 	section("When all of these people leave home") {
 		input "people", "capability.presenceSensor", multiple: true

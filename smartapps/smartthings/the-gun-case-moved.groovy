@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "The Gun Case Moved",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Send a text when your gun case moves",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text_accelerometer.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text_accelerometer@2x.png"
+)
+
 preferences {
 	section("When the gun case moves..."){
 		input "accelerationSensor", "capability.accelerationSensor", title: "Where?"

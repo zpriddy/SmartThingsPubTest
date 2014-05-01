@@ -52,6 +52,16 @@ private getClientSecret() 	{ "bd44c524a1df9dce134235d174350603" }
 
 private getServerUrl() 		{ "https://graph.api.smartthings.com" }
 
+definition(
+    name: "Quirky (Connect)",
+    namespace: "wackford",
+    author: "SmartThings",
+    description: "Connect your Quirky to SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/quirky.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/quirky@2x.png"
+)
+
 preferences {
 	page(name: "Credentials", title: "Fetch OAuth2 Credentials", content: "authPage", install: false)
 	page(name: "listDevices", title: "Quirky Devices", content: "listDevices", install: false)

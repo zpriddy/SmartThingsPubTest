@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Power Allowance",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Save energy or restrict total time an appliance (like a curling iron or TV) can be in use.  When a switch turns on, automatically turn it back off after a set number of minutes you specify.",
+    category: "Green Living",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet@2x.png"
+)
+
 preferences {
 	section("When a switch turns on...") {
 		input "theSwitch", "capability.switch"

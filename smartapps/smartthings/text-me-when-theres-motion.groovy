@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Text Me When There's Motion",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Get a text message sent to your phone when motion is detected.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/intruder_motion.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/intruder_motion@2x.png"
+)
+
 preferences {
 	section("When there's movement..."){
 		input "motion1", "capability.motionSensor", title: "Where?"
