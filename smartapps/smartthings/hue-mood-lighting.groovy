@@ -10,7 +10,7 @@ definition(
     namespace: "smartthings",
     author: "SmartThings",
     description: "Sets the colors and brightness level of your Philips Hue lights to match your mood.",
-    category: "Reviewers",
+    category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/hue.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/hue@2x.png"
 )

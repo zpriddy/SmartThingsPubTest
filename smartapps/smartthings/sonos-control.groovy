@@ -9,7 +9,7 @@ definition(
     namespace: "smartthings",
     author: "SmartThings",
     description: "Play or pause your Sonos when certain actions take place in your home.",
-    category: "Reviewers",
+    category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )

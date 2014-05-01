@@ -9,7 +9,7 @@ definition(
     namespace: "smartthings",
     author: "SmartThings",
     description: "Play a sound or custom message through your Sonos when the mode changes or other events occur.",
-    category: "Reviewers",
+    category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )
