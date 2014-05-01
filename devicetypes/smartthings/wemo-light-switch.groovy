@@ -1,13 +1,15 @@
 /**
- *	Wemo Switch
+ *  Wemo Light Switch
  *
- *	Author: superuser
- *	Date: 2013-10-11
+ *  Author: smartthings
+ *  Date: 2014-02-14
  */
  // for the UI
+
+
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Wemo Switch", namespace: "smartthings", author: "SmartThings") {
+	definition (name: "Wemo Light Switch", namespace: "smartthings", author: "SmartThings") {
 		capability "Actuator"
 		capability "Switch"
 		capability "Polling"
@@ -17,6 +19,7 @@ metadata {
 		command "subscribe"
 		command "resubscribe"
 		command "unsubscribe"
+		command "get"
 	}
 
 	// simulator metadata
@@ -30,7 +33,7 @@ metadata {
 			state "turningOn", label:'${name}', icon:"st.switches.switch.on", backgroundColor:"#79b821"
 			state "turningOff", label:'${name}', icon:"st.switches.switch.off", backgroundColor:"#ffffff"
 		}
-		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
+        standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 
@@ -45,50 +48,50 @@ def parse(String description) {
 
 
 	def map = stringToMap(description)
-	def headerString = new String(map.headers.decodeBase64())
-	def result = []
+    def headerString = new String(map.headers.decodeBase64())
+    def result = []
 
-	if (headerString.contains("SID: uuid:")) {
+   	if (headerString.contains("SID: uuid:")) {
 		def sid = (headerString =~ /SID: uuid:.*/) ? ( headerString =~ /SID: uuid:.*/)[0] : "0"
-		sid -= "SID: uuid:".trim()
+        sid -= "SID: uuid:".trim()
 
-		updateDataValue("subscriptionId", sid)
-	}
+        updateDataValue("subscriptionId", sid)
+    }
 
-	if (map.body) {
+    if (map.body) {
 
 		def bodyString = new String(map.body.decodeBase64())
-		def body = new XmlSlurper().parseText(bodyString)
+    	def body = new XmlSlurper().parseText(bodyString)
 
-		if (body?.property?.TimeSyncRequest?.text())
-		{
-			log.trace "Got TimeSyncRequest"
-			result << timeSyncResponse()
-		}
-		else if (body?.Body?.SetBinaryStateResponse?.BinaryState?.text())
-		{
-			log.trace "Got SetBinaryStateResponse = ${body?.Body?.SetBinaryStateResponse?.BinaryState?.text()}"
-		}
-		else if (body?.property?.BinaryState?.text())
-		{
+        if (body?.property?.TimeSyncRequest?.text())
+        {
+        	log.trace "Got TimeSyncRequest"
+        	result << timeSyncResponse()
+        }
+        else if (body?.Body?.SetBinaryStateResponse?.BinaryState?.text())
+        {
+        	log.trace "Got SetBinaryStateResponse = ${body?.Body?.SetBinaryStateResponse?.BinaryState?.text()}"
+        }
+        else if (body?.property?.BinaryState?.text())
+        {
 			def value = body?.property?.BinaryState?.text().toInteger() == 1 ? "on" : "off"
-			log.trace "Notify: BinaryState = ${value}"
-			result << createEvent(name: "switch", value: value)
-		}
-		else if (body?.property?.TimeZoneNotification?.text())
-		{
-			log.debug "Notify: TimeZoneNotification = ${body?.property?.TimeZoneNotification?.text()}"
-		}
-		else if (body?.Body?.GetBinaryStateResponse?.BinaryState?.text())
-		{
-			def value = body?.Body?.GetBinaryStateResponse?.BinaryState?.text().toInteger() == 1 ? "on" : "off"
-			log.trace "GetBinaryResponse: BinaryState = ${value}"
-			result << createEvent(name: "switch", value: value)
-		}
+            log.trace "Notify: BinaryState = ${value}"
+          	result << createEvent(name: "switch", value: value)
+        }
+        else if (body?.property?.TimeZoneNotification?.text())
+        {
+        	log.debug "Notify: TimeZoneNotification = ${body?.property?.TimeZoneNotification?.text()}"
+        }
+        else if (body?.Body?.GetBinaryStateResponse?.BinaryState?.text())
+        {
+        	def value = body?.Body?.GetBinaryStateResponse?.BinaryState?.text().toInteger() == 1 ? "on" : "off"
+            log.trace "GetBinaryResponse: BinaryState = ${value}"
+          	result << createEvent(name: "switch", value: value)
+        }
 
-	}
+    }
 
-	result
+    result
 }
 
 ////////////////////////////
@@ -102,18 +105,18 @@ private getCallBackAddress() {
 }
 
 private Integer convertHexToInt(hex) {
-	Integer.parseInt(hex,16)
+    Integer.parseInt(hex,16)
 }
 
 private String convertHexToIP(hex) {
-	[convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
+    [convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
 }
 
 private getHostAddress() {
 	def parts = device.deviceNetworkId.split(":")
 	def ip = convertHexToIP(parts[0])
-	def port = convertHexToInt(parts[1])
-	return ip + ":" + port
+    def port = convertHexToInt(parts[1])
+    return ip + ":" + port
 }
 
 ////////////////////////////
@@ -138,7 +141,7 @@ Content-Length: 333
 def off() {
 	log.debug "Executing 'off'"
 
-	def turnOff = new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
+    def turnOff = new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
 SOAPAction: "urn:Belkin:service:basicevent:1#SetBinaryState"
 Host: ${getHostAddress()}
 Content-Type: text/xml
@@ -154,27 +157,9 @@ Content-Length: 333
 </SOAP-ENV:Envelope>""", physicalgraph.device.Protocol.LAN)
 }
 
-/*def refresh() {
-	log.debug "Executing 'refresh'"
-new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
-SOAPACTION: "urn:Belkin:service:basicevent:1#GetBinaryState"
-Content-Length: 277
-Content-Type: text/xml; charset="utf-8"
-HOST: ${getHostAddress()}
-User-Agent: CyberGarage-HTTP/1.0
-
-<?xml version="1.0" encoding="utf-8"?>
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-<s:Body>
-<u:GetBinaryState xmlns:u="urn:Belkin:service:basicevent:1">
-</u:GetBinaryState>
-</s:Body>
-</s:Envelope>""", physicalgraph.device.Protocol.LAN)
-}*/
-
 ////////////////////////////
 def refresh() {
-	log.debug "Executing WeMo Switch 'subscribe', then 'timeSyncResponse', then 'poll'"
+	log.debug "Executing WeMo Light Switch 'subscribe', then 'timeSyncResponse', then 'poll'"
 	[subscribe(), timeSyncResponse(), poll()]
 }
 
@@ -227,7 +212,7 @@ log.debug "Executing 'timeSyncResponse()'"
 new physicalgraph.device.HubAction("""POST /upnp/control/timesync1 HTTP/1.1
 Content-Type: text/xml; charset="utf-8"
 SOAPACTION: "urn:Belkin:service:timesync:1#TimeSync"
-Content-Length: 376
+Content-Length: 375
 HOST: ${getHostAddress()}
 User-Agent: CyberGarage-HTTP/1.0
 

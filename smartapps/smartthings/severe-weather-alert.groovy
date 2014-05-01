@@ -51,12 +51,21 @@ def checkForSevereWeather() {
 		state.alertKeys = newKeys
 
 		alerts.each {alert ->
-			if (!oldKeys.contains(alert.type + alert.date_epoch) && !alert.description.contains("Special") && !alert.description.contains("Statement")) {
+			if (!oldKeys.contains(alert.type + alert.date_epoch) && descriptionFilter(alert.description)) {
 				def msg = "Weather Alert! ${alert.description} from ${alert.date} until ${alert.expires}"
 				send(msg)
 			}
 		}
 	}
+}
+
+def descriptionFilter(String description) {
+	def filterList = ["Special", "Statement", "Test"]
+	def passesFilter = true
+	filterList.each() { word ->
+		if(description.contains(word)) { passesFilter = false }
+	}
+	passesFilter
 }
 
 def locationIsDefined() {
