@@ -5,6 +5,18 @@
  *	Date: 2013-09-27
  */
 metadata {
+	// Automatically generated. Make future change here.
+	definition (name: "Wireless Scale", namespace: "smartthings", author: "SmartThings") {
+		capability "Polling"
+
+		attribute "weight", "string"
+		attribute "leanMass", "string"
+		attribute "fatRatio", "string"
+		attribute "fatMass", "string"
+
+		command "storeGraphImage"
+	}
+
 	simulator {
 		// TODO: define status and reply messages here
 	}
