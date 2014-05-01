@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Double Tap",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn on or off any number of switches when an existing switch is tapped twice in a row.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet@2x.png"
+)
+
 preferences {
 	section("When this switch is double-tapped...") {
 		input "master", "capability.switch", title: "Where?"

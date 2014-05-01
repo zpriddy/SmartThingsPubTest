@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-07
  */
+definition(
+    name: "Smart Security",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Alerts you when there are intruders but not when you just got up for a glass of water in the middle of the night",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-IsItSafe@2x.png"
+)
+
 preferences {
 	section("Sensors detecting an intruder") {
 		input "intrusionMotions", "capability.motionSensor", title: "Motion Sensors", multiple: true, required: false

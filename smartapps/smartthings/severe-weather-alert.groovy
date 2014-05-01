@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-04
  */
+definition(
+    name: "Severe Weather Alert",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Get a push notification when severe weather is in your area.",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-SevereWeather.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-SevereWeather@2x.png"
+)
+
 preferences {
 	section ("In addition to push notifications, send text alerts to...") {
 		input "phone1", "phone", title: "Phone Number 1", required: false

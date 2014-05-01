@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-07
  */
+definition(
+    name: "Greetings Earthling",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Monitors a set of presence detectors and triggers a mode change when someone arrives at home.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld@2x.png"
+)
+
 preferences {
 
 	section("When one of these people arrive at home") {

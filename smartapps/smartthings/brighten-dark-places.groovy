@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Brighten Dark Places",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when a open/close sensor opens and the space is dark.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet-luminance.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_contact-outlet-luminance@2x.png"
+)
+
 preferences {
 	section("When the door opens...") {
 		input "contact1", "capability.contactSensor", title: "Where?"

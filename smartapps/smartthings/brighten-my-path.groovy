@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Brighten My Path",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when motion is detected.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet@2x.png"
+)
+
 preferences {
 	section("When there's movement...") {
 		input "motion1", "capability.motionSensor", title: "Where?", multiple: true

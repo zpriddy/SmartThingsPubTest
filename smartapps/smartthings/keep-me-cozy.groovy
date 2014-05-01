@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Keep Me Cozy",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes your thermostat settings automatically in response to a mode change.  Often used with Bon Voyage, Rise and Shine, and other Mode Magic SmartApps to automatically keep you comfortable while you're present and save you energy and money while you are away.",
+    category: "Green Living",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo@2x.png"
+)
+
 preferences {
 	section("Choose thermostat... ") {
 		input "thermostat", "capability.thermostat"

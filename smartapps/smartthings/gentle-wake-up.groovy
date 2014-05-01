@@ -12,6 +12,16 @@
  * 	world (you may want to set your normal alarm as a backup plan).
  *
  */
+definition(
+    name: "Gentle Wake Up",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Gentle Wake Up turns on your lights slowly, allowing you to wake up more naturally. Once your lights have reached full brightness, optionally turn on more things, or send yourself a text for a more gentle nudge into the waking world (you may want to set your normal alarm as a backup plan).",
+    category: "Health & Wellness",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime@2x.png"
+)
+
 preferences {
 	page(name: "rootPage")
 	page(name: "schedulingPage")

@@ -53,6 +53,16 @@ private saveSelectedSong() {
 	}
 }
 
+definition(
+    name: "Sonos Mood Music",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Plays a selected song or station.",
+    category: "Reviewers",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+)
+
 preferences {
 	page(name: "mainPage", title: "Play a selected song or station on your Sonos when something happens", nextPage: "chooseTrack", uninstall: true)
 	page(name: "chooseTrack", title: "Select a song", install: true)

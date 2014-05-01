@@ -6,6 +6,16 @@
  *
  */
 
+definition(
+    name: "Scheduled Mode Change",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes mode at a specific time of day.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld@2x.png"
+)
+
 preferences {
 	section("At this time every day") {
 		input "time", "time", title: "Time of Day"

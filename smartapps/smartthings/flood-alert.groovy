@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Flood Alert!",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Get a push notification or text message when water is detected where it doesn't belong.",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/water_moisture@2x.png"
+)
+
 preferences {
 	section("When there's water detected...") {
 		input "alarm", "capability.waterSensor", title: "Where?"

@@ -4,6 +4,16 @@
  *  Author: SmartThings
  *  Date: 2013-03-07
  */
+definition(
+    name: "Good Night",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Changes mode when motion ceases after a specific time of night.",
+    category: "Mode Magic",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/good-night.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/ModeMagic/good-night@2x.png"
+)
+
 preferences {
 	section("When there is no motion on any of these sensors") {
 		input "motionSensors", "capability.motionSensor", title: "Where?", multiple: true

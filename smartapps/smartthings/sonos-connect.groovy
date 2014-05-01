@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Sonos (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Allows you to control your Sonos from the SmartThings app. Perform basic functions like play, pause, stop, change track, and check artist and song name from the Things screen.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+)
+
 preferences {
 	page(name:"sonosDiscovery", title:"Sonos Device Setup", content:"sonosDiscovery", refreshTimeout:5)
 }

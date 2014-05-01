@@ -4,6 +4,16 @@
  *  Author: SmartThings
  */
 
+definition(
+    name: "Light Follows Me",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when motion is detected and then off again once the motion stops for a set period of time.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch@2x.png"
+)
+
 preferences {
 	section("Turn on when there's movement..."){
 		input "motion1", "capability.motionSensor", title: "Where?"

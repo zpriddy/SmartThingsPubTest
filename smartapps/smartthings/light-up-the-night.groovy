@@ -3,6 +3,16 @@
  *
  *  Author: SmartThings
  */
+definition(
+    name: "Light Up the Night",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn your lights on when it gets dark and off when it becomes light again.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet-luminance.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet-luminance@2x.png"
+)
+
 preferences {
 	section("Monitor the luminosity...") {
 		input "lightSensor", "capability.illuminanceMeasurement"
