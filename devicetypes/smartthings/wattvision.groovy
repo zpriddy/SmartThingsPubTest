@@ -8,7 +8,7 @@
 metadata {
 
 	definition(name: "Wattvision", namespace: "smartthings", author: "Steve Vlaminck") {
-		capability "Power meter"
+		capability "Power Meter"
 		capability "Refresh"
 		attribute "powerContent", "string"
 	}
