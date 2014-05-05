@@ -356,32 +356,53 @@ private loadText() {
 	if (location.timeZone || zipCode) {
 		def weather = getWeatherFeature("forecast", zipCode)
 		def current = getWeatherFeature("conditions", zipCode)
-
+		def isMetric = location.temperatureScale == "C"
 		def delim = ""
 		def sb = new StringBuilder()
 		list(forecastOptions).sort().each {opt ->
 			if (opt == "0") {
-				sb << "The current temperature is ${Math.round(current.current_observation.temp_f)} degrees."
+				if (isMetric) {
+                	sb << "The current temperature is ${Math.round(current.current_observation.temp_c)} degrees."
+                }
+                else {
+                	sb << "The current temperature is ${Math.round(current.current_observation.temp_f)} degrees."
+                }
 				delim = " "
 			}
 			else if (opt == "1") {
 				sb << delim
 				sb << "Today's forecast is "
-				sb << weather.forecast.txt_forecast.forecastday[0].fcttext
+				if (isMetric) {
+                	sb << weather.forecast.txt_forecast.forecastday[0].fcttext_metric 
+                }
+                else {
+                	sb << weather.forecast.txt_forecast.forecastday[0].fcttext
+                }
 			}
 			else if (opt == "2") {
 				sb << delim
 				sb << "Tonight will be "
-				sb << weather.forecast.txt_forecast.forecastday[1].fcttext
+				if (isMetric) {
+                	sb << weather.forecast.txt_forecast.forecastday[1].fcttext_metric 
+                }
+                else {
+                	sb << weather.forecast.txt_forecast.forecastday[1].fcttext
+                }
 			}
 			else if (opt == "3") {
 				sb << delim
 				sb << "Tomorrow will be "
-				sb << weather.forecast.txt_forecast.forecastday[2].fcttext
+				if (isMetric) {
+                	sb << weather.forecast.txt_forecast.forecastday[2].fcttext_metric 
+                }
+                else {
+                	sb << weather.forecast.txt_forecast.forecastday[2].fcttext
+                }
 			}
 		}
 
 		def msg = sb.toString()
+        msg = msg.replaceAll(/([0-9]+)C/,'$1 degrees') // TODO - remove after next release
 		log.debug "msg = ${msg}"
 		state.sound = textToSpeech(msg, true)
 	}
