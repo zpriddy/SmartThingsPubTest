@@ -13,6 +13,17 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+
+definition(
+    name: "SmartWeather Station Controller",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Updates SmartWeather Station Tile devices every hour.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-MindYourHome.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/SafetyAndSecurity/App-MindYourHome@2x.png"
+)
+
 preferences {
 	section {
 		input "weatherDevices", "device.smartweatherStationTile"
