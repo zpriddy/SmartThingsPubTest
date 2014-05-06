@@ -5,6 +5,12 @@
  *  Date: 2013-06-13
  */
 metadata {
+	
+    definition (name: "Ecobee", namespace: "smartthings-deprecated", author: "SmartThings") {
+		capability "Thermostat"
+		capability "Polling"
+	}
+
 	simulator { }
 
 	tiles {
