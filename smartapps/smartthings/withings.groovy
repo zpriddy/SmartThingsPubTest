@@ -4,6 +4,18 @@
  *	Author: SmartThings
  *	Date: 2013-09-26
  */
+
+definition(
+    name: "Withings",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Connect your Withings scale to SmartThings.",
+    category: "Connections",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/withings.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/withings%402x.png",
+    oauth: true
+)
+
 preferences {
 	page(name: "auth", title: "Withings", content:"authPage")
 }

@@ -20,6 +20,17 @@
  *  ---------------------+----------------+--------------------------+------------------------------------
  */
 
+definition(
+    name: "IFTTT",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Put the internet to work for you.",
+    category: "SmartThings Internal",
+    iconUrl: "https://ifttt.com/images/channels/ifttt.png",
+    iconX2Url: "https://ifttt.com/images/channels/ifttt_med.png",
+    oauth: [displayName: "IFTTT", displayLink: "https://ifttt.com"]
+)
+
 preferences {
 	section("Allow IFTTT to control these things...") {
 		input "switches", "capability.switch", title: "Which Switches?", multiple: true, required: false

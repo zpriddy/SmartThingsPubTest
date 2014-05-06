@@ -5,6 +5,17 @@
  *
  *  Date: 2013-09-30
  */
+
+definition(
+    name: "Photo Burst When...",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Take a burst of photos and send a push notification when...",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/photo-burst-when.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/photo-burst-when@2x.png"
+)
+
 preferences {
 	section("Choose one or more, when..."){
 		input "motion", "capability.motionSensor", title: "Motion Here", required: false, multiple: true
