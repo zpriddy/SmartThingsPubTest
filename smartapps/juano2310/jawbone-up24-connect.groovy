@@ -246,7 +246,7 @@ def installed() {
     // create the device
     if (member) {
     			state.member = member
-                def childDevice = addChildDevice("Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
+                def childDevice = addChildDevice("juano23","Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
                 if (childDevice)
                 {
                         log.debug "Child Device Successfully Created"
