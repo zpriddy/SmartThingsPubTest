@@ -6,6 +6,16 @@
  *  Turn on one or more switches at a specified time and turn them off at a later time.
  */
 
+definition(
+    name: "Once a Day",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Turn on one or more switches at a specified time and turn them off at a later time.",
+    category: "Convenience",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_outlet@2x.png"
+)
+
 preferences {
 	section("Select switches to control...") {
 		input name: "switches", type: "capability.switch", multiple: true

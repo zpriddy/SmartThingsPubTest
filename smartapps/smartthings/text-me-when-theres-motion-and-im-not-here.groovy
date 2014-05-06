@@ -1,8 +1,9 @@
 /**
- *  Text Me When There's Motion and I'm Not Here
+ *  Text Me When I'm Not Here
  *
  *  Author: SmartThings
  */
+
 definition(
     name: "Text Me When There's Motion and I'm Not Here",
     namespace: "smartthings",
