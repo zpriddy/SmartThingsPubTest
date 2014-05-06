@@ -1,5 +1,5 @@
 /**
- *  Text Me When I'm Not Here
+ *  Text Me When There's Motion and I'm Not Here
  *
  *  Author: SmartThings
  */
