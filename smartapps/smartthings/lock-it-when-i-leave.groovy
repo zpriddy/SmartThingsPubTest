@@ -4,6 +4,18 @@
  *  Author: SmartThings
  *  Date: 2013-02-11
  */
+
+definition(
+    name: "Lock It When I Leave",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Locks a deadbolt or lever lock when a SmartSense Presence tag or smartphone leaves a location.",
+    category: "Safety & Security",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png",
+    oauth: true
+)
+
 preferences {
 	section("When I leave...") {
 		input "presence1", "capability.presenceSensor", title: "Who?", multiple: true

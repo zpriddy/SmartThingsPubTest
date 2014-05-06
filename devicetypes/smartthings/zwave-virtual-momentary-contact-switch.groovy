@@ -58,6 +58,31 @@ def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cm
 	[name: "switch", value: cmd.value ? "on" : "off", type: "digital"]
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.manufacturerspecificv2.ManufacturerSpecificReport cmd) {
+	if (state.manufacturer != cmd.manufacturerName) {
+		updateDataValue("manufacturer", cmd.manufacturerName)
+	}
+
+	final relays = [
+	    [manufacturerId:0x0113, productTypeId: 0x5246, productId: 0x3133, productName: "Evolve LFM-20"],
+		[manufacturerId:0x5254, productTypeId: 0x8000, productId: 0x0002, productName: "Remotec ZFM-80"]
+	]
+
+	def productName  = null
+	for (it in relays) {
+		if (it.manufacturerId == cmd.manufacturerId && it.productTypeId == cmd.productTypeId && it.productId == cmd.productId) {
+			productName = it.productName
+			break
+		}
+	}
+
+	if (productName) {
+		log.debug "Relay found: $productName"
+		updateDataValue("productName", productName)
+	}
+	[name: "manufacturer", value: cmd.manufacturerName]
+}
+
 def zwaveEvent(physicalgraph.zwave.Command cmd) {
 	// Handles all Z-Wave commands we aren't interested in
 	[:]
@@ -84,10 +109,9 @@ def off() {
 	]
 }
 
-def poll() {
-	zwave.switchBinaryV1.switchBinaryGet().format()
-}
-
 def refresh() {
-	zwave.switchBinaryV1.switchBinaryGet().format()
+	delayBetween([
+		zwave.switchBinaryV1.switchBinaryGet().format(),
+		zwave.manufacturerSpecificV1.manufacturerSpecificGet().format()
+	])
 }
