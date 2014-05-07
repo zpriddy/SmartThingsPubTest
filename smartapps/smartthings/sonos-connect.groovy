@@ -1,16 +1,16 @@
 /**
- *  Sonos Service Manager
+ *  Sonos (Connect)
  *
  *  Author: SmartThings
  */
 definition(
-    name: "Sonos (Connect)",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Allows you to control your Sonos from the SmartThings app. Perform basic functions like play, pause, stop, change track, and check artist and song name from the Things screen.",
-    category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+	name: "Sonos (Connect)",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Allows you to control your Sonos from the SmartThings app. Perform basic functions like play, pause, stop, change track, and check artist and song name from the Things screen.",
+	category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )
 
 preferences {
@@ -152,14 +152,20 @@ def scheduledActionsHandler() {
 	log.trace "scheduledActionsHandler()"
 	syncDevices()
 	refreshAll()
+
+	if (!state.twoHourSchedule) {
+		scheduleActions()
+	}
 }
 
 private scheduleActions() {
 	def sec = Math.round(Math.floor(Math.random() * 60))
-	def min = Math.round(Math.floor(Math.random() * 20))
-	def cron = "$sec $min/20 * * * ?"
-	log.trace "schedule('$cron', scheduledActionsHandler)"
+	def min = Math.round(Math.floor(Math.random() * 60))
+	def hour = Math.round(Math.floor(Math.random() * 3))
+	def cron = "$sec $min $hour/3 * * ?"
+	log.debug "schedule('$cron', scheduledActionsHandler)"
 	schedule(cron, scheduledActionsHandler)
+	state.twoHourSchedule = true
 }
 
 private syncDevices() {
