@@ -19,7 +19,7 @@ definition(
     namespace: "smartthings",
     author: "jeff",
     description: "Life360 Service Manager",
-    category: "My Apps",
+    category: "SmartThings Internal",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/life360.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/life360@2x.png",
     oauth: [displayName: "Life360", displayLink: "Life360"]
