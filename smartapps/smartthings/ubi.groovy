@@ -212,7 +212,7 @@ def updated() {
 }
 
 def listAll() {
-	listSwitches() + listMotions() + listLocks() + listContactSensors() + listPresenceSensors()
+	listSwitches() + listMotions() + listLocks() + listContactSensors() + listPresenceSensors() + listPhrasesWithType()
 }
 
 def listContactSensors() {
@@ -400,6 +400,16 @@ def showStates() {
 	else
 	{
 		device.events(params)
+	}
+}
+
+def listPhrasesWithType() {
+	listPhrases().collect {
+		[
+			"id"   : it,
+			"label": it,
+			"type" : "phrase"
+		]
 	}
 }
 
