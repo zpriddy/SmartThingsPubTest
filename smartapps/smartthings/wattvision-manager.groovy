@@ -5,16 +5,15 @@
  *  Date: 2014-02-13
  */
 
-
 // Automatically generated. Make future change here.
 definition(
-    name: "Wattvision Manager",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Wattvision integration",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision%402x.png",
-    oauth: [displayName: "Wattvision", displayLink: "https://www.wattvision.com/"]
+	name: "Wattvision Manager",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Wattvision integration",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision%402x.png",
+	oauth: [displayName: "Wattvision", displayLink: "https://www.wattvision.com/"]
 )
 
 preferences {
@@ -67,15 +66,15 @@ def updated() {
 
 def initialize() {
 	getDataFromWattvision()
-	// TODO: only schedule if we receive state.wattvisionApiAccess from Wattvision
-	schedule("* /5 * * * ?", getDataFromWattvision) // every 5 minutes
 }
 
 def getDataFromWattvision() {
-	log.debug "getting data from wattvision"
+
+	log.trace "Getting data from Wattvision"
 
 	def children = getChildDevices()
 	if (!children) {
+		log.warn "No children. Not collecting data from Wattviwion"
 		// currently only support one child
 		return
 	}
@@ -115,7 +114,8 @@ def getDataForChild(child, startDate, endDate) {
 }
 
 def wattvisionURL(senorId, startDate, endDate) {
-	log.debug "getting wattvisionURL"
+
+	log.trace "getting wattvisionURL"
 
 	def wattvisionApiAccess = state.wattvisionApiAccess
 	if (!wattvisionApiAccess.id || !wattvisionApiAccess.key || !wattvisionApiAccess.url) {
@@ -141,7 +141,7 @@ def wattvisionURL(senorId, startDate, endDate) {
 	def parameterString = params.collect { key, value -> "${key.encodeAsURL()}=${value.encodeAsURL()}" }.join("&")
 	def url = "${wattvisionApiAccess.url}?${parameterString}"
 
-	log.debug "wattvisionURL: ${url}"
+//	log.debug "wattvisionURL: ${url}"
 	return url
 }
 
@@ -171,6 +171,9 @@ def listDevices() {
 }
 
 def getDevice() {
+
+	log.trace "Getting device"
+
 	def child = getChildDevice(params.sensorId)
 
 	if (!child) {
@@ -181,6 +184,9 @@ def getDevice() {
 }
 
 def updateDevice() {
+
+	log.trace "Updating Device with data from Wattvision"
+
 	def body = request.JSON
 
 	def child = getChildDevice(params.sensorId)
@@ -195,6 +201,9 @@ def updateDevice() {
 }
 
 def createDevice() {
+
+	log.trace "Creating Wattvision device"
+
 	if (getChildDevice(params.sensorId)) {
 		httpError(403, "Device already exists")
 	}
@@ -209,26 +218,42 @@ def createDevice() {
 }
 
 def deleteDevice() {
+
+	log.trace "Deleting Wattvision device"
+
 	deleteChildDevice(params.sensorId)
 	render([status: 204, data: " "])
 }
 
 def setApiAccess() {
+
+	log.trace "Granting access to Wattvision API"
+
 	def body = request.JSON
+
 	state.wattvisionApiAccess = [
 		url: body.url,
 		id : body.id,
 		key: body.key
 	]
+
+	schedule("* /5 * * * ?", "getDataFromWattvision") // every 5 minutes
+
 	render([status: 204, data: " "])
 }
 
 def revokeApiAccess() {
+
+	log.trace "Revoking access to Wattvision API"
+
 	state.wattvisionApiAccess = [:]
 	render([status: 204, data: " "])
 }
 
 public getGraphUrl(sensorId) {
+
+	log.trace "Collecting URL for Wattvision graph"
+
 	def apiId = state.wattvisionApiAccess.id
 	def apiKey = state.wattvisionApiAccess.key
 

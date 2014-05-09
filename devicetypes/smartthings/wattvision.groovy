@@ -8,7 +8,7 @@
 metadata {
 
 	definition(name: "Wattvision", namespace: "smartthings", author: "Steve Vlaminck") {
-		capability "Power Meter"
+		capability "Power meter"
 		capability "Refresh"
 		attribute "powerContent", "string"
 	}
@@ -39,7 +39,7 @@ metadata {
 }
 
 def refresh() {
-    setGraphUrl(parent.getGraphUrl(device.deviceNetworkId))
+	setGraphUrl(parent.getGraphUrl(device.deviceNetworkId))
 }
 
 // parse events into attributes
@@ -48,6 +48,9 @@ def parse(String description) {
 }
 
 public setGraphUrl(graphUrl) {
+
+	log.trace "setting url for Wattvision graph"
+
 	sendEvent([
 		date           : new Date(),
 		value          : graphUrl,
@@ -60,6 +63,9 @@ public setGraphUrl(graphUrl) {
 }
 
 public addWattvisionData(json) {
+
+	log.trace "Adding data from Wattvision"
+
 	def data = json.data
 	log.debug "adding wattvision data: ${json.data}"
 	def units = json.units ?: "watts"
@@ -81,6 +87,7 @@ public addWattvisionData(json) {
 			descriptionText: "${it.v} ${units}"
 		]
 
+		log.debug "sending event: ${eventData}"
 		sendEvent(eventData)
 
 	}
