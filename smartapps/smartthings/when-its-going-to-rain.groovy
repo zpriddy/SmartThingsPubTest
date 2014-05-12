@@ -7,8 +7,8 @@ definition(
     name: "When It's Going to Rain",
     namespace: "smartthings",
     author: "SmartThings",
-    description: "Is your shed closed? Are your windows shut? Is the grill covered? Are your dogs indoors? Will the lawn and plants need to be watered tomorrow?\nOften, rain comes when we least expect it - even when it's in the forecast! "When It's Going to Rain" watches up-to-the-minute weather data and eliminates guesswork, so you don't have to rush to be sure that you're ready for a storm.\nCHECK ON THINGS WHEN RAIN IS COMING\nChoose all of the things that you want to check, and make sure everything is safe and sound.\nKNOW IF ACTION NEEDS TO BE TAKEN\nChoose how you want to receive alerts, and set up smart rules based on whether you're home or away.\nWATERING JUST GOT SMARTER\nSnooze your sprinklers for a day or two, or receive a text reminder the following day that you may not need to water your outdoor plants.",
-    category: "Convenience",
+    description: "Is your shed closed? Are your windows shut? Is the grill covered? Are your dogs indoors? Will the lawn and plants need to be watered tomorrow?",
+	category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text@2x.png"
 )

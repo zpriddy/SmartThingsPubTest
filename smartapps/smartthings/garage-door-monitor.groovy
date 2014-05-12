@@ -27,52 +27,60 @@ preferences {
 
 def installed()
 {
-	subscribe(multisensor, "acceleration", accelerationHandler, [filterEvents: false])
+	subscribe(multisensor, "acceleration", accelerationHandler)
 }
 
 def updated()
 {
 	unsubscribe()
-	subscribe(multisensor, "acceleration", accelerationHandler, [filterEvents: false])
+	subscribe(multisensor, "acceleration", accelerationHandler)
 }
 
-/*
-The "acceleration" message comes during acceleration, but also is reported every 2.5 minutes, so we listen for
-that and then check if the garage door has been open for longer than the threshold.
-*/
 def accelerationHandler(evt) {
 	def latestThreeAxisState = multisensor.threeAxisState // e.g.: 0,0,-1000
-
 	if (latestThreeAxisState) {
-		def latestThreeAxisDate = latestThreeAxisState.dateCreated.toSystemDate()
 		def isOpen = Math.abs(latestThreeAxisState.xyzValue.z) > 250 // TODO: Test that this value works in most cases...
+		def isNotScheduled = state.status != "scheduled"
 
-		if (isOpen) {
-			def deltaMillis = 1000 * 60 * maxOpenTime
-			def timeAgo = new Date(now() - deltaMillis)
-			def openTooLong = latestThreeAxisDate < timeAgo
-			log.debug "openTooLong: $openTooLong"
-			def recentTexts = state.smsHistory.find { it.sentDate.toSystemDate() > timeAgo }
-			log.debug "recentTexts: $recentTexts"
-
-			if (openTooLong && !recentTexts) {
-				def openMinutes = maxOpenTime * (state.smsHistory?.size() ?: 1)
-				sendTextMessage(openMinutes)
-			}
-		}
-		else {
+		if (!isOpen) {
 			clearSmsHistory()
+			clearStatus()
 		}
+
+		if (isOpen && isNotScheduled) {
+			runIn(maxOpenTime * 60, takeAction, [overwrite: false])
+			state.status = "scheduled"
+		}
+
 	}
 	else {
 		log.warn "COULD NOT FIND LATEST 3-AXIS STATE FOR: ${multisensor}"
 	}
 }
 
-def sendTextMessage(openMinutes) {
+def takeAction(){
+	if (state.status == "scheduled")
+	{
+		def deltaMillis = 1000 * 60 * maxOpenTime
+		def timeAgo = new Date(now() - deltaMillis)
+		def openTooLong = multisensor.threeAxisState.dateCreated.toSystemDate() < timeAgo
+
+		def recentTexts = state.smsHistory.find { it.sentDate.toSystemDate() > timeAgo }
+
+		if (!recentTexts) {
+			sendTextMessage()
+		}
+		runIn(maxOpenTime * 60, takeAction, [overwrite: false])
+	} else {
+		log.trace "Status is no longer scheduled. Not sending text."
+	}
+}
+
+def sendTextMessage() {
 	log.debug "$multisensor was open too long, texting $phone"
 
 	updateSmsHistory()
+	def openMinutes = maxOpenTime * (state.smsHistory?.size() ?: 1)
 	def msg = "Your ${multisensor.label ?: multisensor.name} has been open for more than ${openMinutes} minutes!"
 	if (phone) {
 		sendSms(phone, msg)
@@ -94,4 +102,8 @@ def updateSmsHistory() {
 
 def clearSmsHistory() {
 	state.smsHistory = null
+}
+
+def clearStatus() {
+	state.status = null
 }

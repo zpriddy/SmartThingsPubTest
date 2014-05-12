@@ -58,7 +58,7 @@ definition(
     namespace: "smartthings",
     author: "SmartThings",
     description: "Plays a selected song or station.",
-    category: "Reviewers",
+    category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )

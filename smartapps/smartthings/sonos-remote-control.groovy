@@ -22,6 +22,17 @@
  * 3: Previous Track
  * 4: Volume Down (2x)
  */
+
+definition(
+    name: "Sonos Remote Control",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Control your Sonos system with an Aeon Minimote",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
+)
+
 preferences {
 	section("Select your devices") {
 		input "buttonDevice", "capability.button", title: "Minimote", multiple: false, required: true

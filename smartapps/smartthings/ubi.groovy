@@ -4,6 +4,16 @@
  *  Author: SmartThings
  */
 
+definition(
+    name: "Ubi",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Add your Ubi device to your SmartThings Account",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/ubi-app-icn.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/ubi-app-icn@2x.png",
+    oauth: [displayName: "Ubi", displayLink: ""]
+)
+
 preferences {
 	section("Allow a web application to control these things...") {
 		input name: "switches", type: "capability.switch", title: "Which Switches?", multiple: true, required: false
@@ -202,7 +212,7 @@ def updated() {
 }
 
 def listAll() {
-	listSwitches() + listMotions() + listLocks() + listContactSensors() + listPresenceSensors()
+	listSwitches() + listMotions() + listLocks() + listContactSensors() + listPresenceSensors() + listPhrasesWithType()
 }
 
 def listContactSensors() {
@@ -390,6 +400,16 @@ def showStates() {
 	else
 	{
 		device.events(params)
+	}
+}
+
+def listPhrasesWithType() {
+	listPhrases().collect {
+		[
+			"id"   : it,
+			"label": it,
+			"type" : "phrase"
+		]
 	}
 }
 

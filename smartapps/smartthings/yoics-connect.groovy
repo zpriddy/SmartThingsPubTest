@@ -5,6 +5,17 @@
  *  Date: 2013-11-19
  */
 
+definition(
+    name: "Yoics (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Connect and Control your Yoics Enabled Devices",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png",
+    oauth: true
+)
+
 preferences {
 	page(name: "auth", title: "Sign in", content: "authPage", uninstall:true)
 	page(name: "page2", title: "Yoics Devices", install:true, content: "listAvailableCameras")

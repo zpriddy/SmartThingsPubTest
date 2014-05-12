@@ -5,13 +5,13 @@
  *  Date: 2014-1-29
  */
 definition(
-    name: "Sonos Notify with Sound",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Play a sound or custom message through your Sonos when the mode changes or other events occur.",
-    category: "Reviewers",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+	name: "Sonos Notify with Sound",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Play a sound or custom message through your Sonos when the mode changes or other events occur.",
+	category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )
 
 preferences {
@@ -84,7 +84,7 @@ def mainPage() {
 			input "sonos", "capability.musicPlayer", title: "On this Sonos player", required: true
 		}
 		section("More options", hideable: true, hidden: true) {
-			input "resumePlaying", "bool", title: "Resume currently playing music after weather report finishes", required: false, defaultValue: true
+			input "resumePlaying", "bool", title: "Resume currently playing music after notification", required: false, defaultValue: true
 			href "chooseTrack", title: "Or play this music or radio station", description: song ? state.selectedSong?.station : "Tap to set", state: song ? "complete" : "incomplete"
 
 			input "volume", "number", title: "Temporarily change volume", description: "0-100%", required: false
@@ -269,11 +269,8 @@ private takeAction(evt) {
 	else if (resumePlaying){
 		sonos.playTrackAndResume(state.sound.uri, state.sound.duration, volume)
 	}
-	else if (volume) {
-		sonos.playTrackAtVolume(state.sound.uri, volume)
-	}
 	else {
-		sonos.playTrack(state.sound.uri)
+		sonos.playTrackAndRestore(state.sound.uri, state.sound.duration, volume)
 	}
 
 	if (frequency || oncePerDay) {

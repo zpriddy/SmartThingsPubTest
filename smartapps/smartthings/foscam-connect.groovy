@@ -5,7 +5,7 @@
  *  Date: 2014-03-10
  */
 
- definition(
+definition(
     name: "Foscam (Connect)",
     namespace: "smartthings",
     author: "SmartThings",

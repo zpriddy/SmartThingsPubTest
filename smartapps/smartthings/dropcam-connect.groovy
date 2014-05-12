@@ -4,6 +4,17 @@
  *	Author: scott
  *	Date: 2013-08-15
  */
+
+definition(
+    name: "Dropcam (Connect)",
+    namespace: "smartthings",
+    author: "SmartThings",
+    description: "Integrate your Dropcam cameras with SmartThings.",
+    category: "SmartThings Labs",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/dropcam.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/dropcam@2x.png"
+)
+
 preferences {
 	page(name: "loginToDropcam", title: "Dropcam")
 	page(name: "listAvailableCameras", title: "Dropcams")
