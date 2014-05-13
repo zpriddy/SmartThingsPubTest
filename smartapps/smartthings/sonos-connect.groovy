@@ -1,5 +1,5 @@
 /**
- *  Sonos Service Manager
+ *  Sonos (Connect)
  *
  *  Author: SmartThings
  */
@@ -152,14 +152,20 @@ def scheduledActionsHandler() {
 	log.trace "scheduledActionsHandler()"
 	syncDevices()
 	refreshAll()
+
+	if (!state.twoHourSchedule) {
+		scheduleActions()
+	}
 }
 
 private scheduleActions() {
 	def sec = Math.round(Math.floor(Math.random() * 60))
-	def min = Math.round(Math.floor(Math.random() * 20))
-	def cron = "$sec $min/20 * * * ?"
-	log.trace "schedule('$cron', scheduledActionsHandler)"
+	def min = Math.round(Math.floor(Math.random() * 60))
+	def hour = Math.round(Math.floor(Math.random() * 3))
+	def cron = "$sec $min $hour/3 * * ?"
+	log.debug "schedule('$cron', scheduledActionsHandler)"
 	schedule(cron, scheduledActionsHandler)
+	state.twoHourSchedule = true
 }
 
 private syncDevices() {
