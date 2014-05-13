@@ -7,7 +7,7 @@ metadata {
 		capability "Sensor"
 		capability "Battery"
 
-		fingerprint deviceId: "0x0101", inClusters: "0x86,0x72,0x85,0x70,0x9B"
+		fingerprint deviceId: "0x0101", inClusters: "0x86,0x72,0x70,0x9B", outClusters: "0x26,0x2B"
 	}
 
 	simulator {

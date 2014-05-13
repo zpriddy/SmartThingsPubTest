@@ -757,9 +757,9 @@ def subscribe() {
 	log.trace "subscribe()"
 	def result = []
 	result << subscribeAction("/MediaRenderer/AVTransport/Event")
-	//result << delayAction(5000)
+	result << delayAction(10000)
 	result << subscribeAction("/MediaRenderer/RenderingControl/Event")
-	//result << delayAction(10000)
+	result << delayAction(20000)
 	result << subscribeAction("/ZoneGroupTopology/Event")
 
 	result
@@ -861,7 +861,7 @@ private subscribeAction(path, callbackPath="") {
 			HOST: ip,
 			CALLBACK: "<http://${address}/notify$callbackPath>",
 			NT: "upnp:event",
-			TIMEOUT: "Second-3600"])
+			TIMEOUT: "Second-28800"])
 
 	log.trace "SUBSCRIBE $path"
 	//log.trace "\n${result.action.encodeAsHTML()}"
