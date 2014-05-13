@@ -1,16 +1,16 @@
 /**
- *  Sonos (Connect)
+ *  Sonos Service Manager
  *
  *  Author: SmartThings
  */
 definition(
-    name: "Sonos (Connect)",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Allows you to control your Sonos from the SmartThings app. Perform basic functions like play, pause, stop, change track, and check artist and song name from the Things screen.",
-    category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
+	name: "Sonos (Connect)",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Allows you to control your Sonos from the SmartThings app. Perform basic functions like play, pause, stop, change track, and check artist and song name from the Things screen.",
+	category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
 )
 
 preferences {
@@ -153,7 +153,8 @@ def scheduledActionsHandler() {
 	syncDevices()
 	refreshAll()
 
-	if (!state.twoHourSchedule) {
+	// TODO - for auto reschedule
+	if (!state.threeHourSchedule) {
 		scheduleActions()
 	}
 }
@@ -165,7 +166,10 @@ private scheduleActions() {
 	def cron = "$sec $min $hour/3 * * ?"
 	log.debug "schedule('$cron', scheduledActionsHandler)"
 	schedule(cron, scheduledActionsHandler)
-	state.twoHourSchedule = true
+
+	// TODO - for auto reschedule
+	state.threeHourSchedule = true
+	state.cronSchedule = cron
 }
 
 private syncDevices() {
