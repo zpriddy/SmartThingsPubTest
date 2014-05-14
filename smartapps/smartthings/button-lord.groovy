@@ -23,7 +23,7 @@ preferences {
 }
 
 def selectButton() {
-	dynamicPage(name: "selectButton", title: "First, select your button device", nextPage: "configureButton1", uninstall: configured()) {
+	dynamicPage(name: "selectButton", title: "First, select your button device", nextPage: "configureButton1", uninstall: true {
 		section {
 			input "buttonDevice", "capability.button", title: "Button", multiple: false, required: true
 		}

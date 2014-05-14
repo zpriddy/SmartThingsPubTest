@@ -406,7 +406,7 @@ def showStates() {
 def listPhrasesWithType() {
 	listPhrases().collect {
 		[
-			"id"   : it,
+			"id"   : URLEncoder.encode(it),
 			"label": it,
 			"type" : "phrase"
 		]
