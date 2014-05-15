@@ -1,6 +1,6 @@
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Zigbee Dimmer", namespace: "smartthings", author: "SmartThings") {
+	definition (name: "ZigBee Dimmer", namespace: "smartthings", author: "SmartThings") {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Switch"
@@ -31,11 +31,14 @@ metadata {
 		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 			state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-		controlTile("levelSliderControl", "device.level", "slider", height: 2, width: 1, inactiveLabel: false) {
+		controlTile("levelSliderControl", "device.level", "slider", height: 1, width: 3, inactiveLabel: false) {
 			state "level", action:"switch level.setLevel"
 		}
+        valueTile("level", "device.level", inactiveLabel: false, decoration: "flat") {
+			state "level", label:'${currentValue} %', unit:"%", backgroundColor:"#ffffff"
+		}
 		main "switch"
-		details(["switch", "refresh", "levelSliderControl"])
+		details(["switch", "refresh", "level", "levelSliderControl"])
 	}
 }
 
@@ -77,7 +80,9 @@ def setLevel(value) {
 		cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 6 0 {}"
 	}
 	else if (device.latestValue("switch") == "off") {
-		sendEvent(name: "switch", value: "on")
+        sendEvent(name: "switch", value: "on")
+        cmds << "st cmd 0x${device.deviceNetworkId} ${endpointId} 6 1 {}"
+        
 	}
 
 	sendEvent(name: "level", value: value)
