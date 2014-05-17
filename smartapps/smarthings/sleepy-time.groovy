@@ -18,7 +18,7 @@ definition(
     name: "Sleepy Time",
     namespace: "smarthings",
     author: "jeff@smartthings.com",
-    description: "Trigger actions based on Jawbone Events",
+    description: "Use Jawbone sleep mode events to automatically execute Hello, Home phrases. Automatially put the house to bed or wake it up in the morning by pushing the button on your UP24.",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
