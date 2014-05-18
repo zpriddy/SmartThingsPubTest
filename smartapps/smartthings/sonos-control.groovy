@@ -1,110 +1,56 @@
 /**
- *  Sonos Control
+ *  Sonos (Control)
  *
  *  Author: SmartThings
  *  Date: 2013-12-10
  */
-definition(
-    name: "Sonos Control",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Play or pause your Sonos when certain actions take place in your home.",
-    category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/sonos@2x.png"
-)
 
 preferences {
-	page(name: "mainPage", title: "Control your Sonos when something happens", install: true, uninstall: true)
-	page(name: "timeIntervalInput", title: "Only during a certain time") {
-		section {
-			input "starting", "time", title: "Starting", required: false
-			input "ending", "time", title: "Ending", required: false
-		}
+	section("Choose one or more, when..."){
+		input "motion", "capability.motionSensor", title: "Motion Here", required: false, multiple: true
+		input "contact", "capability.contactSensor", title: "Contact Opens", required: false, multiple: true
+		input "contactClosed", "capability.contactSensor", title: "Contact Closes", required: false, multiple: true
+		input "acceleration", "capability.accelerationSensor", title: "Acceleration Detected", required: false, multiple: true
+		input "mySwitch", "capability.switch", title: "Switch Turned On", required: false, multiple: true
+		input "mySwitchOff", "capability.switch", title: "Switch Turned Off", required: false, multiple: true
+		input "arrivalPresence", "capability.presenceSensor", title: "Arrival Of", required: false, multiple: true
+		input "departurePresence", "capability.presenceSensor", title: "Departure Of", required: false, multiple: true
+		input "smoke", "capability.smokeDetector", title: "Smoke Detected", required: false, multiple: true
+		input "water", "capability.waterSensor", title: "Water Sensor Wet", required: false, multiple: true
+		input "button1", "capability.button", title: "Button Press", required:false, multiple:true //remove from production
+		input "triggerModes", "mode", title: "System Changes Mode", required: false, multiple: true
 	}
-}
 
-def mainPage() {
-	dynamicPage(name: "mainPage") {
-		def anythingSet = anythingSet()
-		if (anythingSet) {
-			section("When..."){
-				ifSet "motion", "capability.motionSensor", title: "Motion Here", required: false, multiple: true
-				ifSet "contact", "capability.contactSensor", title: "Contact Opens", required: false, multiple: true
-				ifSet "contactClosed", "capability.contactSensor", title: "Contact Closes", required: false, multiple: true
-				ifSet "acceleration", "capability.accelerationSensor", title: "Acceleration Detected", required: false, multiple: true
-				ifSet "mySwitch", "capability.switch", title: "Switch Turned On", required: false, multiple: true
-				ifSet "mySwitchOff", "capability.switch", title: "Switch Turned Off", required: false, multiple: true
-				ifSet "arrivalPresence", "capability.presenceSensor", title: "Arrival Of", required: false, multiple: true
-				ifSet "departurePresence", "capability.presenceSensor", title: "Departure Of", required: false, multiple: true
-				ifSet "smoke", "capability.smokeDetector", title: "Smoke Detected", required: false, multiple: true
-				ifSet "water", "capability.waterSensor", title: "Water Sensor Wet", required: false, multiple: true
-				ifSet "button1", "capability.button", title: "Button Press", required:false, multiple:true //remove from production
-				ifSet "triggerModes", "mode", title: "System Changes Mode", required: false, multiple: true
-				ifSet "timeOfDay", "time", title: "At a Scheduled Time", required: false
-			}
-		}
-		section(anythingSet ? "Select additional triggers" : "When...", hideable: anythingSet, hidden: true){
-			ifUnset "motion", "capability.motionSensor", title: "Motion Here", required: false, multiple: true
-			ifUnset "contact", "capability.contactSensor", title: "Contact Opens", required: false, multiple: true
-			ifUnset "contactClosed", "capability.contactSensor", title: "Contact Closes", required: false, multiple: true
-			ifUnset "acceleration", "capability.accelerationSensor", title: "Acceleration Detected", required: false, multiple: true
-			ifUnset "mySwitch", "capability.switch", title: "Switch Turned On", required: false, multiple: true
-			ifUnset "mySwitchOff", "capability.switch", title: "Switch Turned Off", required: false, multiple: true
-			ifUnset "arrivalPresence", "capability.presenceSensor", title: "Arrival Of", required: false, multiple: true
-			ifUnset "departurePresence", "capability.presenceSensor", title: "Departure Of", required: false, multiple: true
-			ifUnset "smoke", "capability.smokeDetector", title: "Smoke Detected", required: false, multiple: true
-			ifUnset "water", "capability.waterSensor", title: "Water Sensor Wet", required: false, multiple: true
-			ifUnset "button1", "capability.button", title: "Button Press", required:false, multiple:true //remove from production
-			ifUnset "triggerModes", "mode", title: "System Changes Mode", required: false, multiple: true
-			ifUnset "timeOfDay", "time", title: "At a Scheduled Time", required: false
-		}
-		section("Perform this action"){
-			input "actionType", "enum", title: "Action?", required: true, defaultValue: "play", options: [
-				"Play",
-				"Stop Playing",
-				"Toggle Play/Pause",
-				"Skip to Next Track",
-				"Play Previous Track"
-			]
-		}
-		section {
-			input "sonos", "capability.musicPlayer", title: "Sonos music player", required: true
-		}
-		section("More options", hideable: true, hidden: true) {
-			input "volume", "number", title: "Set the volume volume", description: "0-100%", required: false
-			input "frequency", "decimal", title: "Minimum time between actions (defaults to every event)", description: "Minutes", required: false
-			href "timeIntervalInput", title: "Only during a certain time", description: timeLabel ?: "Tap to set", state: timeLabel ? "complete" : "incomplete"
-			input "days", "enum", title: "Only on certain days of the week", multiple: true, required: false,
-				options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
-			input "oncePerDay", "bool", title: "Only once per day", required: false, defaultValue: false
-		}
-		section([mobileOnly:true]) {
-			label title: "Assign a name", required: false
-			mode title: "Set for specific mode(s)"
-		}
+	section("Perform this action"){
+		input "actionType", "enum", title: "Action?", required: true, options: [
+			"Play",
+			"Stop Playing",
+			"Toggle Play/Pause",
+			"Bell 1",
+			"Bell 2",
+			"Dogs Barking",
+			"Fire Alarm",
+			"The mail has arrived",
+			"A door opened",
+			"There is motion",
+			"Smartthings detected a flood",
+			"Smartthings detected smoke",
+			"Someone is arriving",
+			"Piano",
+			"Lightsaber"]
 	}
-}
 
-private anythingSet() {
-	for (name in ["motion","contact","contactClosed","acceleration","mySwitch","mySwitchOff","arrivalPresence","departurePresence","smoke","water","button1","triggerModes","timeOfDay"]) {
-		if (settings[name]) {
-			return true
-		}
+	section {
+		input "sonos", "capability.musicPlayer", title: "Sonos Device", required: true
 	}
-	return false
-}
 
-private ifUnset(Map options, String name, String capability) {
-	if (!settings[name]) {
-		input(options, name, capability)
+	section("Minimum time between actions (optional, defaults to every event)") {
+		input "frequency", "decimal", title: "Minutes", required: false
 	}
-}
 
-private ifSet(Map options, String name, String capability) {
-	if (settings[name]) {
-		input(options, name, capability)
+	section("More options", expandable: false, expanded: false) {
+		input "volume", "number", title: "Temporarily change volume", description: "0-100%", required: false
+		input "resumePlaying", "bool", title: "Resume playing music", required: false, defaultValue: true
 	}
 }
 
@@ -116,13 +62,10 @@ def installed() {
 def updated() {
 	log.debug "Updated with settings: ${settings}"
 	unsubscribe()
-	unschedule()
 	subscribeToEvents()
 }
 
 def subscribeToEvents() {
-	log.trace "subscribeToEvents()"
-	subscribe(app, appTouchHandler)
 	subscribe(contact, "contact.open", eventHandler)
 	subscribe(contactClosed, "contact.closed", eventHandler)
 	subscribe(acceleration, "acceleration.active", eventHandler)
@@ -136,35 +79,20 @@ def subscribeToEvents() {
 	subscribe(smoke, "carbonMonoxide.detected", eventHandler)
 	subscribe(water, "water.wet", eventHandler)
 	subscribe(button1, "button.pushed", eventHandler)
-
 	if (triggerModes) {
 		subscribe(location, modeChangeHandler)
-	}
-
-	if (timeOfDay) {
-		runDaily(timeOfDay, scheduledTimeHandler)
 	}
 }
 
 def eventHandler(evt) {
-	if (allOk) {
-		def lastTime = state[frequencyKey(evt)]
-		if (oncePerDayOk(lastTime)) {
-			if (frequency) {
-				if (lastTime == null || now() - lastTime >= frequency * 60000) {
-					takeAction(evt)
-				}
-				else {
-					log.debug "Not taking action because $frequency minutes have not elapsed since last action"
-				}
-			}
-			else {
-				takeAction(evt)
-			}
+	if (frequency) {
+		def lastTime = state.lastActionTimeStamp
+		if (lastTime == null || now() - lastTime >= frequency * 60000) {
+			sendMessage(evt)
 		}
-		else {
-			log.debug "Not taking action because it was already taken today"
-		}
+	}
+	else {
+		takeAction(evt)
 	}
 }
 
@@ -175,129 +103,115 @@ def modeChangeHandler(evt) {
 	}
 }
 
-def scheduledTimeHandler() {
-	eventHandler(null)
-}
-
-def appTouchHandler(evt) {
-	takeAction(evt)
-}
-
 private takeAction(evt) {
 	log.debug "takeAction($actionType)"
-	def options = [:]
-	if (volume) {
-		sonos.setLevel(volume as Integer)
-		options.delay = 1000
-	}
 
-	switch (actionType) {
-		case "Play":
-			options ? sonos.on(options) : sonos.on()
-			break
-		case "Stop Playing":
-			options ? sonos.off(options) : sonos.off()
-			break
-		case "Toggle Play/Pause":
-			def currentStatus = sonos.currentValue("status")
-			if (currentStatus == "playing") {
-				options ? sonos.pause(options) : sonos.pause()
+	if (actionType == "Play") {
+		log.trace "sonos.on()"
+		sonos.on()
+	}
+	else if (actionType == "Stop Playing") {
+		log.trace "sonos.off()"
+		sonos.off()
+	}
+	else if (actionType == "Toggle Play/Pause") {
+		log.trace "$actionType"
+		def currentStatus = sonos.currentValue("status")
+		if (currentStatus == "playing") {
+			sonos.pause()
+		}
+		else {
+			sonos.play()
+		}
+	}
+	else {
+		def currentVolume = sonos.currentState("level")?.integerValue
+		def currentTrack = sonos.currentState("trackData").jsonValue
+
+		if (volume != null) {
+			sonos.stop()
+			pause(500)
+			sonos.setLevel(volume)
+			pause(500)
+		}
+
+		log.trace "Playing $actionType"
+
+		def length  = 3000
+		switch ( actionType) {
+			case "Bell 1":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3")
+				break;
+			case "Bell 2":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/bell2.mp3")
+				break;
+			case "Dogs Barking":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/dogs.mp3")
+				length += 4000
+				break;
+			case "Fire Alarm":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/alarm.mp3")
+				length += 9000
+				break;
+			case "The mail has arrived":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/the+mail+has+arrived.mp3")
+				break;
+			case "A door opened":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/a+door+opened.mp3")
+				break;
+			case "There is motion":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/there+is+motion.mp3")
+				break;
+			case "Smartthings detected a flood":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+a+flood.mp3")
+				length += 1000
+				break;
+			case "Smartthings detected smoke":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+smoke.mp3")
+				length += 1000
+				break;
+			case "Someone is arriving":
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/someone+is+arriving.mp3")
+				break;
+			case "Piano":
+				length += 11000
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/piano2.mp3")
+				break;
+			case "Lightsaber":
+				length += 9000
+				sonos.playTrack("http://s3.amazonaws.com/smartapp-media/sonos/lightsaber.mp3")
+				break;
+			default:
+				log.debug "Missing Sound Choice"
+				break;
+		}
+
+		// Stop after allowed time
+		pause(length)
+
+		// Reset volume and resume
+		if (volume && currentVolume) {
+			log.trace "Restoring volume"
+			sonos.stop()
+			pause(500)
+			sonos.setLevel(currentVolume)
+			pause(500)
+		}
+
+		if (!currentTrack.uri?.contains("s3.amazonaws.com/smartapp-media")) {
+			if ((resumePlaying == null || resumePlaying) && currentTrack.status == "playing") {
+				log.trace "Resuming play"
+				sonos.playTrack(currentTrack)
 			}
 			else {
-				options ? sonos.play(options) : sonos.play()
+				log.trace "Restoring track"
+				sonos.setTrack(currentTrack)
 			}
-			break
-		case "Skip to Next Track":
-			options ? sonos.nextTrack(options) : sonos.nextTrack()
-			break
-		case "Play Previous Track":
-			options ? sonos.previousTrack(options) : sonos.previousTrack()
-			break
-		default:
-			log.error "Action type '$actionType' not defined"
+		}
 	}
 
 	if (frequency) {
 		state.lastActionTimeStamp = now()
 	}
 }
-
-private frequencyKey(evt) {
-	//evt.deviceId ?: evt.value
-	"lastActionTimeStamp"
-}
-
-private dayString(Date date) {
-	def df = new java.text.SimpleDateFormat("yyyy-MM-dd")
-	if (location.timeZone) {
-		df.setTimeZone(location.timeZone)
-	}
-	else {
-		df.setTimeZone(TimeZone.getTimeZone("America/New_York"))
-	}
-	df.format(date)
-}
-
-private oncePerDayOk(Long lastTime) {
-	def result = true
-	if (oncePerDay) {
-		result = lastTime ? dayString(new Date()) != dayString(new Date(lastTime)) : true
-		log.trace "oncePerDayOk = $result"
-	}
-	result
-}
-
-// TODO - centralize somehow
-private getAllOk() {
-	modeOk && daysOk && timeOk
-}
-
-private getModeOk() {
-	def result = !modes || modes.contains(location.mode)
-	log.trace "modeOk = $result"
-	result
-}
-
-private getDaysOk() {
-	def result = true
-	if (days) {
-		def df = new java.text.SimpleDateFormat("EEEE")
-		if (location.timeZone) {
-			df.setTimeZone(location.timeZone)
-		}
-		else {
-			df.setTimeZone(TimeZone.getTimeZone("America/New_York"))
-		}
-		def day = df.format(new Date())
-		result = days.contains(day)
-	}
-	log.trace "daysOk = $result"
-	result
-}
-
-private getTimeOk() {
-	def result = true
-	if (starting && ending) {
-		def currTime = now()
-		def start = timeToday(starting).time
-		def stop = timeToday(ending).time
-		result = start < stop ? currTime >= start && currTime <= stop : currTime <= stop || currTime >= start
-	}
-	log.trace "timeOk = $result"
-	result
-}
-
-private hhmm(time, fmt = "h:mm a")
-{
-	def t = timeToday(time, location.timeZone)
-	def f = new java.text.SimpleDateFormat(fmt)
-	f.setTimeZone(location.timeZone ?: timeZone(time))
-	f.format(t)
-}
-
-private timeIntervalLabel()
-{
-	(starting && ending) ? hhmm(starting) + "-" + hhmm(ending, "h:mm a z") : ""
-}
-// TODO - End Centralize
 
