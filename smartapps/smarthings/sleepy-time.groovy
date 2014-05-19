@@ -32,7 +32,7 @@ def selectPhrases() {
 	def configured = (settings.sleepPhrase && settings.wakePhrase && settings.jawbone)
     dynamicPage(name: "selectPhrases", title: "Configure Your Jawbone Phrases.", install: configured, uninstall: true) {		
 		section("Select your Jawbone UP24") {
-			input "jawbone", "device.jawboneUser", title: "Jawbone UP24", required: true, multiple: false
+			input "jawbone", "device.jawboneUser", title: "Jawbone UP24", required: true, multiple: false,  refreshAfterSelection:true
 		}
         
 		def phrases = location.helloHome?.getPhrases()*.label
@@ -40,8 +40,8 @@ def selectPhrases() {
         	phrases.sort()
 			section("Hello Home Actions") {
 				log.trace phrases
-				input "sleepPhrase", "enum", title: "Enter Sleep Mode (Bedtime) Phrase", required: true, options: phrases
-				input "wakePhrase", "enum", title: "Exit Sleep Mode (Waking Up) Phrase", required: true, options: phrases
+				input "sleepPhrase", "enum", title: "Enter Sleep Mode (Bedtime) Phrase", required: true, options: phrases,  refreshAfterSelection:true
+				input "wakePhrase", "enum", title: "Exit Sleep Mode (Waking Up) Phrase", required: true, options: phrases,  refreshAfterSelection:true
 			}
 		}
     }
