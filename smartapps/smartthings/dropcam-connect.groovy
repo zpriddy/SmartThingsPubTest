@@ -50,7 +50,7 @@ def listAvailableCameras() {
 
 		return dynamicPage(name: "listAvailableCameras", title: "Dropcams", install:true, uninstall:true) {
 			section("Select which Dropcams to connect"){
-				input(name: "cameras", title:"", type: "enum", required:false, multiple:true, metadata:[values:cameras])
+				input(name: "cameras", type: "enum", required:false, multiple:true, metadata:[values:cameras])
 			}
 			section("Turn on which Lights when taking pictures")
 				{
