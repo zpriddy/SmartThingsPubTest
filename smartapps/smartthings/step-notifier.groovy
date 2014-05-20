@@ -43,7 +43,7 @@ def setupNotifications() {
 		}
            
      	section("Notify Me When"){
-			input "thresholdType", "enum", title: "Select When to Notify", required: false, defaultValue: "Goal Reached", options: [["Goal":"Goal Reached"],["Threshold":"Specific Number of Steps"]], refreshAfterSelection:true
+			input "thresholdType", "enum", title: "Select When to Notify", required: false, defaultValue: "Goal Reached", options: [["Goal":"Goal Reached"],["Threshold":"Exceed Specific Number of Steps"]], refreshAfterSelection:true
             if (settings.thresholdType) {
                 if (settings.thresholdType == "Threshold") {
                 	input "threshold", "number", title: "Enter Step Threshold", description: "Number", required: true
@@ -192,10 +192,16 @@ def stepHandler(evt) {
     state.steps = steps
     
     def stepGoal
-    if (settings.thresholdType == "Goal")
+    def stepMessage
+    
+    if (settings.thresholdType == "Goal") {
     	stepGoal = state.goal
-    else
+        stepMessage = "You achieved your Step Goal (${stepGoal}) for today with ${steps} steps ! Congratulations!"
+    }
+    else {
     	stepGoal = settings.threshold
+        stepMessage = "You've just reached ${stepGoal} steps! Keep it up!"      
+    }
     
     if ((state.lastSteps < stepGoal) && (state.steps >= stepGoal)) { // only trigger when crossing through the goal threshold
     
@@ -208,7 +214,7 @@ def stepHandler(evt) {
 				phone: settings.phone
 			]
             
-            sendNotification("You achieved your Step Goal (${state.goal}) for today with ${state.steps} steps ! Congratulations!", options)
+            sendNotification(stepMessage, options)
         }
         
         if (settings.sonos) { // play a song on the Sonos as requested
