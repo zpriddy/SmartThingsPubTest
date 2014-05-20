@@ -22,7 +22,7 @@ preferences {
 mappings {
         path("/receivedToken") { action: [ POST: "receivedToken", GET: "receivedToken"] }
         path("/receiveToken") { action: [ POST: "receiveToken", GET: "receiveToken"] }
-        path("/placecallback") { action: [ POST: "hookEventHandler", GET: "hookEventHandler"] }
+        path("/hookCallback") { action: [ POST: "hookEventHandler", GET: "hookEventHandler"] }
 }
 
 def getSmartThingsClientId() {
@@ -47,10 +47,6 @@ def authPage() {
         }
     } else {
         description = "Jawbone Credentials Already Entered." 
-        def hookUrl = "https://graph.api.smartthings.com/api/token/${state.accessToken}/smartapps/installations/${app.id}/placecallback"
-        def webhook = "https://jawbone.com/nudge/api/v.1.1/users/@me/pubsub?webhook=$hookUrl"
-        log.debug "Callback URL: $webhook"        
-		httpPost(uri: webhook, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ])
         return dynamicPage(name: "Credentials", title: "Jawbone UP", uninstall: true, install:true) {
                section { href url: buildRedirectUrl("receivedToken"), style:"embedded", state: "complete", title:"Jawbone UP", description:description }
         }
@@ -74,7 +70,11 @@ def receiveToken() {
         def params = [
           uri: tokentUrl,
         ]
-        httpGet(params) { response -> state.JawboneAccessToken = response.data.access_token }
+        httpGet(params) { response -> 
+        	log.debug "${response?.data}"
+        	state.JawboneAccessToken = response.data.access_token
+        }
+        
     def html = """
         <!DOCTYPE html>
         <html>
@@ -230,11 +230,46 @@ def buildRedirectUrl(page) {
     return serverUrl + "/api/token/${state.accessToken}/smartapps/installations/${app.id}/${page}"
 }
 
+def validateCurrentToken() {
+    def url = "https://jawbone.com/nudge/api/v.1.1/users/@me/refreshToken"
+    def requestBody = "secret="+getSmartThingsClientSecret()
+        
+	httpPost(uri: url, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ],  body: requestBody) {response ->
+    	if (response.status == 200) {
+     		state.refreshToken = response.data.refresh_token   
+        }
+        else if (response.status == 401) { // token is expired
+        
+        	if (state.refreshToken) { // if we have this we are okay
+            
+            	def stcid = getSmartThingsClientId();
+    			def oauthClientSecret = getSmartThingsClientSecret();
+    			def oauthParams = [ client_id: stcid, client_secret: oauthClientSecret, grant_type: "refresh_token",refresh_token: state.refreshToken]
+        		def tokentUrl = "https://jawbone.com/auth/oauth2/token?" + toQueryString(oauthParams)
+        		def params = [
+          			uri: tokentUrl,
+        		]
+        		httpGet(params) { refreshResponse -> state.JawboneAccessToken = response.data.access_token }
+            
+            }
+        }
+    }
+}
+
 def initialize() {
-        // TODO: subscribe to attributes, devices, locations, etc.
+
+	def hookUrl = "https://graph.api.smartthings.com/api/token/${state.accessToken}/smartapps/installations/${app.id}/hookCallback"
+    def webhook = "https://jawbone.com/nudge/api/v.1.1/users/@me/pubsub?webhook=$hookUrl"
+    log.debug "Callback URL: $webhook"        
+	httpPost(uri: webhook, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ])
+    
 }
 
 def installed() {
+
+	// make sure this is going to work
+    validateCurrentToken()
+    
     // log.debug "In installed() method."
     def urlmember = "https://jawbone.com/nudge/api/users/@me/"
         def member = null
@@ -242,20 +277,27 @@ def installed() {
     httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
         member = response.data.data
     }    
-        // log.debug "member=${member.first} ${member.last}"    
+    // log.debug "member=${member.first} ${member.last}"  
+    
     // create the device
     if (member) {
-    			state.member = member
-                def childDevice = addChildDevice("juano2310","Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
-                if (childDevice)
-                {
-                        log.debug "Child Device Successfully Created"
-                                 generateInitialEvent (member, childDevice)
-                       }
+    	state.member = member
+        def childDevice = addChildDevice("juano2310","Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
+        if (childDevice) {
+        	log.debug "Child Device Successfully Created"  
+            generateInitialEvent (member, childDevice)
+        }
     }
+    
+    initialize()
+    
 }
 
 def updated() {
+
+	// make sure this is going to work
+    validateCurrentToken()
+    
     // log.debug "App Updated"
     def urlmember = "https://jawbone.com/nudge/api/users/@me/"
     def member = null    
@@ -263,24 +305,57 @@ def updated() {
         member = response.data.data
         state.member = member
     }
-        def externalId = "${app.id}.${member.xid}"
+    def externalId = "${app.id}.${member.xid}"
+    
     // find the appropriate child device based on my app id and the device network id 
     def deviceWrapper = getChildDevice("${externalId}")
+    
     // invoke the generatePresenceEvent method on the child device
     log.debug "Device $externalId: $deviceWrapper"
-        if (!deviceWrapper) {
-                def childDevice = addChildDevice('jawbone', "jawbone-user", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
-                if (childDevice)
-                {
-                        log.debug "Child Device Successfully Created"
-                                 generateInitialEvent (member, childDevice)
-                       }
-    }    
+    if (!deviceWrapper) {
+      	def childDevice = addChildDevice('jawbone', "jawbone-user", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
+        if (childDevice) {
+           	log.debug "Child Device Successfully Created"
+            generateInitialEvent (member, childDevice)
+        }
+    }  
+    
+    initialize()
+    
 }
 
 def pollChild (childDevice) {
     def member = state.member 
-    generateDeviceEvents (member, childDevice)   
+    generatePollingEvents (member, childDevice)   
+}
+
+def generatePollingEvents (member, childDevice) {
+    // lets figure out if the member is currently "home" (At the place)
+    def urlgoals = "https://jawbone.com/nudge/api/users/@me/goals" 
+    def urlmoves = "https://jawbone.com/nudge/api/users/@me/moves"  
+    def urlsleeps = "https://jawbone.com/nudge/api/users/@me/sleeps"     
+    def goals = null
+    def moves = null
+ 	def sleeps = null   
+    httpGet(uri: urlgoals, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+        goals = response.data.data
+    }   
+    httpGet(uri: urlmoves, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+        moves = response.data.data.items[0]
+    }    
+   
+    try { // we are going to just ignore any errors
+        log.debug "Member = ${member.first}"
+        log.debug "Moves Goal = ${goals.move_steps} Steps"
+        log.debug "Moves = ${moves.details.steps} Steps" 
+
+        childDevice?.sendEvent(name:"steps", value: moves.details.steps)
+        childDevice?.sendEvent(name:"goal", value: goals.move_steps)
+    	//setColor(moves.details.steps,goals.move_steps,childDevice)
+    }
+    catch (e) {
+            // eat it
+    }       
 }
 
 def generateInitialEvent (member, childDevice) {
@@ -297,17 +372,15 @@ def generateInitialEvent (member, childDevice) {
     httpGet(uri: urlmoves, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
         moves = response.data.data.items[0]
     }    
-    httpGet(uri: urlsleeps, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-        sleeps = response.data
-    }     
+    
     try { // we are going to just ignore any errors
         log.debug "Member = ${member.first}"
         log.debug "Moves Goal = ${goals.move_steps} Steps"
         log.debug "Moves = ${moves.details.steps} Steps"
         log.debug "Sleeping state = false"   
-            childDevice?.generateSleepingEvent(false)
-            childDevice?.sendEvent(name:"steps", value: moves.details.steps)
-            childDevice?.sendEvent(name:"goal", value: goals.move_steps)
+        childDevice?.generateSleepingEvent(false)
+        childDevice?.sendEvent(name:"steps", value: moves.details.steps)
+        childDevice?.sendEvent(name:"goal", value: goals.move_steps)
     	//setColor(moves.details.steps,goals.move_steps,childDevice)
     }
     catch (e) {
@@ -316,19 +389,22 @@ def generateInitialEvent (member, childDevice) {
 }
 
 def setColor (steps,goal,childDevice) {
-        def result = steps * 100 / goal
+    
+    def result = steps * 100 / goal
     if (result < 25) 
-            childDevice?.sendEvent(name:"steps", value: "steps", label: steps)
+    	childDevice?.sendEvent(name:"steps", value: "steps", label: steps)
     else if ((result >= 25) && (result < 50)) 
-            childDevice?.sendEvent(name:"steps", value: "steps1", label: steps)
+        childDevice?.sendEvent(name:"steps", value: "steps1", label: steps)
     else if ((result >= 50) && (result < 75)) 
-            childDevice?.sendEvent(name:"steps", value: "steps1", label: steps)
+        childDevice?.sendEvent(name:"steps", value: "steps1", label: steps)
     else if (result >= 75)     
-            childDevice?.sendEvent(name:"steps", value: "stepsgoal", label: steps)   
+        childDevice?.sendEvent(name:"steps", value: "stepsgoal", label: steps)   
 }
 
 def hookEventHandler() {
     // log.debug "In hookEventHandler method."
+    log.debug "request = ${request}"
+    
     def json = request.JSON 
     
     // get some stuff we need
@@ -346,34 +422,34 @@ def hookEventHandler() {
     def childDevice = getChildDevice("${externalId}")
             
     if (childDevice) {
-            switch (json_action) {   
-                case "enter_sleep_mode":       
-                        childDevice?.generateSleepingEvent(true)           
-                        break           
-                case "exit_sleep_mode":        
-                        childDevice?.generateSleepingEvent(false) 
-                        break 
-                case "creation": 
-                        childDevice?.generateSleepingEvent(false)  
-                        childDevice?.sendEvent(name:"steps", value: 0)
-                		break
-                case "updation":
-                    def urlgoals = "https://jawbone.com/nudge/api/users/@me/goals"     
-                    def urlmoves = "https://jawbone.com/nudge/api/users/@me/moves"       
-                    def goals = null
-                        def moves = null    
-                        httpGet(uri: urlgoals, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-                        goals = response.data.data
-                    }       
-                    httpGet(uri: urlmoves, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-                        moves = response.data.data.items[0]
-                    }        
-                    // log.debug "Device $externalId: $deviceWrapper"
-                    // invoke the generatePresenceEvent method on the child device
-                    childDevice?.sendEvent(name:"steps", value: moves.details.steps)
-                    childDevice?.sendEvent(name:"goal", value: goals.move_steps)       
-                    //setColor(moves.details.steps,goals.move_steps,childDevice)   
-           			break               
+    	switch (json_action) {   
+	        case "enter_sleep_mode":      
+            	childDevice?.generateSleepingEvent(true)           
+                break           
+            case "exit_sleep_mode":       
+            	childDevice?.generateSleepingEvent(false) 
+                break 
+            case "creation": 
+                childDevice?.generateSleepingEvent(false)  
+                childDevice?.sendEvent(name:"steps", value: 0)
+          		break
+            case "updation":
+                def urlgoals = "https://jawbone.com/nudge/api/users/@me/goals"     
+                def urlmoves = "https://jawbone.com/nudge/api/users/@me/moves"       
+                def goals = null
+                def moves = null    
+                httpGet(uri: urlgoals, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+ 	               goals = response.data.data
+                }       
+                httpGet(uri: urlmoves, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+                   moves = response.data.data.items[0]
+                }        
+                log.debug "Goal = ${goals.move_steps} Steps"
+        		log.debug "Steps = ${moves.details.steps} Steps"
+                childDevice?.sendEvent(name:"steps", value: moves.details.steps)
+                childDevice?.sendEvent(name:"goal", value: goals.move_steps)       
+                //setColor(moves.details.steps,goals.move_steps,childDevice)   
+                break               
             }
     }
     else {
