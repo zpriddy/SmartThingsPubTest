@@ -20,12 +20,31 @@ preferences {
 	page(name: "configureButton2")
 	page(name: "configureButton3")
 	page(name: "configureButton4")
+	
+	page(name: "timeIntervalInput", title: "Only during a certain time") {
+		section {
+			input "starting", "time", title: "Starting", required: false
+			input "ending", "time", title: "Ending", required: false
+		}
+	}
 }
 
 def selectButton() {
-	dynamicPage(name: "selectButton", title: "First, select your button device", nextPage: "configureButton1", uninstall: true) {
+	dynamicPage(name: "selectButton", title: "First, select your button device", nextPage: "configureButton1", uninstall: configured()) {
 		section {
 			input "buttonDevice", "capability.button", title: "Button", multiple: false, required: true
+		}
+		
+		section(title: "More options", hidden: hideOptionsSection(), hideable: true) {
+			
+			def timeLabel = timeIntervalLabel()
+
+			href "timeIntervalInput", title: "Only during a certain time", description: timeLabel ?: "Tap to set", state: timeLabel ? "complete" : null
+
+			input "days", "enum", title: "Only on certain days of the week", multiple: true, required: false,
+				options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
 		}
 	}
 }
@@ -102,31 +121,33 @@ def buttonConfigured(idx) {
 }
 
 def buttonEvent(evt){
-	def buttonNumber = evt.data // why doesn't jsonData work? always returning [:]
-	def value = evt.value
-	log.debug "buttonEvent: $evt.name = $evt.value ($evt.data)"
-	log.debug "button: $buttonNumber, value: $value"
-
-	def recentEvents = buttonDevice.eventsSince(new Date(now() - 3000)).findAll{it.value == evt.value && it.data == evt.data}
-	log.debug "Found ${recentEvents.size()?:0} events in past 3 seconds"
-
-	if(recentEvents.size <= 1){
-		switch(buttonNumber) {
-			case ~/.*1.*/:
-				executeHandlers(1, value)
-				break
-			case ~/.*2.*/:
-				executeHandlers(2, value)
-				break
-			case ~/.*3.*/:
-				executeHandlers(3, value)
-				break
-			case ~/.*4.*/:
-				executeHandlers(4, value)
-				break
+	if(allOk) {
+		def buttonNumber = evt.data // why doesn't jsonData work? always returning [:]
+		def value = evt.value
+		log.debug "buttonEvent: $evt.name = $evt.value ($evt.data)"
+		log.debug "button: $buttonNumber, value: $value"
+	
+		def recentEvents = buttonDevice.eventsSince(new Date(now() - 3000)).findAll{it.value == evt.value && it.data == evt.data}
+		log.debug "Found ${recentEvents.size()?:0} events in past 3 seconds"
+	
+		if(recentEvents.size <= 1){
+			switch(buttonNumber) {
+				case ~/.*1.*/:
+					executeHandlers(1, value)
+					break
+				case ~/.*2.*/:
+					executeHandlers(2, value)
+					break
+				case ~/.*3.*/:
+					executeHandlers(3, value)
+					break
+				case ~/.*4.*/:
+					executeHandlers(4, value)
+					break
+			}
+		} else {
+			log.debug "Found recent button press events for $buttonNumber with value $value"
 		}
-	} else {
-		log.debug "Found recent button press events for $buttonNumber with value $value"
 	}
 }
 
@@ -185,4 +206,60 @@ def changeMode(mode) {
 	if (location.mode != mode && location.modes?.find { it.name == mode }) {
 		setLocationMode(mode)
 	}
+}
+
+// execution filter methods
+private getAllOk() {
+	notificationsEnabled && modeOk && daysOk && timeOk
+}
+
+private getModeOk() {
+	def result = !modes || modes.contains(location.mode)
+	log.trace "modeOk = $result"
+	result
+}
+
+private getDaysOk() {
+	def result = true
+	if (days) {
+		def df = new java.text.SimpleDateFormat("EEEE")
+		if (location.timeZone) {
+			df.setTimeZone(location.timeZone)
+		}
+		else {
+			df.setTimeZone(TimeZone.getTimeZone("America/New_York"))
+		}
+		def day = df.format(new Date())
+		result = days.contains(day)
+	}
+	log.trace "daysOk = $result"
+	result
+}
+
+private getTimeOk() {
+	def result = true
+	if (starting && ending) {
+		def currTime = now()
+		def start = timeToday(starting).time
+		def stop = timeToday(ending).time
+		result = start < stop ? currTime >= start && currTime <= stop : currTime <= stop || currTime >= start
+	}
+	log.trace "timeOk = $result"
+	result
+}
+
+private hhmm(time, fmt = "h:mm a")
+{
+	def t = timeToday(time, location.timeZone)
+	def f = new java.text.SimpleDateFormat(fmt)
+	f.setTimeZone(location.timeZone ?: timeZone(time))
+	f.format(t)
+}
+
+private hideOptionsSection() {
+	(starting || ending || days || modes) ? false : true
+}
+
+private timeIntervalLabel() {
+	(starting && ending) ? hhmm(starting) + "-" + hhmm(ending, "h:mm a z") : ""
 }

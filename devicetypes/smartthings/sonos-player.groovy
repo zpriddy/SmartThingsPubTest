@@ -30,6 +30,8 @@ metadata {
 		command "playTrackAtVolume", ["string","number"]
 		command "playTrackAndResume", ["string","number","number"]
 		command "playTextAndResume", ["string","number"]
+		command "playTrackAndRestore", ["string","number","number"]
+		command "playTextAndRestore", ["string","number"]
 		command "playSoundAndTrack", ["string","number","json_object","number"]
 		command "playTextAndResume", ["string","json_object","number"]
 	}
@@ -586,6 +588,57 @@ def playTrackAndResume(uri, duration, volume=null) {
 			if (currentStatus == "playing") {
 				result << sonosAction("Play")
 			}
+		}
+
+		result = result.flatten()
+		log.trace "Returning ${result.size()} commands"
+		result
+	}, {it.playTrackAndResume(uri, duration, volume)})
+}
+
+def playTextAndRestore(text, volume=null)
+{
+	log.debug "playTextAndResume($text, $volume)"
+	coordinate({
+		def sound = textToSpeech(text)
+		playTrackAndRestore(sound.uri, (sound.duration as Integer) + 1, volume)
+	}, {it.playTextAndRestore(text, volume)})
+}
+
+def playTrackAndRestore(uri, duration, volume=null) {
+	log.debug "playTrackAndRestore($uri, $duration, $volume)"
+	coordinate({
+		def currentTrack = device.currentState("trackData")?.jsonValue
+		def currentVolume = device.currentState("level")?.integerValue
+		def currentStatus = device.currentValue("status")
+		def level = volume as Integer
+
+		def result = []
+		if (level) {
+			log.trace "Stopping and setting level to $volume"
+			result << sonosAction("Stop")
+			result << delayAction(1000)
+			result << setLocalLevel(level)
+		}
+
+		log.trace "Setting sound track: ${uri}"
+		result << setTrack(uri)
+		result << sonosAction("Play")
+
+		if (currentTrack) {
+			def delayTime = ((duration as Integer) * 1000)+1500
+			if (level) {
+				delayTime += 1000
+			}
+			result << delayAction(delayTime)
+			log.trace "Delaying $delayTime ms before restoration"
+			if (level) {
+				log.trace "Restoring volume to $currentVolume"
+				result << sonosAction("Stop")
+				result << setLocalLevel(currentVolume)
+			}
+			log.trace "Restoring track $currentTrack.uri"
+			result << setTrack(currentTrack)
 		}
 
 		result = result.flatten()

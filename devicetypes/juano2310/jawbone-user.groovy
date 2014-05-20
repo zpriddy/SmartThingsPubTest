@@ -8,7 +8,7 @@
 
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Jawbone User", namespace: "juano2310", author: "Juan Pablo Risso") {
+	definition (name: "Jawbone User", namespace: "juano2310", author: "juano23@gmail.com") {
 		capability "Refresh"
 		capability "Polling"
         capability "Button"
@@ -34,7 +34,7 @@ metadata {
                 standardTile("goal", "device.goal", width: 1, height: 1, canChangeIcon: false, canChangeBackground: false,  decoration: "flat") {
                         state("goal", label: '${currentValue} Steps', icon:"st.Health & Wellness.health5", backgroundColor:"#ffffff")
                 }                
-                standardTile("refresh", "device.sleeping", inactiveLabel: false, decoration: "flat") {
+                standardTile("refresh", "device.steps", inactiveLabel: false, decoration: "flat") {
 						state "default", action:"polling.poll", icon:"st.secondary.refresh"
 				}
                 main "steps"
