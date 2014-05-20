@@ -93,7 +93,7 @@ def buildUrl(String key, String endpoint="increment", Boolean absolute=true)
 }
 
 def getServerName() {
-	return "https://dgraph.api.smartthings.com"
+	return "https://graph.api.smartthings.com"
 }
 
 def listAvailableCameras() {
