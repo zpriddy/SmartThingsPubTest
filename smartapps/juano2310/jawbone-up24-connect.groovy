@@ -10,8 +10,8 @@ definition(
 	author: "Juan Pablo Risso",
 	description: "Connect your Jawbone UP to SmartThings",
 	category: "Reviewers",
-	iconUrl: "http://thinkmakelab.com/images/upsmall.png",
-	iconX2Url: "http://thinkmakelab.com/images/upbig.png",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
 	oauth: true
 )
 
