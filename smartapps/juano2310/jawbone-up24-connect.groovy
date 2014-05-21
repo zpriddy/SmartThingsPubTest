@@ -9,7 +9,7 @@ definition(
 	namespace: "juano2310",
 	author: "Juan Pablo Risso",
 	description: "Connect your Jawbone UP to SmartThings",
-	category: "Reviewers",
+	category: "SmartThings Labs",
 	iconUrl: "http://thinkmakelab.com/images/upsmall.png",
 	iconX2Url: "http://thinkmakelab.com/images/upbig.png",
 	oauth: true
