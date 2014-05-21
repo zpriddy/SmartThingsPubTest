@@ -16,7 +16,7 @@
 definition(
     name: "Step Notifier",
     namespace: "smartthings",
-    author: "Jeff's Account",
+    author: "SmartThings",
     description: "Use a step tracker device to track daily step goals and trigger various device actions when your goals are met!",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
