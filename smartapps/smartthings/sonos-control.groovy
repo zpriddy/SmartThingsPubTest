@@ -2,6 +2,7 @@
  *  Sonos Control
  *
  *  Author: SmartThings
+ *
  *  Date: 2013-12-10
  */
 definition(

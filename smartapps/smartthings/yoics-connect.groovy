@@ -93,7 +93,7 @@ def buildUrl(String key, String endpoint="increment", Boolean absolute=true)
 }
 
 def getServerName() {
-	return "https://dgraph.api.smartthings.com"
+	return "https://graph.api.smartthings.com"
 }
 
 def listAvailableCameras() {
@@ -167,7 +167,7 @@ def initialize() {
 
 		if(!d)
 		{
-			d = addChildDevice("smartthings", "YoicsCamera", dni, null, [name:"YoicsCamera", label:name])
+			d = addChildDevice("smartthings", "Yoics Camera", dni, null, [name:"YoicsCamera", label:name])
 
 			/* WE'LL GET PROXY ON TAKE REQUEST
 			def setupProxyResult = setupProxy(dni)
