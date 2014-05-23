@@ -167,7 +167,7 @@ def initialize() {
 
 		if(!d)
 		{
-			d = addChildDevice("smartthings", "YoicsCamera", dni, null, [name:"YoicsCamera", label:name])
+			d = addChildDevice("smartthings", "Yoics Camera", dni, null, [name:"YoicsCamera", label:name])
 
 			/* WE'LL GET PROXY ON TAKE REQUEST
 			def setupProxyResult = setupProxy(dni)
