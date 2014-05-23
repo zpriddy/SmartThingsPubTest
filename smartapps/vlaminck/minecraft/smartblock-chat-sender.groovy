@@ -1,7 +1,7 @@
 /**
  *  SmartClockChatSender
  *
- *  Author: Steve Vlaminck 
+ *  Author: Steve Vlaminck
  *
  *  Date: 2014-02-03
  */

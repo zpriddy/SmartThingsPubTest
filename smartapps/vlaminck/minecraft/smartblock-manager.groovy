@@ -3,19 +3,19 @@ import com.sun.corba.se.spi.activation._ServerImplBase
 /**
  *  SmartBlock Manager
  *
- *  Author: Steve Vlaminck 
+ *  Author: Steve Vlaminck
  *
  *  Date: 2013-12-24
  */
 
 definition(
-    name: "SmartBlock Manager",
-    namespace: "vlaminck/Minecraft",
-    author: "SmartThings",
-    description: "A SmartApp for managing SmartBlocks",
-    iconUrl: "http://f.cl.ly/items/0p2c222z0p2K0y3y3w2M/SmartApp-icon.png",
-    iconX2Url: "http://f.cl.ly/items/0p2c222z0p2K0y3y3w2M/SmartApp-icon.png",
-    oauth: [displayName: "SmartBlock Manager", displayLink: ""]
+	name: "SmartBlock Manager",
+	namespace: "vlaminck/Minecraft",
+	author: "SmartThings",
+	description: "A SmartApp for managing SmartBlocks",
+	iconUrl: "http://f.cl.ly/items/0p2c222z0p2K0y3y3w2M/SmartApp-icon.png",
+	iconX2Url: "http://f.cl.ly/items/0p2c222z0p2K0y3y3w2M/SmartApp-icon.png",
+	oauth: [displayName: "SmartBlock Manager", displayLink: ""]
 )
 
 preferences {
@@ -106,7 +106,7 @@ def linkerPage() {
 			app(
 				title: "Link a SmartBlock to a switch",
 				name: "blockLinker-new",
-				namespace: "Minecraft",
+				namespace: "vlaminck/Minecraft",
 				appName: "SmartBlock Linker",
 				page: "linkerPage",
 				multiple: true,
@@ -123,7 +123,7 @@ def notifierPage() {
 			app(
 				title: "Get Notified",
 				name: "blockNotifier-new",
-				namespace: "Minecraft",
+				namespace: "vlaminck/Minecraft",
 				appName: "SmartBlock Notifier",
 				multiple: true
 			)
@@ -137,7 +137,7 @@ def chatPage() {
 			app(
 				title: "Send Notifications",
 				name: "chatSender-new",
-				namespace: "Minecraft",
+				namespace: "vlaminck/Minecraft",
 				appName: "SmartBlock Chat Sender",
 				multiple: true
 			)
@@ -147,14 +147,16 @@ def chatPage() {
 
 mappings {
 	path("/block") { // any need for GET?
-		action: [
-			POST: "createBlock",
-			PUT: "updateBlock",
+		action:
+		[
+			POST  : "createBlock",
+			PUT   : "updateBlock",
 			DELETE: "deleteBlock"
 		]
 	}
 	path("/ack") {
-		action: [
+		action:
+		[
 			POST: "ack"
 		]
 	}
@@ -166,13 +168,10 @@ def createBlock() {
 	def blockDNI = blockDNI(data)
 	def block = block(data)
 
-	if (block)
-	{
+	if (block) {
 		log.debug "Block ${block?.label} with id $blockDNI already exists"
-	}
-	else
-	{
-		block = addChildDevice("Minecraft", "Smart Block", blockDNI, null, [name: "SmartBlock", label: "SmartBlock $blockCoordinates"])
+	} else {
+		block = addChildDevice("vlaminck/Minecraft", "Smart Block", blockDNI, null, [name: "SmartBlock", label: "SmartBlock $blockCoordinates"])
 	}
 
 	block?.setCoordinates(data.x, data.y, data.z)
@@ -181,8 +180,7 @@ def createBlock() {
 	block?.setDimensionName(data?.dimensionName)
 	block?.setPlacedBy(data?.placedBy)
 
-	if (serverIp)
-	{
+	if (serverIp) {
 		block.setServerIp(serverIp)
 	}
 
@@ -209,18 +207,15 @@ def sendDataToBlock(data, isStateChange) {
 
 	block?.neighborBlockChange(data)
 
-	if (data.worldSeed)
-	{
+	if (data.worldSeed) {
 		block.setWorldSeed(data.worldSeed)
 	}
 
-	if (data.dimensionName)
-	{
+	if (data.dimensionName) {
 		block.setDimensionName(data.dimensionName)
 	}
 
-	if (data.placedBy)
-	{
+	if (data.placedBy) {
 		block.setPlacedBy(data.placedBy)
 	}
 
@@ -268,8 +263,7 @@ def updated() {
 
 def initialize() {
 	// update all children with serverIp.
-	if (serverIp)
-	{
+	if (serverIp) {
 		getChildDevices().each { block ->
 			block.setServerIp(serverIp)
 		}
