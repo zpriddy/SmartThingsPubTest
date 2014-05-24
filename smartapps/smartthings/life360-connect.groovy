@@ -17,7 +17,7 @@
 definition(
     name: "Life360 (Connect)",
     namespace: "smartthings",
-    author: "jeff",
+    author: "SmartThings",
     description: "Life360 Service Manager",
 	category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/life360.png",

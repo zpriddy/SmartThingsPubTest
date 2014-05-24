@@ -19,7 +19,7 @@ definition(
 )
 
 preferences {
-	page(name: "auth", title: "ecobee", nextPage:"deviceList", content:"authPage")
+	page(name: "auth", title: "ecobee", nextPage:"deviceList", content:"authPage", uninstall: true)
 	page(name: "deviceList", title: "ecobee", content:"ecobeeDeviceList", install:true)
 }
 

@@ -280,7 +280,7 @@ private takeAction(evt) {
 }
 
 private frequencyKey(evt) {
-	evt.deviceId ?: evt.value
+	"lastActionTimeStamp"
 }
 
 private dayString(Date date) {

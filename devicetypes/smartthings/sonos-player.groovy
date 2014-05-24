@@ -170,12 +170,12 @@ def parse(description) {
 
 							if (coordinator) {
 								sendEvent(name: "status", value: "grouped", data: [source: 'xml.Body.GetTransportInfoResponse'])
-								sendEvent(name: "switch", value: "off")
+								sendEvent(name: "switch", value: "off", displayed: false)
 							}
 							else {
 								log.trace "status = $currentStatus"
 								sendEvent(name: "status", value: currentStatus, data: [source: 'xml.Body.GetTransportInfoResponse'])
-								sendEvent(name: "switch", value: currentStatus=="playing" ? "on" : "off")
+								sendEvent(name: "switch", value: currentStatus=="playing" ? "on" : "off", displayed: false)
 							}
 						}
 					}
@@ -208,7 +208,7 @@ def parse(description) {
 						sendEvent(name: "status", value: "grouped", data: [
 							coordinator: [displayName: coordinatorDevice.displayName, id: coordinatorDevice.id, deviceNetworkId: coordinatorDevice.deviceNetworkId]
 						])
-						sendEvent(name: "switch", value: "off")
+						sendEvent(name: "switch", value: "off", displayed: false)
 					}
 					else {
 						// Not grouped
@@ -236,12 +236,12 @@ def parse(description) {
 
 							if (coordinator) {
 								sendEvent(name: "status", value: "grouped", data: [source: 'xml.property.LastChange.InstanceID.TransportState'])
-								sendEvent(name: "switch", value: "off")
+								sendEvent(name: "switch", value: "off", displayed: false)
 							}
 							else {
 								log.trace "status = $currentStatus"
 								sendEvent(name: "status", value: currentStatus, data: [source: 'xml.property.LastChange.InstanceID.TransportState'])
-								sendEvent(name: "switch", value: currentStatus=="playing" ? "on" : "off")
+								sendEvent(name: "switch", value: currentStatus=="playing" ? "on" : "off", displayed: false)
 							}
 						}
 					}
