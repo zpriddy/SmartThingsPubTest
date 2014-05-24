@@ -1,7 +1,7 @@
 /**
  *  SmartBlock Notifier
  *
- *  Author: Steve Vlaminck 
+ *  Author: Steve Vlaminck
  *
  *  Date: 2013-12-27
  */
@@ -218,6 +218,7 @@ def updated() {
 def initialize() {
 	log.debug "initializing"
 	subscribe(smartBlock, "redstoneSignalStrength", redstoneSignalStrengthHandler)
+	subscribe(smartBlock, "smartBlockNeighborChanged", smartBlockNeighborChangedHandler, [filterEvents: false])
 	subscribe(smartBlock, "smartBlockNeighborChanged", smartBlockNeighborChangedHandler, [filterEvents: false])
 	subscribe(smartBlock, "blockDestroyed.true", smartBlockDestroyedHandler, [filterEvents: false])
 }
