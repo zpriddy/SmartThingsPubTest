@@ -9,13 +9,13 @@
  */
 
 definition(
-    name: "Laundry Monitor",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Sends a message and (optionally) turns on or blinks a light to indicate that laundry is done.",
-    category: "Convenience",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner%402x.png"
+	name: "Laundry Monitor",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Sends a message and (optionally) turns on or blinks a light to indicate that laundry is done.",
+	category: "Convenience",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/FunAndSocial/App-HotTubTuner%402x.png"
 )
 
 preferences {
@@ -25,13 +25,13 @@ preferences {
 	section("Via this number (optional, sends push notification if not specified)"){
 		input "phone", "phone", title: "Phone Number", required: false
 	}
-    section("And by turning on this light (optional)") {
-    	input "switches", "capability.switch", required: false, multiple: true
-        input "lightMode", "enum", metadata: [values: ["Flash Lights", "Turn On Lights"]], required: false
+	section("And by turning on this light (optional)") {
+		input "switches", "capability.switch", required: false, multiple: true
+		input "lightMode", "enum", metadata: [values: ["Flash Lights", "Turn On Lights"]], required: false
 	}
 	section("Time thresholds (in minutes, optional)"){
 		input "cycleTime", "decimal", title: "Minimum cycle time", required: false, defaultValue: 10
-        input "fillTime", "decimal", title: "Time to fill tub", required: false, defaultValue: 5
+		input "fillTime", "decimal", title: "Time to fill tub", required: false, defaultValue: 5
 	}
 }
 
@@ -43,7 +43,7 @@ def installed()
 def updated()
 {
 	unsubscribe()
-    initialize()
+	initialize()
 }
 
 def initialize() {
@@ -53,62 +53,66 @@ def initialize() {
 
 def accelerationActiveHandler(evt) {
 	log.trace "vibration"
-    if (!state.isRunning) {
-    	log.info "Arming detector"
-        state.isRunning = true
-        state.startedAt = now()
-    }
-    state.stoppedAt = null
+	if (!state.isRunning) {
+		log.info "Arming detector"
+		state.isRunning = true
+		state.startedAt = now()
+	}
+	state.stoppedAt = null
 }
 
 def accelerationInactiveHandler(evt) {
-    log.trace "no vibration, isRunning: $state.isRunning"
-    if (state.isRunning) {
-    	log.debug "startedAt: ${state.startedAt}, stoppedAt: ${state.stoppedAt}"
-        if (state.stoppedAt) {
-			
-            def fillTimeMsec = fillTime ? fillTime * 60000 : 300000
-            def remaining = fillTimeMsec - (now() - state.stoppedAt)
-            if (remaining <= 0) {
-            
-            	def cycleTimeMsec = cycleTime ? cycleTime * 60000 : 600000
-            	def duration = now() - state.startedAt
-                if (duration - fillTimeMsec > cycleTimeMsec) {
-                	log.debug "Sending notification"
-                    
-                    def msg = "${evt.linkText} is finished"
-                    log.info msg
-                                
-                    if (phone) {
-                        sendSms phone, msg
-                    }
-                    else {
-                        sendPush msg
-                    }
-                    
-                    if (switches) {
-                        if (lightMode?.equals("Turn On Lights")) {
-                            switches.on()
-                        }
-                        else {
-                            flashLights()
-                        }
-                    }
-                }
-                else {
-                	log.debug "Not sending notification because duration of $duration msec wasn't long enough"
-                }
-                state.isRunning = false
-                log.info "Disarming detector"
-            }
-            else {
-                log.debug "$remaining msec to go before sending message"
-            }
-        }
-        else {
-            state.stoppedAt = now()
-        }            
-    }
+	log.trace "no vibration, isRunning: $state.isRunning"
+	if (state.isRunning) {
+		log.debug "startedAt: ${state.startedAt}, stoppedAt: ${state.stoppedAt}"
+		if (!state.stoppedAt) {
+			state.stoppedAt = now()
+			runIn(fillTime * 60, checkRunning, [overwrite: false])
+		}
+	}
+}
+
+def checkRunning() {
+	log.trace "checkRunning()"
+	if (state.isRunning) {
+		def fillTimeMsec = fillTime ? fillTime * 60000 : 300000
+		def sensorStates = sensor1.statesSince("acceleration", new Date((now() - fillTimeMsec) as Long))
+
+		if (!sensorStates.find{it.value == "active"}) {
+
+			def cycleTimeMsec = cycleTime ? cycleTime * 60000 : 600000
+			def duration = now() - state.startedAt
+			if (duration - fillTimeMsec > cycleTimeMsec) {
+				log.debug "Sending notification"
+
+				def msg = "${sensor1.displayName} is finished"
+				log.info msg
+
+				if (phone) {
+					sendSms phone, msg
+				} else {
+					sendPush msg
+				}
+
+				if (switches) {
+					if (lightMode?.equals("Turn On Lights")) {
+						switches.on()
+					} else {
+						flashLights()
+					}
+				}
+			} else {
+				log.debug "Not sending notification because machine wasn't running long enough $duration versus $cycleTimeMsec msec"
+			}
+			state.isRunning = false
+			log.info "Disarming detector"
+		} else {
+			log.debug "skipping notification because vibration detected again"
+		}
+	}
+	else {
+		log.debug "machine no longer running"
+	}
 }
 
 private flashLights() {
