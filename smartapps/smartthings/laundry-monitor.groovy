@@ -48,7 +48,7 @@ def updated()
 
 def initialize() {
 	subscribe(sensor1, "acceleration.active", accelerationActiveHandler)
-	subscribe(sensor1, "acceleration.inactive", accelerationInactiveHandler, [filterEvents: false])
+	subscribe(sensor1, "acceleration.inactive", accelerationInactiveHandler)
 }
 
 def accelerationActiveHandler(evt) {
