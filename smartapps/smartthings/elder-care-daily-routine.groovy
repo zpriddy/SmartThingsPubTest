@@ -29,7 +29,7 @@ preferences {
 		input "contact1", "capability.contactSensor", required: false
 	}
 	section("between these times...") {
-		input "time0", "time", title: "From what time?", required: false
+		input "time0", "time", title: "From what time?"
 		input "time1", "time", title: "Until what time?"
 	}
 	section("Text me an alert at (sends push notification if not specified)...") {
