@@ -40,17 +40,17 @@ metadata {
  				]
  				)
  		}
- 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
- 			state "default", label:'${currentValue}%', unit:"Humidity"
+ 		valueTile("humidity", "device.humidity", decoration: "flat") {
+			state "default", label:'${currentValue}% humidity'
+		}
+ 		valueTile("carbonDioxide", "device.carbonDioxide", decoration: "flat") {
+ 			state "default", label:'${currentValue}ppm CO2'
  		}
- 		valueTile("carbonDioxide", "device.carbonDioxide", inactiveLabel: false) {
- 			state "default", label:'${currentValue}ppm', unit:"CO2"
+ 		valueTile("noise", "device.noise", decoration: "flat") {
+ 			state "default", label:'${currentValue}db Noise Level'
  		}
- 		valueTile("noise", "device.noise", inactiveLabel: false) {
- 			state "default", label:'${currentValue}db', unit:"Noise"
- 		}
- 		valueTile("pressure", "device.pressure", inactiveLabel: false) {
- 			state "default", label:'${currentValue}mbar', unit:"Pressure"
+ 		valueTile("pressure", "device.pressure", decoration: "flat") {
+ 			state "default", label:'${currentValue}mbar Pressure'
  		}
  		main "temperature"
  		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])

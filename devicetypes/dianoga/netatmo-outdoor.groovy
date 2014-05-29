@@ -36,9 +36,9 @@ metadata {
  				]
  				)
  		}
- 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
- 			state "default", label:'${currentValue}%', unit:"Humidity"
- 		}
+ 		valueTile("humidity", "device.humidity", decoration: "flat") {
+			state "default", label:'${currentValue}% humidity'
+		}
  		main "temperature"
  		details(["temperature", "humidity"])
 	}

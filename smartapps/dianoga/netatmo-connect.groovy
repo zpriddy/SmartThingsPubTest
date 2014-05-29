@@ -9,9 +9,10 @@ private getVendorName() 	{ "netatmo" }
 private getVendorAuthPath()	{ "http://api.netatmo.net/oauth2/authorize?" }
 private getVendorTokenPath(){ "http://api.netatmo.net/oauth2/token" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png" }
-private getClientId() 		{ appSettings.clientId }
-private getClientSecret() 	{ appSettings.clientSecret }
-private getServerUrl() 		{ appSettings.serverUrl }
+private getClientId() 		{ "534577f41c7759259b8b45dd" }
+private getClientSecret() 	{ "Tp7suzR4WSoUkwTBtFVqUnToZmAEO" }
+
+private getServerUrl() 		{ "https://graph.api.smartthings.com" }
 
 // Automatically generated. Make future change here.
 definition(
@@ -19,15 +20,11 @@ definition(
     namespace: "dianoga",
     author: "Brian Steere",
     description: "Netatmo Integration",
-    category: "SmartThings Internal",
+    category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png",
     oauth: true
-) {
-	appSetting "clientId"
-	appSetting "clientSecret"
-	appSetting "serverUrl"
-}
+)
 
 preferences {
 	page(name: "Credentials", title: "Fetch OAuth2 Credentials", content: "authPage", install: false)
@@ -153,9 +150,10 @@ def receiveToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>${getVendorName()} Connection</title>
-        <style type="text/css">
+        <style type="text/css">        
+            * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
                 src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
@@ -177,7 +175,7 @@ def receiveToken() {
                 font-style: normal;
             }
             .container {
-                width: 560px;
+                width: 100%;
                 padding: 40px;
                 /*background: #eee;*/
                 text-align: center;
@@ -193,7 +191,6 @@ def receiveToken() {
                 font-family: 'Swiss 721 W01 Thin';
                 text-align: center;
                 color: #666666;
-                padding: 0 40px;
                 margin-bottom: 0;
             }
         /*
@@ -227,9 +224,10 @@ def receivedToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Withings Connection</title>
-        <style type="text/css">
+        <style type="text/css">        
+            * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
                 src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
@@ -267,7 +265,6 @@ def receivedToken() {
                 font-family: 'Swiss 721 W01 Thin';
                 text-align: center;
                 color: #666666;
-                padding: 0 40px;
                 margin-bottom: 0;
             }
         /*
