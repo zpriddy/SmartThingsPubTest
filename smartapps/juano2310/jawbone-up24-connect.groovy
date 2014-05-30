@@ -30,7 +30,7 @@ def getSmartThingsClientId() {
 }
 
 def getSmartThingsClientSecret() {
-   return "df52c46689595959b35fd9cee3ea9133369e58ca"
+   return "03c825404c04c9f9cdc72759700718ce"
 }
 
 def authPage() {
