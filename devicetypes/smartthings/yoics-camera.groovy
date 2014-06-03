@@ -38,7 +38,7 @@ metadata {
 }
 
 def uninstalled() {
-	parent.removeChildFromSettings(this)
+	parent?.removeChildFromSettings(this)
 }
 
 // parse events into attributes
