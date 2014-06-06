@@ -129,6 +129,7 @@ def setColor(value) {
 	parent.setColor(this, value)
 	sendEvent(name: "hue", value: value.hue)
 	sendEvent(name: "saturation", value: value.saturation)
+	sendEvent(name: "color", value: value.hex)
 	if (value.level) {
 		sendEvent(name: "level", value: value.level)
 	}

@@ -7,7 +7,7 @@
 
 // for the UI
 metadata {
-	
+
     definition (name: "Smart Block", namespace: "vlaminck/Minecraft", author: "SmartThings") {
 		capability "Switch Level"
 		capability "Switch"
@@ -193,7 +193,7 @@ def setSignalStrength(int signalStrength) {
 def setLastNeighborChanged(blockId, blockName) {
 	state.neighborBlockId = blockId
 	state.neighborBlockName = blockName
-	sendEvent(name: "smartBlockNeighborChanged", value: "${blockId} ${blockName}")
+	sendEvent(name: "smartBlockNeighborChanged", value: "${blockId} ${blockName}", isStateChange: true)
 }
 
 def setServerIp(ip) {

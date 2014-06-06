@@ -1,7 +1,7 @@
 /**
  *  SmartBlock Linker
  *
- *  Author: Steve Vlaminck 
+ *  Author: Steve Vlaminck
  *
  *  Date: 2013-12-26
  */

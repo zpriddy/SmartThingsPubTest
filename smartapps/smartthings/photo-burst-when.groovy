@@ -27,7 +27,7 @@ preferences {
 	}
 	section("Take a burst of pictures") {
 		input "camera", "capability.imageCapture"
-		input "burst", "number", title: "How many? (default 5)", defaultValue:5
+		input "burstCount", "number", title: "How many? (default 5)", defaultValue:5
 	}
 	section("Then send this message in a push notification"){
 		input "messageText", "text", title: "Message Text"
