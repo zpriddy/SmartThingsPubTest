@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition (name: "netatmo-basestation", namespace: "dianoga", author: "Brian Steere") {
+	definition (name: "Netatmo Basestation", namespace: "dianoga", author: "Brian Steere") {
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
 
@@ -40,17 +40,20 @@ metadata {
  				]
  				)
  		}
- 		valueTile("humidity", "device.humidity", decoration: "flat") {
-			state "default", label:'${currentValue}% humidity'
-		}
- 		valueTile("carbonDioxide", "device.carbonDioxide", decoration: "flat") {
- 			state "default", label:'${currentValue}ppm CO2'
+ 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
+ 			state "default", label:'${currentValue}%', unit:"Humidity"
  		}
- 		valueTile("noise", "device.noise", decoration: "flat") {
- 			state "default", label:'${currentValue}db Noise Level'
+ 		valueTile("carbonDioxide", "device.carbonDioxide", inactiveLabel: false) {
+ 			state "default", label:'${currentValue}ppm', unit:"CO2"
  		}
- 		valueTile("pressure", "device.pressure", decoration: "flat") {
- 			state "default", label:'${currentValue}mbar Pressure'
+ 		valueTile("noise", "device.noise", inactiveLabel: false) {
+ 			state "default", label:'${currentValue}db', unit:"Noise"
+ 		}
+ 		valueTile("pressure", "device.pressure", inactiveLabel: false) {
+ 			state "default", label:'${currentValue}mbar', unit:"Pressure"
+ 		}
+ 		standardTile("refresh", "device.pressure", inactiveLabel: false, decoration: "flat") {
+ 			state "default", action:"device.poll", icon:"st.secondary.refresh"
  		}
  		main "temperature"
  		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
@@ -66,4 +69,8 @@ def parse(String description) {
 	// TODO: handle 'noise' attribute
 	// TODO: handle 'pressure' attribute
 
+}
+
+def poll() {
+	parent.poll()
 }

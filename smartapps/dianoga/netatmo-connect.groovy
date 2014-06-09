@@ -368,11 +368,11 @@ def initialize() {
 			switch(detail.type) {
 				case 'NAMain':
 					log.debug "Base station"
-					createChildDevice("netatmo-basestation", deviceId, "${detail.type}.${deviceId}", detail.module_name)
+					createChildDevice("Netatmo Basestation", deviceId, "${detail.type}.${deviceId}", detail.module_name)
 					break
 				case 'NAModule1':
 					log.debug "Outdoor module"
-					createChildDevice("netatmo-outdoor", deviceId, "${detail.type}.${deviceId}", detail.module_name)
+					createChildDevice("Netatmo Outdoor Module", deviceId, "${detail.type}.${deviceId}", detail.module_name)
 					break
 			}
 		} catch (Exception e) {
@@ -385,9 +385,9 @@ def initialize() {
 	log.debug "Delete: $delete"
 	delete.each { deleteChildDevice(it.deviceNetworkId) }
 
-	// Do the initial poll and schedule it to run every 5 minutes
+	// Do the initial poll and schedule it to run every minute
 	runIn(1, poll)
-	schedule("0 0/5 * * * ?", poll)
+	schedule("0 * * * * ?", poll)
 }
 
 def uninstalled() {
