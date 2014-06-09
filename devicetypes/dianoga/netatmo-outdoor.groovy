@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition (name: "netatmo-outdoor", namespace: "dianoga", author: "Brian Steere") {
+	definition (name: "Netatmo Outdoor Module", namespace: "dianoga", author: "Brian Steere") {
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
 	}
@@ -39,6 +39,9 @@ metadata {
  		valueTile("humidity", "device.humidity", decoration: "flat") {
 			state "default", label:'${currentValue}% humidity'
 		}
+ 		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
+ 			state "default", action:"device.refresh", icon:"st.secondary.refresh"
+ 		}
  		main "temperature"
  		details(["temperature", "humidity"])
 	}
@@ -53,5 +56,9 @@ def parse(String description) {
 	// TODO: handle 'noise' attribute
 	// TODO: handle 'pressure' attribute
 
+}
+
+def poll() {
+	parent.poll()
 }
 
