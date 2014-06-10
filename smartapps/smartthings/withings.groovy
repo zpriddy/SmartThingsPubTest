@@ -61,7 +61,7 @@ def authPage() {
 	}
 
 	def redirectUrl = oauthInitUrl()
-	return dynamicPage(name: "auth", title: "Withings", install:installOptions, uninstall:installOptions) {
+	return dynamicPage(name: "auth", title: "Withings", install:installOptions, uninstall:true) {
 		section {
 			href url:redirectUrl, style:"embedded", required:false, title:"Withings", description:description
 		}

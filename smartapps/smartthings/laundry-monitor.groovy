@@ -25,9 +25,9 @@ preferences {
 	section("Via this number (optional, sends push notification if not specified)"){
 		input "phone", "phone", title: "Phone Number", required: false
 	}
-	section("And by turning on this light (optional)") {
-		input "switches", "capability.switch", required: false, multiple: true
-		input "lightMode", "enum", metadata: [values: ["Flash Lights", "Turn On Lights"]], required: false
+	section("And by turning on these lights (optional)") {
+		input "switches", "capability.switch", required: false, multiple: true, title: "Which lights?"
+		input "lightMode", "enum", metadata: [values: ["Flash Lights", "Turn On Lights"]], required: false, defaultValue: "Turn On Lights", title: "Action?"
 	}
 	section("Time thresholds (in minutes, optional)"){
 		input "cycleTime", "decimal", title: "Minimum cycle time", required: false, defaultValue: 10
