@@ -466,10 +466,7 @@ private show(devices, type) {
 	}
 	else
 	{
-
 		def attributeName = type
-
-
 
 		def s = device.currentState(attributeName)
 		[id: device.id, label: device.displayName, value: s?.value, unitTime: s?.date?.time, type: type]
@@ -485,21 +482,26 @@ private addSubscription(devices, attribute) {
 	def deviceId = params.deviceId
 	def callbackUrl = params.callbackUrl
 
-
-
-
 	def myDevice = devices.find { it.id == deviceId }
 	if (myDevice)
 	{
-		if (state[deviceId])
-		{
-			log.debug "Switch subscription already exists, unsubcribing"
-			unsubscribe(myDevice)
-		}
 		log.debug "Adding switch subscription" + callbackUrl
 		state[deviceId] = [callbackUrl: callbackUrl]
 		log.debug "Added state: $state"
-		subscribe(myDevice, attribute, deviceHandler)
+		def subscription = subscribe(myDevice, attribute, deviceHandler)
+		if (subscription && subscription.eventSubscription) {
+			log.debug "Subscription is newly created"
+		} else {
+			log.debug "Subscription already exists, returning existing subscription"
+			subscription = app.subscriptions?.find { it.deviceId == deviceId && it.data == attribute && it.handler == 'deviceHandler' }
+		}
+		[
+			id: subscription.id,
+			deviceId: subscription.deviceId,
+			data: subscription.data,
+			handler: subscription.handler,
+			callbackUrl: callbackUrl
+		]
 	}
 }
 
