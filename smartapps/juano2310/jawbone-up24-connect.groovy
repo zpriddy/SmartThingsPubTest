@@ -12,7 +12,8 @@ definition(
 	category: "SmartThings Labs",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
-	oauth: true
+	oauth: true,
+    usePreferencesForAuthorization: false
 )
 
 preferences {
@@ -20,9 +21,10 @@ preferences {
 }
 
 mappings {
-        path("/receivedToken") { action: [ POST: "receivedToken", GET: "receivedToken"] }
-        path("/receiveToken") { action: [ POST: "receiveToken", GET: "receiveToken"] }
-        path("/hookCallback") { action: [ POST: "hookEventHandler", GET: "hookEventHandler"] }
+	path("/receivedToken") { action: [ POST: "receivedToken", GET: "receivedToken"] }
+	path("/receiveToken") { action: [ POST: "receiveToken", GET: "receiveToken"] }
+	path("/hookCallback") { action: [ POST: "hookEventHandler", GET: "hookEventHandler"] }
+	path("/oauth/callback") { action: [ GET: "callback" ] }
 }
 
 def getSmartThingsClientId() {
@@ -33,13 +35,51 @@ def getSmartThingsClientSecret() {
    return "03c825404c04c9f9cdc72759700718ce"
 }
 
+def callback() {
+	def redirectUrl = null
+	if (params.authQueryString) {
+		redirectUrl = URLDecoder.decode(params.authQueryString.replaceAll(".+&redirect_url=", ""))
+		log.debug "redirectUrl: ${redirectUrl}"
+	} else {
+		log.warn "No authQueryString"
+	}
+	
+	if (state.JawboneAccessToken) {
+		log.debug "Access token already exists"
+		setup()
+		success()
+	} else {
+		def code = params.code
+		if (code) {
+			if (code.size() > 6) {
+				// Jawbone code
+				log.debug "Exchanging code for access token"
+				receiveToken(redirectUrl)
+			} else {
+				// SmartThings code, which we ignore, as we don't need to exchange for an access token.
+				// Instead, go initiate the Jawbone OAuth flow.
+				log.debug "Executing callback redirect to auth page"
+			    def stcid = getSmartThingsClientId()
+			    state.oauthInitState = UUID.randomUUID().toString()
+			    def oauthParams = [response_type: "code", client_id: stcid, scope: "move_read sleep_read", redirect_uri: "${serverUrl}/oauth/callback"]
+				redirect(location: "https://jawbone.com/auth/oauth2/auth?${toQueryString(oauthParams)}")
+			}
+		} else {
+			log.debug "This code should be unreachable"
+			success()
+		}
+	}
+}
+
 def authPage() {
-    // log.debug "authPage"
+    log.debug "authPage"
     def description = null          
-    if (state.JawboneAccessToken == null) {   
-        log.debug "About to create access token."                
-        createAccessToken()       
-        description = "Click to enter Jawbone Credentials."
+    if (state.JawboneAccessToken == null) {
+		if (!state.accessToken) {
+			log.debug "About to create access token"
+			createAccessToken()
+		}
+        description = "Click to enter Jawbone Credentials"
         def redirectUrl = oauthInitUrl()
         // log.debug "RedirectURL = ${redirectUrl}"
         return dynamicPage(name: "Credentials", title: "Jawbone UP", nextPage: null, uninstall: true, install:false) {
@@ -53,106 +93,71 @@ def authPage() {
     }
 }
 
-def oauthInitUrl()
-{
-    // log.debug "oauthInitUrl"
-    def stcid = getSmartThingsClientId();
+def oauthInitUrl() {
+    log.debug "oauthInitUrl"
+    def stcid = getSmartThingsClientId()
     state.oauthInitState = UUID.randomUUID().toString()
     def oauthParams = [ response_type: "code", client_id: stcid, scope: "move_read sleep_read", redirect_uri: buildRedirectUrl("receiveToken") ]
-        return "https://jawbone.com/auth/oauth2/auth?" + toQueryString(oauthParams)
+	return "https://jawbone.com/auth/oauth2/auth?${toQueryString(oauthParams)}"
 }
 
-def receiveToken() {
-    def stcid = getSmartThingsClientId();
-    def oauthClientSecret = getSmartThingsClientSecret();
-    def oauthParams = [ client_id: stcid, client_secret: oauthClientSecret, grant_type: "authorization_code",code: params.code ]
-        def tokentUrl = "https://jawbone.com/auth/oauth2/token?" + toQueryString(oauthParams)
-        def params = [
-          uri: tokentUrl,
-        ]
-        httpGet(params) { response -> 
-        	log.debug "${response?.data}"
-        	state.JawboneAccessToken = response.data.access_token
-        }
-        
-    def html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <meta name="viewport" content="width=640">
-        <title>Withings Connection</title>
-        <style type="text/css">
-            @font-face {
-                font-family: 'Swiss 721 W01 Thin';
-                src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
-                src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot?#iefix') format('embedded-opentype'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.woff') format('woff'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.ttf') format('truetype'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.svg#swis721_th_btthin') format('svg');
-                font-weight: normal;
-                font-style: normal;
-            }
-            @font-face {
-                font-family: 'Swiss 721 W01 Light';
-                src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.eot');
-                src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.eot?#iefix') format('embedded-opentype'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.woff') format('woff'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.ttf') format('truetype'),
-                     url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.svg#swis721_lt_btlight') format('svg');
-                font-weight: normal;
-                font-style: normal;
-            }
-            .container {
-                width: 560px;
-                padding: 40px;
-                /*background: #eee;*/
-                text-align: center;
-            }
-            img {
-                vertical-align: middle;
-            }
-            img:nth-child(2) {
-                margin: 0 30px;
-            }
-            p {
-                font-size: 2.2em;
-                font-family: 'Swiss 721 W01 Thin';
-                text-align: center;
-                color: #666666;
-                padding: 0 40px;
-                margin-bottom: 0;
-            }
-        /*
-            p:last-child {
-                margin-top: 0px;
-            }
-        */
-            span {
-                font-family: 'Swiss 721 W01 Light';
-            }
-        </style>
-        </head>
-        <body>
-            <div class="container">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMuoEIQ7gQhFtc02vXkybwmH0o7L1cs5mtbcJye0mgNqop_LOZbg" alt="Jawbone UP icon" />
-                <img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/connected-device-icn%402x.png" alt="connected device icon" />
-                <img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/st-logo%402x.png" alt="SmartThings logo" />
-                <p>Your Jawbone Account is now connected to SmartThings!</p>
-                <p>Click 'Done' to finish setup.</p>
-                        </div>
-        </body>
-        </html>
-        """
-        render contentType: 'text/html', data: html
+def receiveToken(redirectUrl = null) {
+	log.debug "receiveToken"
+    def stcid = getSmartThingsClientId()
+    def oauthClientSecret = getSmartThingsClientSecret()
+    def oauthParams = [ client_id: stcid, client_secret: oauthClientSecret, grant_type: "authorization_code", code: params.code ]
+    def params = [
+      uri: "https://jawbone.com/auth/oauth2/token?${toQueryString(oauthParams)}",
+    ]
+    httpGet(params) { response -> 
+    	log.debug "${response.data}"
+		log.debug "Setting access token to ${response.data.access_token}, refresh token to ${response.data.refresh_token}"
+    	state.JawboneAccessToken = response.data.access_token
+		state.refreshToken = response.data.refresh_token
+    }
+
+	setup()
+	if (redirectUrl) {
+		def message = """
+			<p>Your Jawbone Account is now connected to SmartThings!</p>
+			<p>You are being redirected...</p>
+		"""
+		connectionStatus(message, redirectUrl)
+	} else {
+		success()
+	}
+}
+
+def success() {
+	def message = """
+		<p>Your Jawbone Account is now connected to SmartThings!</p>
+		<p>Click 'Done' to finish setup.</p>
+	"""
+	connectionStatus(message)
 }
 
 def receivedToken() {
+	def message = """
+		<p>Your Jawbone Account is already connected to SmartThings!</p>
+		<p>Click 'Done' to finish setup.</p>
+	"""
+	connectionStatus(message)
+}
+
+def connectionStatus(message, redirectUrl = null) {
+	def redirectHtml = ""
+	if (redirectUrl) {
+		redirectHtml = """
+			<meta http-equiv="refresh" content="3; url=${redirectUrl}" />
+		"""
+	}
+	
     def html = """
         <!DOCTYPE html>
         <html>
         <head>
         <meta name="viewport" content="width=640">
-        <title>Withings Connection</title>
+        <title>SmartThings Connection</title>
         <style type="text/css">
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
@@ -203,23 +208,23 @@ def receivedToken() {
                 font-family: 'Swiss 721 W01 Light';
             }
         </style>
+		${redirectHtml}
         </head>
         <body>
             <div class="container">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMuoEIQ7gQhFtc02vXkybwmH0o7L1cs5mtbcJye0mgNqop_LOZbg" alt="Jawbone UP icon" />
                 <img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/connected-device-icn%402x.png" alt="connected device icon" />
                 <img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/st-logo%402x.png" alt="SmartThings logo" />
-                <p>Your Jawbone Account is already connected to SmartThings!</p>
-                <p>Click 'Done' to finish setup.</p>
-                        </div>
+                ${message}
+            </div>
         </body>
         </html>
-        """
-        render contentType: 'text/html', data: html
+	"""
+	render contentType: 'text/html', data: html
 }
 
 String toQueryString(Map m) {
-        return m.collect { k, v -> "${k}=${URLEncoder.encode(v.toString())}" }.sort().join("&")
+	return m.collect { k, v -> "${k}=${URLEncoder.encode(v.toString())}" }.sort().join("&")
 }
 
 def getServerUrl() { return "https://graph.api.smartthings.com" }
@@ -227,104 +232,110 @@ def getServerUrl() { return "https://graph.api.smartthings.com" }
 def buildRedirectUrl(page) {
     // log.debug "buildRedirectUrl"
     // /api/token/:st_token/smartapps/installations/:id/something
-    return serverUrl + "/api/token/${state.accessToken}/smartapps/installations/${app.id}/${page}"
+    return "${serverUrl}/api/token/${state.accessToken}/smartapps/installations/${app.id}/${page}"
 }
 
 def validateCurrentToken() {
+	log.debug "validateCurrentToken"
     def url = "https://jawbone.com/nudge/api/v.1.1/users/@me/refreshToken"
-    def requestBody = "secret="+getSmartThingsClientSecret()
-        
-	httpPost(uri: url, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ],  body: requestBody) {response ->
-    	if (response.status == 200) {
-     		state.refreshToken = response.data.refresh_token   
-        }
-        else if (response.status == 401) { // token is expired
-        
+    def requestBody = "secret=${getSmartThingsClientSecret()}"
+	
+	try {
+		httpPost(uri: url, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ],  body: requestBody) {response ->
+	    	if (response.status == 200) {
+				log.debug "${response.data}"
+				log.debug "Setting refresh token to ${response.data.data.refresh_token}"
+	     		state.refreshToken = response.data.data.refresh_token
+	        }
+	    }
+	} catch (groovyx.net.http.HttpResponseException e) {
+        if (e.statusCode == 401) { // token is expired
+        	log.debug "Access token is expired"
         	if (state.refreshToken) { // if we have this we are okay
-            
-            	def stcid = getSmartThingsClientId();
-    			def oauthClientSecret = getSmartThingsClientSecret();
-    			def oauthParams = [ client_id: stcid, client_secret: oauthClientSecret, grant_type: "refresh_token",refresh_token: state.refreshToken]
-        		def tokentUrl = "https://jawbone.com/auth/oauth2/token?" + toQueryString(oauthParams)
+            	def stcid = getSmartThingsClientId()
+    			def oauthClientSecret = getSmartThingsClientSecret()
+    			def oauthParams = [client_id: stcid, client_secret: oauthClientSecret, grant_type: "refresh_token", refresh_token: state.refreshToken]
+        		def tokenUrl = "https://jawbone.com/auth/oauth2/token?${toQueryString(oauthParams)}"
         		def params = [
-          			uri: tokentUrl,
+          			uri: tokenUrl
         		]
-        		httpGet(params) { refreshResponse -> state.JawboneAccessToken = response.data.access_token }
-            
+        		httpGet(params) { refreshResponse ->
+					log.debug "${refreshResponse.data}"
+					log.debug "Setting access token to ${refreshResponse.data.access_token}, refresh token to ${refreshResponse.data.refresh_token}"
+					state.JawboneAccessToken = refreshResponse.data.access_token
+					state.refreshToken = refreshResponse.data.refresh_token
+				}
             }
         }
-    }
+	}
 }
 
 def initialize() {
-
-	def hookUrl = "https://graph.api.smartthings.com/api/token/${state.accessToken}/smartapps/installations/${app.id}/hookCallback"
+	def hookUrl = "${serverUrl}/api/token/${state.accessToken}/smartapps/installations/${app.id}/hookCallback"
     def webhook = "https://jawbone.com/nudge/api/v.1.1/users/@me/pubsub?webhook=$hookUrl"
     log.debug "Callback URL: $webhook"        
 	httpPost(uri: webhook, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ])
-    
+}
+
+def setup() {
+	// make sure this is going to work
+	validateCurrentToken()
+
+	// log.debug "App Updated"
+	def urlmember = "https://jawbone.com/nudge/api/users/@me/"
+	def member = null    
+	httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+	    member = response.data.data
+	}
+	
+	if (member) {
+		state.member = member
+		def externalId = "${app.id}.${member.xid}"
+
+		// find the appropriate child device based on my app id and the device network id 
+		def deviceWrapper = getChildDevice("${externalId}")
+
+		// invoke the generatePresenceEvent method on the child device
+		log.debug "Device $externalId: $deviceWrapper"
+		if (!deviceWrapper) {
+		  	def childDevice = addChildDevice('juano2310', "Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
+		    if (childDevice) {
+		       	log.debug "Child Device Successfully Created"
+		        generateInitialEvent (member, childDevice)
+		    }
+		}
+	}
+
+	initialize()
 }
 
 def installed() {
+	enableCallback()
+	
+	if (!state.accessToken) {
+		log.debug "About to create access token"
+		createAccessToken()
+	}
 
-	// make sure this is going to work
-    validateCurrentToken()
-    
-    // log.debug "In installed() method."
-    def urlmember = "https://jawbone.com/nudge/api/users/@me/"
-        def member = null
-    
-    httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-        member = response.data.data
-    }    
-    // log.debug "member=${member.first} ${member.last}"  
-    
-    // create the device
-    if (member) {
-    	state.member = member
-        def childDevice = addChildDevice("juano2310","Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
-        if (childDevice) {
-        	log.debug "Child Device Successfully Created"  
-            generateInitialEvent (member, childDevice)
-        }
-    }
-    
-    initialize()
-    
+	if (state.JawboneAccessToken) {
+		setup()
+	}
 }
 
 def updated() {
+	enableCallback()
+	
+	if (!state.accessToken) {
+		log.debug "About to create access token"
+		createAccessToken()
+	}
 
-	// make sure this is going to work
-    validateCurrentToken()
-    
-    // log.debug "App Updated"
-    def urlmember = "https://jawbone.com/nudge/api/users/@me/"
-    def member = null    
-    httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-        member = response.data.data
-        state.member = member
-    }
-    def externalId = "${app.id}.${member.xid}"
-    
-    // find the appropriate child device based on my app id and the device network id 
-    def deviceWrapper = getChildDevice("${externalId}")
-    
-    // invoke the generatePresenceEvent method on the child device
-    log.debug "Device $externalId: $deviceWrapper"
-    if (!deviceWrapper) {
-      	def childDevice = addChildDevice('jawbone', "jawbone-user", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
-        if (childDevice) {
-           	log.debug "Child Device Successfully Created"
-            generateInitialEvent (member, childDevice)
-        }
-    }  
-    
-    initialize()
-    
+	if (state.JawboneAccessToken) {
+		setup()
+	}
 }
 
-def pollChild (childDevice) {
+def pollChild(childDevice) {
     def member = state.member 
     generatePollingEvents (member, childDevice)   
 }
@@ -389,7 +400,6 @@ def generateInitialEvent (member, childDevice) {
 }
 
 def setColor (steps,goal,childDevice) {
-    
     def result = steps * 100 / goal
     if (result < 25) 
     	childDevice?.sendEvent(name:"steps", value: "steps", label: steps)
@@ -456,7 +466,6 @@ def hookEventHandler() {
             log.debug "Couldn't find child device associated with Jawbone."
     }
 
-    def html = """{"code":200,"message":"OK"}"""
-        render contentType: 'application/json', data: html
-        
+	def html = """{"code":200,"message":"OK"}"""
+	render contentType: 'application/json', data: html
 }
