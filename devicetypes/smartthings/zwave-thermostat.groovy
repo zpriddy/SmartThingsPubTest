@@ -318,7 +318,7 @@ def setHeatingSetpoint(Double degrees) {
 	delayBetween([
 		zwave.thermostatSetpointV1.thermostatSetpointSet(setpointType: 1, scale: deviceScale, precision: p, scaledValue: convertedDegrees).format(),
 		zwave.thermostatSetpointV1.thermostatSetpointGet(setpointType: 1).format()
-	])
+	], standardDelay)
 }
 
 def setCoolingSetpoint(degrees) {
@@ -343,7 +343,7 @@ def setCoolingSetpoint(Double degrees) {
 	delayBetween([
 		zwave.thermostatSetpointV1.thermostatSetpointSet(setpointType: 2, scale: deviceScale, precision: p,  scaledValue: convertedDegrees).format(),
 		zwave.thermostatSetpointV1.thermostatSetpointGet(setpointType: 2).format()
-	])
+	], standardDelay)
 }
 
 def configure() {
@@ -435,7 +435,7 @@ def setThermostatMode(String value) {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: modeMap[value]).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def getFanModeMap() { [
@@ -448,62 +448,66 @@ def setThermostatFanMode(String value) {
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: fanModeMap[value]).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format()
-	])
+	], standardDelay)
 }
 
 def off() {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: 0).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def heat() {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: 1).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def emergencyHeat() {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: 4).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def cool() {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: 2).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def auto() {
 	delayBetween([
 		zwave.thermostatModeV2.thermostatModeSet(mode: 3).format(),
 		zwave.thermostatModeV2.thermostatModeGet().format()
-	])
+	], standardDelay)
 }
 
 def fanOn() {
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 1).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format()
-	])
+	], standardDelay)
 }
 
 def fanAuto() {
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 0).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format()
-	])
+	], standardDelay)
 }
 
 def fanCirculate() {
 	delayBetween([
 		zwave.thermostatFanModeV3.thermostatFanModeSet(fanMode: 6).format(),
 		zwave.thermostatFanModeV3.thermostatFanModeGet().format()
-	])
+	], standardDelay)
+}
+
+private getStandardDelay() {
+	1000
 }
 
