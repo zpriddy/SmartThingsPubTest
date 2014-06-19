@@ -172,8 +172,8 @@ def setTimer()
 	}
 	else
 	{
-		log.debug "runIn duration, resetHue"
-		runIn(duration,"resetHue")
+		log.debug "runIn $duration, resetHue"
+		runIn(duration,"resetHue", [overwrite: false])
 	}
 }
 
