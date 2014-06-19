@@ -1,0 +1,312 @@
+/**
+ *  Every Element
+ *
+ *  Copyright 2014 SmartThings
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ *
+ */
+definition(
+    name: "Every Element",
+    namespace: "smartthings/examples",
+    author: "SmartThings",
+    description: "Every element demonstration app",
+    category: "SmartThings Internal",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+)
+
+preferences {
+	page(name: "firstPage")
+	page(name: "inputPage")
+	page(name: "appPage")
+	page(name: "labelPage")
+	page(name: "modePage")
+	page(name: "paragraphPage")
+	page(name: "iconPage")
+	page(name: "hrefPage")
+	page(name: "buttonsPage")
+	page(name: "imagePage")
+	page(name: "deadEnd", title: "Nothing to see here, move along.", content: "foo")
+}
+
+def firstPage() {
+	dynamicPage(name: "firstPage", title: "Where to first?", install: true, uninstall: true) {
+		section() {
+			href(page: "inputPage", title: "Element: 'input'")
+			href(page: "appPage", title: "Element: 'app'")
+			href(page: "labelPage", title: "Element: 'label'")
+			href(page: "modePage", title: "Element: 'mode'")
+			href(page: "paragraphPage", title: "Element: 'paragraph'")
+			href(page: "iconPage", title: "Element: 'icon'")
+			href(page: "hrefPage", title: "Element: 'href'")
+			href(page: "buttonsPage", title: "Element: 'buttons'")
+			href(page: "imagePage", title: "Element: 'image'")
+		}
+	}
+}
+
+def inputPage() {
+	dynamicPage(name: "inputPage", title: "Every 'input' type") {
+		section("enum") {
+			input(type: "enum", name: "enumRefresh", title: "refreshAfterSelection:true", required: false, multiple: true, options: ["one", "two", "three"], refreshAfterSelection: true)
+			if (enumRefresh) {
+				paragraph "${enumRefresh}"
+			}
+			input(type: "enum", name: "enumSegmented", title: "style:segmented", required: false, multiple: true, options: ["one", "two", "three"], style: "segmented")
+			input(type: "enum", name: "enum", title: "required:false, multiple:false", required: false, multiple: false, options: ["one", "two", "three"])
+			input(type: "enum", name: "enumRequired", title: "required:true", required: true, multiple: false, options: ["one", "two", "three"])
+			input(type: "enum", name: "enumMultiple", title: "multiple:true", required: false, multiple: true, options: ["one", "two", "three"])
+			input(type: "enum", name: "enumWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, options: ["one", "two", "three"], image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("text") {
+			input(type: "text", name: "text", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "text", name: "textRequired", title: "required:true", required: true, multiple: false)
+			input(type: "text", name: "textMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "text", name: "textWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("number") {
+			input(type: "number", name: "number", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "number", name: "numberRequired", title: "required:true", required: true, multiple: false)
+			input(type: "number", name: "numberMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "number", name: "numberWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("boolean") {
+			input(type: "boolean", name: "boolean", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "boolean", name: "booleanRequired", title: "required:true", required: true, multiple: false)
+			input(type: "boolean", name: "booleanMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "boolean", name: "booleanWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("password") {
+			input(type: "password", name: "password", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "password", name: "passwordRequired", title: "required:true", required: true, multiple: false)
+			input(type: "password", name: "passwordMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "password", name: "passwordWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("phone") {
+			input(type: "phone", name: "phone", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "phone", name: "phoneRequired", title: "required:true", required: true, multiple: false)
+			input(type: "phone", name: "phoneMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "phone", name: "phoneWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("email") {
+			input(type: "email", name: "email", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "email", name: "emailRequired", title: "required:true", required: true, multiple: false)
+			input(type: "email", name: "emailMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "email", name: "emailWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("decimal") {
+			input(type: "decimal", name: "decimal", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "decimal", name: "decimalRequired", title: "required:true", required: true, multiple: false)
+			input(type: "decimal", name: "decimalMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "decimal", name: "decimalWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("mode") {
+			input(type: "mode", name: "mode", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "mode", name: "modeRequired", title: "required:true", required: true, multiple: false)
+			input(type: "mode", name: "modeMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "mode", name: "iconWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("icon") {
+			input(type: "icon", name: "icon", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "icon", name: "iconRequired", title: "required:true", required: true, multiple: false)
+			input(type: "icon", name: "iconMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "icon", name: "iconWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("capability") {
+			input(type: "capability.switch", name: "capability", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "capability.switch", name: "capabilityRequired", title: "required:true", required: true, multiple: false)
+			input(type: "capability.switch", name: "capabilityMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "capability.switch", name: "capabilityWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("hub") {
+			input(type: "hub", name: "hub", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "hub", name: "hubRequired", title: "required:true", required: true, multiple: false)
+			input(type: "hub", name: "hubMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "hub", name: "hubWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("device") {
+			input(type: "device.switch", name: "device", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "device.switch", name: "deviceRequired", title: "required:true", required: true, multiple: false)
+			input(type: "device.switch", name: "deviceMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "device.switch", name: "deviceWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+		section("time") {
+			input(type: "time", name: "time", title: "required:false, multiple:false", required: false, multiple: false)
+			input(type: "time", name: "timeRequired", title: "required:true", required: true, multiple: false)
+			input(type: "time", name: "timeMultiple", title: "multiple:true", required: false, multiple: true)
+			input(type: "time", name: "timeWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+	}
+}
+
+def appPage() {
+	dynamicPage(name: "appPage", title: "Every 'app' type") {
+		section("app") {
+			app(
+				name: "app",
+				title: "required:false, multiple:false",
+				required: false,
+				multiple: false,
+				namespace: "Steve",
+				appName: "Child SmartApp"
+			)
+			app(name: "appRequired", title: "required:true", required: true, multiple: false, namespace: "Steve", appName: "Child SmartApp")
+			app(name: "appComplete", title: "state:complete", required: false, multiple: false, namespace: "Steve", appName: "Child SmartApp", state: "complete")
+			app(name: "appWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", namespace: "Steve", appName: "Child SmartApp")
+		}
+		section("multiple:true") {
+			app(name: "appMultiple", title: "multiple:true", required: false, multiple: true, namespace: "Steve", appName: "Child SmartApp")
+		}
+		section("multiple:true with image") {
+			app(name: "appMultipleWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", namespace: "Steve", appName: "Child SmartApp")
+		}
+	}
+}
+
+def labelPage() {
+	dynamicPage(name: "labelPage", title: "Every 'Label' type") {
+		section("label") {
+			label(name: "label", title: "required:false, multiple:false", required: false, multiple: false)
+			label(name: "labelRequired", title: "required:true", required: true, multiple: false)
+			label(name: "labelMultiple", title: "multiple:true", required: false, multiple: true)
+			label(name: "labelWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+	}
+}
+
+def modePage() {
+	dynamicPage(name: "modePage", title: "Every 'mode' type") { // TODO: finish this
+		section("mode") {
+			mode(name: "mode", title: "required:false, multiple:false", required: false, multiple: false)
+			mode(name: "modeRequired", title: "required:true", required: true, multiple: false)
+			mode(name: "modeMultiple", title: "multiple:true", required: false, multiple: true)
+			mode(name: "modeWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+	}
+}
+
+def paragraphPage() {
+	dynamicPage(name: "paragraphPage", title: "Every 'paragraph' type") {
+		section("paragraph") {
+			paragraph "This us how you should make a paragraph element"
+			paragraph image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", "This is a long description, blah, blah, blah."
+		}
+	}
+}
+
+def iconPage() {
+	dynamicPage(name: "iconPage", title: "Every 'icon' type") { // TODO: finish this
+		section("icon") {
+			icon(name: "icon", title: "required:false, multiple:false", required: false, multiple: false)
+			icon(name: "iconRequired", title: "required:true", required: true, multiple: false)
+			icon(name: "iconMultiple", title: "multiple:true", required: false, multiple: true)
+			icon(name: "iconWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+	}
+}
+
+def hrefPage() {
+	dynamicPage(name: "hrefPage", title: "Every 'href' type") {
+		section("page") {
+			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, page: "deadEnd")
+			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, page: "deadEnd", description: "Don't make hrefs required")
+			href(name: "hrefMultiple", title: "multiple:true", required: false, multiple: true, page: "deadEnd")
+			href(name: "hrefComplete", title: "state:complete", required: false, multiple: false, page: "deadEnd", state: "complete")
+			href(name: "hrefWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", page: "deadEnd",)
+		}
+		section("external") {
+			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, style: "external", url: "http://smartthings.com/")
+			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, style: "external", url: "http://smartthings.com/", description: "Don't make hrefs required")
+			href(name: "hrefMultiple", title: "multiple:true", required: false, multiple: true, style: "external", url: "http://smartthings.com/")
+			href(name: "hrefComplete", title: "state:complete", required: false, multiple: true, style: "external", url: "http://smartthings.com/", state: "complete")
+			href(name: "hrefWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
+		}
+		section("embedded") {
+			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, style: "embedded", url: "http://smartthings.com/")
+			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, style: "embedded", url: "http://smartthings.com/", description: "Don't make hrefs required")
+			href(name: "hrefMultiple", title: "multiple:true", required: false, multiple: true, style: "embedded", url: "http://smartthings.com/")
+			href(name: "hrefComplete", title: "state:complete", required: false, multiple: true, style: "embedded", url: "http://smartthings.com/", state: "complete")
+			href(name: "hrefWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
+		}
+	}
+}
+
+def buttonsPage() {
+	dynamicPage(name: "buttonsPage", title: "Every 'button' type") {
+		section("buttons") {
+			buttons(name: "buttons", title: "required:false, multiple:false", required: false, multiple: false, buttons: [
+				[label: "foo", action: "foo"],
+				[label: "bar", action: "bar"]
+			])
+			buttons(name: "buttonsRequired", title: "required:true", required: true, multiple: false, buttons: [
+				[label: "foo", action: "foo"],
+				[label: "bar", action: "bar"]
+			])
+			buttons(name: "buttonsMultiple", title: "multiple:true", required: false, multiple: true, buttons: [
+				[label: "foo", action: "foo"],
+				[label: "bar", action: "bar"]
+			])
+			buttons(name: "buttonsMultipleWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", buttons: [
+				[label: "foo", action: "foo"],
+				[label: "bar", action: "bar"]
+			])
+		}
+		section("Colored Buttons") {
+			buttons(name: "buttonsColoredSpecial", title: "special strings", description: "SmartThings highly recommends using these colors", buttons: [
+				[label: "complete", action: "bar", backgroundColor: "complete"],
+				[label: "required", action: "bar", backgroundColor: "required"]
+			])
+			buttons(name: "buttonsColoredHex", title: "hex values work", buttons: [
+				[label: "bg: #000dff", action: "foo", backgroundColor: "#000dff"],
+				[label: "fg: #ffac00", action: "foo", color: "#ffac00"],
+				[label: "both fg and bg", action: "foo", color: "#ffac00", backgroundColor: "#000dff"]
+			])
+			buttons(name: "buttonsColoredString", title: "strings work too", buttons: [
+				[label: "green", action: "foo", backgroundColor: "green"],
+				[label: "red", action: "foo", backgroundColor: "red"],
+				[label: "both fg and bg", action: "foo", color: "red", backgroundColor: "green"]
+			])
+		}
+	}
+
+}
+
+def imagePage() {
+	dynamicPage(name: "imagePage", title: "Every 'image' type") { // TODO: finish thise
+		section("image") {
+			image "http://www.deargrumpycat.com/wp-content/uploads/2013/02/Grumpy-Cat1.jpg"
+			image(name: "imageWithImage", title: "This enum has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+		}
+	}
+}
+
+def foo() {
+	dynamicPage(name: "deadEnd") {
+
+	}
+}
+
+def installed() {
+	log.debug "Installed with settings: ${settings}"
+
+	initialize()
+}
+
+def updated() {
+	log.debug "Updated with settings: ${settings}"
+
+	unsubscribe()
+	initialize()
+}
+
+def initialize() {
+	// TODO: subscribe to attributes, devices, locations, etc.
+}
