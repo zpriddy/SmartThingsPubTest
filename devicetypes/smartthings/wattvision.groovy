@@ -70,19 +70,22 @@ public addWattvisionData(json) {
 
 	if (data) {
 		def latestData = data[-1]
-		sendPowerEvent(latestData.t, latestData.v, units)
+		data.each {
+			sendPowerEvent(it.t, it.v, units, (latestData == it))
+		}
 	}
+
 }
 
-private sendPowerEvent(time, value, units) {
+private sendPowerEvent(time, value, units, isLatest = false) {
 	def wattvisionDateFormat = parent.wattvisionDateFormat()
 
 	def eventData = [
 		date           : new Date().parse(wattvisionDateFormat, time),
 		value          : value,
 		name           : "power",
-		displayed      : true,
-		isStateChange  : true,
+		displayed      : isLatest,
+		isStateChange  : isLatest,
 		description    : "${value} ${units}",
 		descriptionText: "${value} ${units}"
 	]
