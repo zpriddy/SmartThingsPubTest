@@ -17,10 +17,26 @@ definition(
 )
 
 preferences {
-	page(name: "rootPage", title: "Wattvision", install: true, uninstall: true) {
+	page(name: "rootPage")
+	page(name: "oldRootPage", title: "Wattvision", install: true, uninstall: true) {
 		section {
 			input(name: "wattvisionDataType", type: "enum", required: false, multiple: false, defaultValue: "rate", options: ["rate", "consumption"])
 			label(title: "Assign a name")
+		}
+	}
+}
+
+def rootPage() {
+	def sensors = state.sensors
+	def hrefState = sensors ? "complete" : ""
+	def hrefDescription = ""
+	sensors.each { sensorId, sensorName ->
+		hrefDescription += "${sensorName}\n"
+	}
+
+	dynamicPage(name: "rootPage", install: sensors ? true : false, uninstall: true) {
+		section {
+			href(url: loginURL(), title: "Connect Wattvision Devices", style: "embedded", description: hrefDescription, state: hrefState)
 		}
 	}
 }
@@ -48,6 +64,12 @@ mappings {
 			DELETE: "deleteDevice"
 		]
 	}
+	path("/${loginCallbackPath()}") {
+		actions:
+		[
+			GET: "loginCallback"
+		]
+	}
 }
 
 def installed() {
@@ -66,6 +88,7 @@ def updated() {
 
 def initialize() {
 	getDataFromWattvision()
+	scheduleDataCollection()
 }
 
 def getDataFromWattvision() {
@@ -83,10 +106,10 @@ def getDataFromWattvision() {
 	def startDate
 
 	if (!state.lastUpdated) {
-		log.debug "no state.lastUpdated"
+//		log.debug "no state.lastUpdated"
 		startDate = new Date(hours: endDate.hours - 3)
 	} else {
-		log.debug "parsing state.lastUpdated"
+//		log.debug "parsing state.lastUpdated"
 		startDate = new Date().parse(smartThingsDateFormat(), state.lastUpdated)
 	}
 
@@ -118,7 +141,7 @@ def wattvisionURL(senorId, startDate, endDate) {
 	log.trace "getting wattvisionURL"
 
 	def wattvisionApiAccess = state.wattvisionApiAccess
-	if (!wattvisionApiAccess.id || !wattvisionApiAccess.key || !wattvisionApiAccess.url) {
+	if (!wattvisionApiAccess.id || !wattvisionApiAccess.key) {
 		return null
 	}
 
@@ -139,7 +162,8 @@ def wattvisionURL(senorId, startDate, endDate) {
 	]
 
 	def parameterString = params.collect { key, value -> "${key.encodeAsURL()}=${value.encodeAsURL()}" }.join("&")
-	def url = "${wattvisionApiAccess.url}?${parameterString}"
+	def accessURL = wattvisionApiAccess.url ?: "https://www.wattvision.com/api/v0.2/elec"
+	def url = "${accessURL}?${parameterString}"
 
 //	log.debug "wattvisionURL: ${url}"
 	return url
@@ -162,9 +186,9 @@ def childMarshaller(child) {
 	]
 }
 
-/*
-			ENDPOINTS
-*/
+// ========================================================
+// ENDPOINTS
+// ========================================================
 
 def listDevices() {
 	getChildDevices().collect { childMarshaller(it) }
@@ -237,9 +261,13 @@ def setApiAccess() {
 		key: body.key
 	]
 
-	schedule("* /5 * * * ?", "getDataFromWattvision") // every 5 minutes
+	scheduleDataCollection()
 
 	render([status: 204, data: " "])
+}
+
+def scheduleDataCollection() {
+	schedule("* /5 * * * ?", "getDataFromWattvision") // every 5 minutes
 }
 
 def revokeApiAccess() {
@@ -260,3 +288,184 @@ public getGraphUrl(sensorId) {
 	// TODO: allow the changing of type?
 	"http://www.wattvision.com/partners/smartthings/charts?s=${sensorId}&api_id=${apiId}&api_key=${apiKey}&type=w"
 }
+
+// ========================================================
+// SmartThings initiated setup
+// ========================================================
+
+/* Debug info for Steve / Andrew
+
+this page: /partners/smartthings/whatswv
+	- linked from within smartthings, will tell you how to get a wattvision sensor, etc.
+	- pass the debug flag (?debug=1) to show this text.
+
+login page: /partners/smartthings/login?callback_url=CALLBACKURL
+	- open this page, which will require login.
+	- once login is complete, we call you back at callback_url with:
+		<callback_url>?id=<wattvision_api_id>&key=<wattvision_api_key>
+			question: will you know which user this is on your end?
+
+sensor json: /partners/smartthings/sensor_list?api_id=...&api_key=...
+	- returns a list of sensors and their associated house names, as a json object
+	- example return value with one sensor id 2, associated with house 'Test's House'
+		- content type is application/json
+		- {"2": "Test's House"}
+
+*/
+
+private makeLoginRequest() {
+	log.trace "makeLoginRequest"
+	httpGet(uri: loginURL())
+}
+
+def loginCallback() {
+	log.trace "loginCallback"
+
+	state.wattvisionApiAccess = [
+		id : params.id,
+		key: params.key
+	]
+
+	getSensorJSON(params.id, params.key)
+
+	connectionSuccessful("Wattvision", "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision@2x.png")
+}
+
+private getSensorJSON(id, key) {
+	log.trace "getSensorJSON"
+
+	def sensorUrl = "${wattvisionBaseURL()}/partners/smartthings/sensor_list?api_id=${id}&api_key=${key}"
+
+	httpGet(uri: sensorUrl) { response ->
+
+		def json = new org.codehaus.groovy.grails.web.json.JSONObject(response.data)
+
+		state.sensors = json
+
+		json.each { sensorId, sensorName ->
+			createChild(sensorId, sensorName)
+		}
+
+		return "success"
+	}
+}
+
+def createChild(sensorId, sensorName) {
+	log.trace "creating Wattvision Child"
+
+	def child = getChildDevice(sensorId)
+
+	if (child) {
+		log.warn "Device already exists"
+	} else {
+		child = addChildDevice("smartthings", "Wattvision", sensorId, null, [name: "Wattvision", label: sensorName])
+	}
+
+	child.setGraphUrl(getGraphUrl(sensorId));
+
+	getDataForChild(child, null, null)
+
+	scheduleDataCollection()
+
+	return childMarshaller(child)
+}
+
+// ========================================================
+// URL HELPERS
+// ========================================================
+
+private loginURL() { "${wattvisionBaseURL()}${loginPath()}" }
+
+private wattvisionBaseURL() { "https://www.wattvision.com" }
+
+private loginPath() { "/partners/smartthings/login?callback_url=${loginCallbackURL().encodeAsURL()}" }
+
+private getServerUrl() { "https://graph.api.smartthings.com" }
+
+private loginCallbackURL() { "${getServerUrl()}/api/t/${getMyAccessToken()}/s/${app.id}/${loginCallbackPath()}" }
+
+private loginCallbackPath() { "login/callback" }
+
+// ========================================================
+// Access Token
+// ========================================================
+
+private getMyAccessToken() { return atomicState.accessToken ?: createAccessToken() }
+
+// ========================================================
+// CONNECTED HTML
+// ========================================================
+
+def connectionSuccessful(deviceName, iconSrc) {
+	def html = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=640">
+<title>Withings Connection</title>
+<style type="text/css">
+	@font-face {
+		font-family: 'Swiss 721 W01 Thin';
+		src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
+		src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.woff') format('woff'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.ttf') format('truetype'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.svg#swis721_th_btthin') format('svg');
+		font-weight: normal;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Swiss 721 W01 Light';
+		src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.eot');
+		src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.eot?#iefix') format('embedded-opentype'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.woff') format('woff'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.ttf') format('truetype'),
+			 url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-light-webfont.svg#swis721_lt_btlight') format('svg');
+		font-weight: normal;
+		font-style: normal;
+	}
+	.container {
+		width: 560px;
+		padding: 40px;
+		/*background: #eee;*/
+		text-align: center;
+	}
+	img {
+		vertical-align: middle;
+	}
+	img:nth-child(2) {
+		margin: 0 30px;
+	}
+	p {
+		font-size: 2.2em;
+		font-family: 'Swiss 721 W01 Thin';
+		text-align: center;
+		color: #666666;
+		padding: 0 40px;
+		margin-bottom: 0;
+	}
+/*
+	p:last-child {
+		margin-top: 0px;
+	}
+*/
+	span {
+		font-family: 'Swiss 721 W01 Light';
+	}
+</style>
+</head>
+<body>
+	<div class="container">
+		<img src="${iconSrc}" alt="${deviceName} icon" />
+		<img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/connected-device-icn%402x.png" alt="connected device icon" />
+		<img src="https://s3.amazonaws.com/smartapp-icons/Partner/support/st-logo%402x.png" alt="SmartThings logo" />
+		<p>Your ${deviceName} is now connected to SmartThings!</p>
+		<p>Click 'Done' to finish setup.</p>
+	</div>
+</body>
+</html>
+"""
+
+	render contentType: 'text/html', data: html
+}
+
