@@ -459,8 +459,11 @@ def hookEventHandler() {
                 childDevice?.sendEvent(name:"steps", value: moves.details.steps)
                 childDevice?.sendEvent(name:"goal", value: goals.move_steps)       
                 //setColor(moves.details.steps,goals.move_steps,childDevice)   
-                break               
-            }
+                break
+			case "deletion":
+				app.delete()
+				break
+		}
     }
     else {
             log.debug "Couldn't find child device associated with Jawbone."
