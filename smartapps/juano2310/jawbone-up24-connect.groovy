@@ -335,6 +335,18 @@ def updated() {
 	}
 }
 
+def uninstalled() {
+	if (state.JawboneAccessToken) {
+		try {
+			httpDelete(uri: "https://jawbone.com/nudge/api/v.1.0/users/@me/PartnerAppMembership", headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) { response ->
+				log.debug "Success disconnecting Jawbone from SmartThings"
+			}
+		} catch (groovyx.net.http.HttpResponseException e) {
+			log.error "Error disconnecting Jawbone from SmartThings: ${e.statusCode}"
+		}
+	}
+}
+
 def pollChild(childDevice) {
     def member = state.member 
     generatePollingEvents (member, childDevice)   
