@@ -10,7 +10,7 @@ definition(
 	name: "Wattvision Manager",
 	namespace: "smartthings",
 	author: "SmartThings",
-	description: "Wattvision integration",
+	description: "Monitor your whole-house energy use by connecting to your Wattvision account",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/wattvision%402x.png",
 	oauth: [displayName: "Wattvision", displayLink: "https://www.wattvision.com/"]
@@ -36,7 +36,10 @@ def rootPage() {
 
 	dynamicPage(name: "rootPage", install: sensors ? true : false, uninstall: true) {
 		section {
-			href(url: loginURL(), title: "Connect Wattvision Devices", style: "embedded", description: hrefDescription, state: hrefState)
+			href(url: loginURL(), title: "Connect Wattvision Sensors", style: "embedded", description: hrefDescription, state: hrefState)
+		}
+		section {
+			href(url: "https://www.wattvision.com", title: "Learn More About Wattvision", style: "external", description: null)
 		}
 	}
 }
@@ -267,7 +270,7 @@ def setApiAccess() {
 }
 
 def scheduleDataCollection() {
-	schedule("* /5 * * * ?", "getDataFromWattvision") // every 5 minutes
+	schedule("* /1 * * * ?", "getDataFromWattvision") // every 1 minute
 }
 
 def revokeApiAccess() {
