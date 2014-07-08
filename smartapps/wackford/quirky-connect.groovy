@@ -41,7 +41,7 @@
 
 import java.text.DecimalFormat
 
-// Wink API 
+// Wink API
 private apiUrl() 			{ "https://winkapi.quirky.com/" }
 private getVendorName() 	{ "Quirky Wink" }
 private getVendorAuthPath()	{ "https://winkapi.quirky.com/oauth2/authorize?" }
@@ -170,7 +170,7 @@ def receiveToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes"> 
+        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
         <title>${getVendorName()} Connection</title>
         <style type="text/css">
             @font-face {
@@ -244,7 +244,7 @@ def receivedToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes"> 
+        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
         <title>Withings Connection</title>
         <style type="text/css">
             @font-face {
@@ -525,17 +525,21 @@ def removeWinkSubscriptions()
 {
 	log.debug "In removeSubscriptions"
 
-	state.deviceDataArr.each() {
-		if (it.subsPath) {
-			def path = it.subsPath
-			apiGet(it.subsPath) { response ->
-				response.data.data.each {
-					if ( it.subscription_id ) {
-						deleteWinkSubscription(path + "/", it.subscription_id)
+	try {
+		state.deviceDataArr.each() {
+			if (it.subsPath) {
+				def path = it.subsPath
+				apiGet(it.subsPath) { response ->
+					response.data.data.each {
+						if ( it.subscription_id ) {
+							deleteWinkSubscription(path + "/", it.subscription_id)
+						}
 					}
 				}
 			}
 		}
+	} catch (groovyx.net.http.HttpResponseException e) {
+		log.warn "Caught HttpResponseException: $e, with status: ${e.statusCode}"
 	}
 }
 
