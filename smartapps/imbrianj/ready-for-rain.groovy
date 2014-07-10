@@ -7,6 +7,16 @@
  *  Warn if doors or windows are open when inclement weather is approaching.
  */
 
+definition(
+  name: "Ready For Rain",
+  namespace: "imbrianj",
+  author: "brian@bevey.org",
+  description: "Warn if doors or windows are open when inclement weather is approaching.",
+  category: "Convenience",
+  iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+  iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
+)
+
 preferences {
   section("Zip code?") {
     input "zipcode", "text", title: "Zipcode?"
@@ -16,13 +26,13 @@ preferences {
     input "sensors", "capability.contactSensor", multiple: true
   }
 
-  section("Notifications") {
+  section("Notifications?") {
     input "sendPushMessage", "enum", title: "Send a push notification?", metadata: [values: ["Yes", "No"]], required: false
     input "phone", "phone", title: "Send a Text Message?", required: false
   }
 
-  section("Message interval (default to every message)") {
-    input name: "messageDelay", type: "number", title: "How Long?", required: false
+  section("Message interval?") {
+    input name: "messageDelay", type: "number", title: "Minutes (default to every message)", required: false
   }
 }
 
@@ -52,7 +62,7 @@ def scheduleCheck(evt) {
     def response = getWeatherFeature("forecast", zipcode)
     def weather  = isStormy(response)
 
-    if (weather) {
+    if(weather) {
       send("${open.join(', ')} ${plural} open and ${weather} coming.")
     }
   }
@@ -72,12 +82,12 @@ private send(msg) {
 
   if(now() - delay > state.lastMessage) {
     state.lastMessage = now()
-    if (sendPushMessage != "No") {
+    if(sendPushMessage == "Yes") {
       log.debug("Sending push message.")
       sendPush(msg)
     }
 
-    if (phone) {
+    if(phone) {
       log.debug("Sending text message.")
       sendSms(phone, msg)
     }
@@ -86,7 +96,7 @@ private send(msg) {
   }
 
   else {
-    log.info("Have a message to send, but user requested to not not get it.")
+    log.info("Have a message to send, but user requested to not get it.")
   }
 }
 
@@ -95,12 +105,12 @@ private isStormy(json) {
   def forecast = json?.forecast?.txt_forecast?.forecastday?.first()
   def result   = false
 
-  if (forecast) {
+  if(forecast) {
     def text = forecast?.fcttext?.toLowerCase()
 
     log.debug(text)
 
-    if (text) {
+    if(text) {
       for (int i = 0; i < types.size() && !result; i++) {
         if(text.contains(types[i])) {
           result = types[i]
