@@ -51,7 +51,7 @@ metadata {
 		}
  
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
-			state "battery", label:'${currentValue}% battery', unit:""/*, backgroundColors:[
+			state "battery", label:"${currentValue}% battery", unit:""/*, backgroundColors:[
 				[value: 5, color: "#BC2323"],
 				[value: 10, color: "#D04E00"],
 				[value: 15, color: "#F1D801"],
@@ -64,7 +64,7 @@ metadata {
 		}
  
 		main "water", "temperature"
-		details(["water", "temperature", "refresh"])
+		details(["water", "temperature", "battery", "refresh"])
 	}
 }
  
@@ -233,7 +233,7 @@ def refresh()
 		
 
        "st rattr 0x${device.deviceNetworkId} 1 0x402 0", "delay 200",
-		//"st rattr 0x${device.deviceNetworkId} 1 1 0"
+		"st rattr 0x${device.deviceNetworkId} 1 1 0x20"
 
 	]
 }
