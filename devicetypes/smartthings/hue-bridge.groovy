@@ -7,6 +7,8 @@
 metadata {
 	// Automatically generated. Make future change here.
 	definition (name: "Hue Bridge", namespace: "smartthings", author: "SmartThings") {
+    	attribute "networkAddress", "string"
+        attribute "serialNumber", "string"      
 	}
 
 	simulator {
@@ -21,11 +23,14 @@ metadata {
 			state "default", label:'SN: ${currentValue}'
 		}
 		valueTile("networkAddress", "device.networkAddress", decoration: "flat", height: 1, width: 2, inactiveLabel: false) {
-			state "default", label:'${currentValue}', height: 1, width: 2, inactiveLabel: false
+			state "default", label:'${currentValue}'
 		}
+		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
+			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
+		}        
 
 		main (["icon"])
-		details(["networkAddress","serialNumber"])
+		details(["networkAddress","serialNumber","refresh"])
 	}
 }
 

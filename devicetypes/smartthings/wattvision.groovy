@@ -14,12 +14,12 @@ metadata {
 	}
 
 	simulator {
-		// TODO: define status and reply messages here
+		// define status and reply messages here
 	}
 
 	tiles {
 
-		valueTile("power", "device.power") { // TODO: add colors to state
+		valueTile("power", "device.power") {
 			state "power", label: '${currentValue} W'
 		}
 
@@ -31,11 +31,10 @@ metadata {
 			state "default", label: '', action: "refresh.refresh", icon: "st.secondary.refresh"
 		}
 
+		main "power"
+		details(["powerChart", "power", "refresh"])
+
 	}
-
-	main "power"
-	details(["powerChart", "power", "refresh"])
-
 }
 
 def refresh() {
@@ -67,28 +66,31 @@ public addWattvisionData(json) {
 	log.trace "Adding data from Wattvision"
 
 	def data = json.data
-	log.debug "adding wattvision data: ${json.data}"
 	def units = json.units ?: "watts"
-	log.debug "units: ${units}"
 
-	def wattvisionDateFormat = parent.wattvisionDateFormat()
-	log.debug "wattvisionDateFormat: ${wattvisionDateFormat}"
-
-	data.each {
-//		log.debug "sending event with data: ${it}"
-
-		def eventData = [
-			date           : new Date().parse(wattvisionDateFormat, it.t),
-			value          : it.v,
-			name           : "power",
-			displayed      : true,
-			isStateChange  : true,
-			description    : "${it.v} ${units}",
-			descriptionText: "${it.v} ${units}"
-		]
-
-		log.debug "sending event: ${eventData}"
-		sendEvent(eventData)
-
+	if (data) {
+		def latestData = data[-1]
+		data.each {
+			sendPowerEvent(it.t, it.v, units, (latestData == it))
+		}
 	}
+
+}
+
+private sendPowerEvent(time, value, units, isLatest = false) {
+	def wattvisionDateFormat = parent.wattvisionDateFormat()
+
+	def eventData = [
+		date           : new Date().parse(wattvisionDateFormat, time),
+		value          : value,
+		name           : "power",
+		displayed      : isLatest,
+		isStateChange  : isLatest,
+		description    : "${value} ${units}",
+		descriptionText: "${value} ${units}"
+	]
+
+	log.debug "sending event: ${eventData}"
+	sendEvent(eventData)
+
 }
