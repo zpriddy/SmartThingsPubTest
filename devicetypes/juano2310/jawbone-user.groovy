@@ -95,6 +95,11 @@ def getMemberId () {
     return(state.jawboneMemberId)
 }
 
+def uninstalled() {
+	log.debug "Uninstalling device, then app"
+	parent.app.delete()
+}
+
 private String formatValue(boolean sleeping) {
     if (sleeping)
     	return "sleeping"
