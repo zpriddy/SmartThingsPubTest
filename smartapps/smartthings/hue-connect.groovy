@@ -121,7 +121,7 @@ def bulbDiscovery()
 			input "selectedBulbs", "enum", required:false, title:"Select Hue Bulbs (${numFound} found)", multiple:true, options:options
 		}
 		section {
-			def title = selectedHue ? "Hue bridge (${ipAddressOnly(selectedHue)})" : "Find bridges"
+			def title = bridgeDni ? "Hue bridge (${bridgeHostname})" : "Find bridges"
 			href "bridgeDiscovery", title: title, description: "", state: selectedHue ? "complete" : "incomplete", params: [override: true]
 
 		}
@@ -142,9 +142,9 @@ private sendDeveloperReq()
 		method: "POST",
 		path: "/api",
 		headers: [
-			HOST: ipAddressFromDni(selectedHue)
+			HOST: bridgeHostnameAndPort
 		],
-		body: [devicetype: "$token-0", username: "$token-0"]], selectedHue))
+		body: [devicetype: "$token-0", username: "$token-0"]], bridgeDni))
 }
 
 private discoverHueBulbs()
@@ -153,8 +153,8 @@ private discoverHueBulbs()
 		method: "GET",
 		path: "/api/${state.username}/lights",
 		headers: [
-			HOST: ipAddressFromDni(selectedHue)
-		]], selectedHue))
+			HOST: bridgeHostnameAndPort
+		]], bridgeDni))
 }
 
 private verifyHueBridge(String deviceNetworkId) {
@@ -239,6 +239,7 @@ def updated() {
 /////////////////////////////////////
 def initialize() {
 	// remove location subscription aftwards
+    log.debug "INITIALIZE"
 	state.subscribe = false
 	state.bridgeSelectedOverride = false
 
@@ -318,6 +319,7 @@ def addBridge() {
 
 /////////////////////////////////////
 def locationHandler(evt) {
+	log.info "LOCATION HANDLER: $evt.description"
 	def description = evt.description
 	def hub = evt?.hubId
 
@@ -688,8 +690,8 @@ private get(path) {
 		method: "GET",
 		path: uri,
 		headers: [
-			HOST: ipAddressFromDni(selectedHue)
-		]], selectedHue))
+			HOST: bridgeHostnameAndPort
+		]], bridgeDni))
 }
 
 private put(path, body) {
@@ -704,9 +706,9 @@ private put(path, body) {
 		method: "PUT",
 		path: uri,
 		headers: [
-			HOST: ipAddressFromDni(selectedHue)
+			HOST: bridgeHostnameAndPort
 		],
-		body: body], selectedHue))
+		body: body], bridgeDni))
 }
 
 private Integer convertHexToInt(hex) {
@@ -757,10 +759,26 @@ def ipAddressFromDni(dni) {
 	}
 }
 
-def ipAddressOnly(dni) {
+def getBridgeDni() {
+	state.hostname
+}
+
+def getBridgeHostname() {
+	def dni = state.hostname
 	if (dni) {
 		def segs = dni.split(":")
 		convertHexToIP(segs[0])
+	}
+	else {
+		null
+	}
+}
+
+def getBridgeHostnameAndPort() {
+	def dni = state.hostname
+	if (dni) {
+		def segs = dni.split(":")
+		convertHexToIP(segs[0]) + ":" +  convertHexToInt(segs[1])
 	}
 	else {
 		null
