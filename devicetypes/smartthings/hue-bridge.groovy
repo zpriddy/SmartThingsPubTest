@@ -33,18 +33,18 @@ metadata {
 
 // parse events into attributes
 def parse(description) {
-	log.debug "Parsing '${description}'"
+	log.trace "Parsing '${description}'"
 	def results = []
 	def result = parent.parse(this, description)
 
 	if (result instanceof physicalgraph.device.HubAction){
-		log.debug "HUE BRIDGE HubAction received -- DOES THIS EVER HAPPEN?"
+		log.warn "HUE BRIDGE HubAction received -- DOES THIS EVER HAPPEN?"
 		results << result
 	} else if (description == "updated") {
 		//do nothing
-		log.debug "HUE BRIDGE was updated"
+		log.trace "HUE BRIDGE was updated"
 	} else {
-		log.debug "HUE BRIDGE, OTHER"
+		log.trace "HUE BRIDGE, OTHER"
 		def map = description
 		if (description instanceof String)  {
 			map = stringToMap(description)
@@ -54,12 +54,12 @@ def parse(description) {
 			results << createEvent(name: "${map?.name}", value: "${map?.value}")
 		}
 		else {
-			log.info "HUE BRIDGE, OTHER"
+			log.trace "HUE BRIDGE, PARSING LAN MESSAGE FOR BULB"
 			def msg = parseLanMessage(description)
 			if (msg.body) {
 				def bulbs = new groovy.json.JsonSlurper().parseText(msg.body)
 				if (bulbs.state) {
-					log.warn "NOT PROCESSED: $msg.body"
+					log.trace "NOT PROCESSED: $msg.body"
 				}
 				else {
 					log.debug "HUE BRIDGE, GENERATING BULB LIST EVENT"

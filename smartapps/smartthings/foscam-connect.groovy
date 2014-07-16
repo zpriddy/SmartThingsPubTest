@@ -224,25 +224,6 @@ private List getRealHubFirmwareVersions()
 	return location.hubs*.firmwareVersionString.findAll { it }
 }
 
-Map stringToMap(String str, String delimiter = ',') {
-	if (str) {
-		def pairs = str.split(delimiter)
-		def map = pairs.inject([:]) { data, pairString ->
-			def pair = pairString.split(':')
-			if(pair.size() > 1) {
-				data[pair[0].trim()] = pair.size() > 2 ? pair[1..-1].join(':')?.trim() : pair[1]?.trim()
-			} else {
-				data[pair[0].trim()] = null
-			}
-			return data
-		}
-		return map
-	}
-	else {
-		return [:]
-	}
-}
-
 private String hexToString(String txtInHex)
 {
 	byte [] txtInByte = new byte [txtInHex.length() / 2];
