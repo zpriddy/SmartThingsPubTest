@@ -341,19 +341,18 @@ def locationHandler(evt) {
 			log.debug "Device was already found in state..."
 
 			def d = bridges."${parsedEvent.ssdpUSN.toString()}"
-			boolean deviceChangedValues = false
+			def host = parsedEvent.ip + ":" + parsedEvent.port
+			if(d.ip != parsedEvent.ip || d.port != parsedEvent.port || host != state.hostname) {
 
-			if(d.ip != parsedEvent.ip || d.port != parsedEvent.port) {
+				log.debug "Device's port or ip changed..."
+				state.hostname = host
 				d.ip = parsedEvent.ip
 				d.port = parsedEvent.port
-				deviceChangedValues = true
-				log.debug "Device's port or ip changed..."
-			}
+				d.name = "Philips hue ($bridgeHostname)"
+			
+				app.updateSetting("selectedHue", host)
 
-			if (deviceChangedValues) {
-				def children = getChildDevices()
-				log.debug "Found children ${children}"
-				children.each {
+				childDevices.each {
 					if (it.getDeviceDataByName("mac") == parsedEvent.mac) {
 						log.debug "updating dni for device ${it} with mac ${parsedEvent.mac}"
 						it.setDeviceNetworkId((parsedEvent.ip + ":" + parsedEvent.port)) //could error if device with same dni already exists
