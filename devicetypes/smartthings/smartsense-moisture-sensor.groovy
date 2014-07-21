@@ -51,12 +51,7 @@ metadata {
 		}
  
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
-			state "battery", label:"${currentValue}% battery", unit:""/*, backgroundColors:[
-				[value: 5, color: "#BC2323"],
-				[value: 10, color: "#D04E00"],
-				[value: 15, color: "#F1D801"],
-				[value: 16, color: "#FFFFFF"]
-			]*/
+			state "battery", label:'${currentValue}% battery'
 		}
         
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
@@ -104,7 +99,7 @@ private Map parseCatchAllMessage(String description) {
             case 0x0001:
                 log.debug 'Battery'
                 resultMap.name = 'battery'
-                resultMap.value = getCatchallBatteryPercentage(cluster.data.last())
+                resultMap.value = getBatteryPercentage(cluster.data.last())
                 break
 
             case 0x0402:
@@ -130,7 +125,7 @@ private boolean shouldProcessMessage(cluster) {
     return !ignoredMessage
 }
 
-private int getCatchallBatteryPercentage(int value) {
+private int getBatteryPercentage(int value) {
     def minVolts = 2.1
     def maxVolts = 3.0
     def volts = value / 10
@@ -154,7 +149,7 @@ private Map parseReportAttributeMessage(String description) {
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
 		log.debug "Battery"
 		resultMap.name = "battery"
-		resultMap.value = calculateBattery(descMap.value)
+		resultMap.value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
 	}
  
 	return resultMap
@@ -232,7 +227,7 @@ def refresh()
 	[
 		
 
-       "st rattr 0x${device.deviceNetworkId} 1 0x402 0", "delay 200",
+        "st rattr 0x${device.deviceNetworkId} 1 0x402 0", "delay 200",
 		"st rattr 0x${device.deviceNetworkId} 1 1 0x20"
 
 	]
@@ -253,8 +248,8 @@ def configure() {
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x001 {${device.zigbeeId}} {}", "delay 1000",
         
-        //"raw 0x500 {01 23 00 00 00}", "delay 200",
-        //"send 0x${device.deviceNetworkId} 1 1", "delay 1000",
+        "raw 0x500 {01 23 00 00 00}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
 	]
     return configCmds + refresh() // send refresh cmds as part of config
 }
@@ -271,14 +266,6 @@ def enrollResponse() {
 
 private hex(value) {
 	new BigInteger(Math.round(value).toString()).toString(16)
-}
-
-private calculateBattery(value) {
-	def min = 2300
-	def percent = (Integer.parseInt(value, 16) - min) / 10
-	// Make sure our percentage is between 0 - 100
-	percent = Math.max(0.0, Math.min(percent, 100.0))
-	percent
 }
 
 private String swapEndianHex(String hex) {

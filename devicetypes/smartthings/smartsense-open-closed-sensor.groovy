@@ -100,7 +100,7 @@ private Map parseCatchAllMessage(String description) {
                 log.debug 'Battery'
                 resultMap.name = 'battery'
                 log.debug "battery value: ${cluster.data.last()}"
-                resultMap.value = getCatchallBatteryPercentage(cluster.data.last())
+                resultMap.value = getBatteryPercentage(cluster.data.last())
                 break
 
             case 0x0402:
@@ -126,11 +126,15 @@ private boolean shouldProcessMessage(cluster) {
     return !ignoredMessage
 }
 
-private int getCatchallBatteryPercentage(int value) {
+private int getHumidity(value) {
+    return Math.round(Double.parseDouble(value))
+}
+
+private int getBatteryPercentage(int value) {
     def minVolts = 2.1
     def maxVolts = 3.0
     def volts = value / 10
-    def pct = Math.max(0.0, (volts - minVolts) / (maxVolts - minVolts))
+    def pct = (volts - minVolts) / (maxVolts - minVolts)
     return (int) pct * 100
 }
  
@@ -150,7 +154,7 @@ private Map parseReportAttributeMessage(String description) {
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
 		log.debug "Battery"
 		resultMap.name = "battery"
-		resultMap.value = calculateBattery(descMap.value)
+		resultMap.value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
 	}
  
 	return resultMap
@@ -266,14 +270,6 @@ def enrollResponse() {
 }
 private hex(value) {
 	new BigInteger(Math.round(value).toString()).toString(16)
-}
-
-private calculateBattery(value) {
-	def min = 2300
-	def percent = (Integer.parseInt(value, 16) - min) / 10
-	// Make sure our percentage is between 0 - 100
-	percent = Math.max(0.0, Math.min(percent, 100.0))
-	percent
 }
 
 private String swapEndianHex(String hex) {
