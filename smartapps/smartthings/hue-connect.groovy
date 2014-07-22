@@ -158,6 +158,7 @@ private discoverHueBulbs()
 }
 
 private verifyHueBridge(String deviceNetworkId) {
+	log.trace "verifyHueBridge($deviceNetworkId)"
 	sendHubCommand(new physicalgraph.device.HubAction([
 		method: "GET",
 		path: "/description.xml",
@@ -168,7 +169,7 @@ private verifyHueBridge(String deviceNetworkId) {
 
 private verifyHueBridges() {
 	def devices = getHueBridges().findAll { it?.value?.verified != true }
-	log.debug "UNVERIFIED BRIDGES!: $devices"
+	//log.debug "UNVERIFIED BRIDGES!: $devices"
 	devices.each {
 		verifyHueBridge((it?.value?.ip + ":" + it?.value?.port))
 	}
@@ -239,7 +240,7 @@ def updated() {
 /////////////////////////////////////
 def initialize() {
 	// remove location subscription aftwards
-    log.debug "INITIALIZE"
+	log.debug "INITIALIZE"
 	state.subscribe = false
 	state.bridgeSelectedOverride = false
 
@@ -328,11 +329,12 @@ def locationHandler(evt) {
 
 	if (parsedEvent?.ssdpTerm?.contains("urn:schemas-upnp-org:device:basic:1"))
 	{ //SSDP DISCOVERY EVENTS
-
+		log.trace "SSDP DISCOVERY EVENTS"
 		def bridges = getHueBridges()
 
 		if (!(bridges."${parsedEvent.ssdpUSN.toString()}"))
 		{ //bridge does not exist
+			log.trace "Adding bridge ${parsedEvent.ssdpUSN}"
 			bridges << ["${parsedEvent.ssdpUSN.toString()}":parsedEvent]
 		}
 		else
@@ -349,7 +351,7 @@ def locationHandler(evt) {
 				d.ip = parsedEvent.ip
 				d.port = parsedEvent.port
 				d.name = "Philips hue ($bridgeHostname)"
-			
+
 				app.updateSetting("selectedHue", host)
 
 				childDevices.each {
@@ -363,6 +365,7 @@ def locationHandler(evt) {
 	}
 	else if (parsedEvent.headers && parsedEvent.body)
 	{ // HUE BRIDGE RESPONSES
+		log.trace "HUE BRIDGE RESPONSES"
 		def headerString = new String(parsedEvent.headers.decodeBase64())
 		def bodyString = new String(parsedEvent.body.decodeBase64())
 		def type = (headerString =~ /Content-type:.*/) ? (headerString =~ /Content-type:.*/)[0] : null
@@ -416,7 +419,7 @@ def locationHandler(evt) {
 		}
 	}
 	else {
-		log.debug "GOT EVENT --- ${evt} --- NOT A HUE"
+		log.trace "NON-HUE EVENT $evt.description"
 	}
 }
 
@@ -774,12 +777,12 @@ def getBridgeHostname() {
 }
 
 def getBridgeHostnameAndPort() {
+	def result = null
 	def dni = state.hostname
 	if (dni) {
 		def segs = dni.split(":")
-		convertHexToIP(segs[0]) + ":" +  convertHexToInt(segs[1])
+		result = convertHexToIP(segs[0]) + ":" +  convertHexToInt(segs[1])
 	}
-	else {
-		null
-	}
+	log.trace "result = $result"
+	result
 }
