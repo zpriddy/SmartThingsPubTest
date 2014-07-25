@@ -7,10 +7,10 @@ definition(
     name: "It's Too Hot",
     namespace: "smartthings",
     author: "SmartThings",
-    description: "Monitor the temperature and when it rises above your setting get a text and/or turn on an A/C unit or fan.",
+    description: "Monitor the temperature and when it rises above your setting get a notification and/or turn on an A/C unit or fan.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/its-too-hot.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/its-too-hot2x.png"
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/its-too-hot@2x.png"
 )
 
 preferences {
@@ -49,7 +49,7 @@ def temperatureHandler(evt) {
 		log.debug "Checking how long the temperature sensor has been reporting <= $tooHot"
 
 		// Don't send a continuous stream of text messages
-		def deltaMinutes = 1 // TODO: Ask for "retry interval" in prefs?
+		def deltaMinutes = 10 // TODO: Ask for "retry interval" in prefs?
 		def timeAgo = new Date(now() - (1000 * 60 * deltaMinutes).toLong())
 		def recentEvents = temperatureSensor1.eventsSince(timeAgo)
 		log.trace "Found ${recentEvents?.size() ?: 0} events in the last $deltaMinutes minutes"
@@ -60,7 +60,7 @@ def temperatureHandler(evt) {
 			// TODO: Send "Temperature back to normal" SMS, turn switch off
 		} else {
 			log.debug "Temperature rose above $tooHot:  sending SMS to $phone1 and activating $mySwitch"
-			send("${temperatureSensor1.label} is too hot, reporting a temperature of ${evt.value}${evt.unit}")
+			send("${temperatureSensor1.label} is too hot, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
 			switch1?.on()
 		}
 	}
