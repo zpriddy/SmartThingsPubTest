@@ -24,7 +24,7 @@ metadata {
         
         command "enrollResponse"
 
-		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", model: "3305-S"
+		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", manufacturer: "CentraLite", model: "3305-S"
 	}
 
 	simulator {
@@ -98,17 +98,15 @@ private Map parseCatchAllMessage(String description) {
     if (shouldProcessMessage(cluster)) {
         switch(cluster.clusterId) {
             case 0x0001:
-                log.debug 'Battery'
-                resultMap.name = 'battery'
-                resultMap.value = getBatteryPercentage(cluster.data.last())
+            	def value = getBatteryPercentage(cluster.data.last())
+            	resultMap = getBatteryResult(value)
                 break
 
             case 0x0402:
-                log.debug 'TEMP'
                 // temp is last 2 data values. reverse to swap endian
                 String temp = cluster.data[-2..-1].reverse().collect { cluster.hex1(it) }.join()
-                resultMap.name = 'temperature'
-                resultMap.value = getTemperature(temp)
+                def value = getTemperature(temp)
+                resultMap = getTemperatureResult(value)
                 break
 
 			case 0x0406:
@@ -140,14 +138,7 @@ private int getBatteryPercentage(int value) {
     def maxVolts = 3.0
     def volts = value / 10
     def pct = (volts - minVolts) / (maxVolts - minVolts)
-    return (int) pct * 100
-}
-
-def parseDescriptionAsMap(description) {
-    (description - "read attr - ").split(",").inject([:]) { map, param ->
-        def nameAndValue = param.split(":")
-        map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
-    }
+    return Math.min(100, (int) pct * 100)
 }
  
 private Map parseReportAttributeMessage(String description) {
@@ -159,34 +150,28 @@ private Map parseReportAttributeMessage(String description) {
  
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
-		log.debug "TEMP"
-		resultMap.name = "temperature"
-		resultMap.value = getTemperature(descMap.value)
+		def value = getTemperature(descMap.value)
+		resultMap = getTemperatureResult(value)
 	}
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
-		log.debug "Battery"
-		resultMap.name = "battery"
-		resultMap.value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
+		def value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
+		resultMap = getBatteryResult(value)
 	}
     else if (descMap.cluster == "0406" && descMap.attrId == "0000") {
-    	log.debug "motion"
-        resultMap.name = "motion"
-        resultMap.value = descMap.value.endsWith("01") ? "active" : "inactive"
+    	def value = descMap.value.endsWith("01") ? "active" : "inactive"
+    	resultMap = getMotionResult(value)
     } 
  
 	return resultMap
 }
  
 private Map parseCustomMessage(String description) {
-	def name = null
-	def value = null
+	Map resultMap = [:]
 	if (description?.startsWith('temperature: ')) {
-		log.debug "TEMP"
-		name = 'temperature'
-		value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		def value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		resultMap = getTemperatureResult(value)
 	}
-	def unit = name == "temperature" ? getTemperatureScale() : null
-	return [name: name, value: value, unit: unit]
+	return resultMap
 }
 
 private Map parseIasMessage(String description) {
@@ -196,21 +181,16 @@ private Map parseIasMessage(String description) {
     Map resultMap = [:]
     switch(msgCode) {
         case '0x0020': // Closed/No Motion/Dry
-            log.debug 'no motion'
-            resultMap.name = 'motion'
-            resultMap.value = 'inactive'
+        	resultMap = getMotionResult('inactive')
             break
 
         case '0x0021': // Open/Motion/Wet
-            log.debug 'motion'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0022': // Tamper Alarm
         	log.debug 'motion with tamper alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0023': // Battery Alarm
@@ -218,8 +198,7 @@ private Map parseIasMessage(String description) {
 
         case '0x0024': // Supervision Report
         	log.debug 'no motion with tamper alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'inactive'
+        	resultMap = getMotionResult('inactive')
             break
 
         case '0x0025': // Restore Report
@@ -227,8 +206,7 @@ private Map parseIasMessage(String description) {
 
         case '0x0026': // Trouble/Failure
         	log.debug 'motion with failure alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0028': // Test Mode
@@ -244,6 +222,39 @@ def getTemperature(value) {
 	} else {
 		return celsiusToFahrenheit(celsius) as Integer
 	}
+}
+
+private Map getBatteryResult(value) {
+	log.debug 'Battery'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} battery was ${value}%"
+	return [
+		name: 'battery',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getTemperatureResult(value) {
+	log.debug 'TEMP'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} was ${value}°${temperatureScale}"
+	return [
+		name: 'temperature',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getMotionResult(value) {
+	log.debug 'motion'
+	String linkText = getLinkText(device)
+	String descriptionText = value == 'active' ? "${linkText} detected motion" : "${linkText} motion has stopped"
+	return [
+		name: 'motion',
+		value: value,
+		descriptionText: descriptionText
+	]
 }
 
 def refresh()

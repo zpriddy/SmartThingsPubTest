@@ -83,25 +83,22 @@ private Map parseCatchAllMessage(String description) {
     if (shouldProcessMessage(cluster)) {
         switch(cluster.clusterId) {
             case 0x0001:
-                log.debug 'Battery'
-                resultMap.name = 'battery'
-                resultMap.value = getBatteryPercentage(cluster.data.last())
+            	def value = getBatteryPercentage(cluster.data.last())
+            	resultMap = getBatteryResult(value)
                 break
 
             case 0x0402:
-                log.debug 'TEMP'
                 // temp is last 2 data values. reverse to swap endian
                 String temp = cluster.data[-2..-1].reverse().collect { cluster.hex1(it) }.join()
-                resultMap.name = 'temperature'
-                resultMap.value = getTemperature(temp)
+                def value = getTemperature(temp)
+                resultMap = getTemperatureResult(value)
                 break
 
 			case 0xFC45:
-            	log.debug 'Humidity'
-                resultMap.name = 'humidity'
                 // value was not in hex so we need to convert it back
                 String pctStr = cluster.data[-2, -1].collect { Integer.toHexString(it) }.join('.')
-				resultMap.value = getHumidity(pctStr)
+                def value = getHumidity(pctStr)
+                resultMap = getHumidityResult(value)
                 break
         }
     }
@@ -128,7 +125,7 @@ private int getBatteryPercentage(int value) {
     def maxVolts = 3.0
     def volts = value / 10
     def pct = (volts - minVolts) / (maxVolts - minVolts)
-    return (int) pct * 100
+    return Math.min(100, (int) pct * 100)
 }
  
 private Map parseReportAttributeMessage(String description) {
@@ -140,19 +137,16 @@ private Map parseReportAttributeMessage(String description) {
  
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
-		log.debug "TEMP"
-		resultMap.name = "temperature"
-		resultMap.value = getTemperature(descMap.value)
+		def value = getTemperature(descMap.value)
+		resultMap = getTemperatureResult(value)
 	}
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
-		log.debug "Battery"
-		resultMap.name = "battery"
-		resultMap.value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
+		def value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
+		resultMap = getBatteryResult(value)
 	}
 	else if (descMap.cluster == "FC45" && descMap.attrId == "0000") {
-		log.debug "Humidity"
-		resultMap.name = "humidity"
-		resultMap.value = getReportAttributeHumidity(descMap.value)
+		def value = getReportAttributeHumidity(descMap.value)
+		resultMap = getHumidityResult(value)
 	}
  
 	return resultMap
@@ -173,23 +167,21 @@ def getReportAttributeHumidity(String value) {
 }
  
 private Map parseCustomMessage(String description) {
-	def name = null
-	def value = null
+	Map resultMap = [:]
 	if (description?.startsWith('temperature: ')) {
-		log.debug "TEMP"
-		name = 'temperature'
-		value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		def value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		resultMap = getTemperatureResult(value)
 	}
 	else if (description?.startsWith('humidity: ')) {
-		log.debug "Humidity"
-		name = 'humidity'
 		def pct = (description - "humidity: " - "%").trim()
 		if (pct.isNumber()) {
-			value = Math.round(new BigDecimal(pct)).toString()
+			def value = Math.round(new BigDecimal(pct)).toString()
+			resultMap = getHumidityResult(value)
+		} else {
+			log.error "invalid humidity: ${pct}"
 		}
 	}
-	def unit = name == "temperature" ? getTemperatureScale() : (name == "humidity" ? "%" : null)
-	return [name: name, value: value, unit: unit]
+	return resultMap
 }
  
 def getTemperature(value) {
@@ -199,6 +191,37 @@ def getTemperature(value) {
 	} else {
 		return celsiusToFahrenheit(celsius) as Integer
 	}
+}
+
+private Map getBatteryResult(value) {
+	log.debug 'Battery'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} battery was ${value}%"
+	return [
+		name: 'battery',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getTemperatureResult(value) {
+	log.debug 'TEMP'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} was ${value}°${temperatureScale}"
+	return [
+		name: 'temperature',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getHumidityResult(value) {
+	log.debug 'Humidity'
+	return [
+		name: 'humidity',
+		value: value,
+		unit: '%'
+	]
 }
 
 def refresh()

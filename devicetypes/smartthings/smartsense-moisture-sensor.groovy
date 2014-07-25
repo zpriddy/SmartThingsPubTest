@@ -24,7 +24,7 @@ metadata {
         command "enrollResponse"
  
  
-		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", model: "3315-S"
+		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", manufacturer: "CentraLite", model: "3315-S"
 	}
  
 	simulator {
@@ -97,17 +97,14 @@ private Map parseCatchAllMessage(String description) {
     if (shouldProcessMessage(cluster)) {
         switch(cluster.clusterId) {
             case 0x0001:
-                log.debug 'Battery'
-                resultMap.name = 'battery'
-                resultMap.value = getBatteryPercentage(cluster.data.last())
+            	resultMap = getBatteryResult(cluster.data.last())
                 break
 
             case 0x0402:
-                log.debug 'TEMP'
                 // temp is last 2 data values. reverse to swap endian
                 String temp = cluster.data[-2..-1].reverse().collect { cluster.hex1(it) }.join()
-                resultMap.name = 'temperature'
-                resultMap.value = getTemperature(temp)
+                def value = getTemperature(temp)
+                resultMap = getTemperatureResult(value)
                 break
         }
     }
@@ -124,14 +121,6 @@ private boolean shouldProcessMessage(cluster) {
         (cluster.data.size() > 0 && cluster.data.first() == 0x3e)
     return !ignoredMessage
 }
-
-private int getBatteryPercentage(int value) {
-    def minVolts = 2.1
-    def maxVolts = 3.0
-    def volts = value / 10
-    def pct = (volts - minVolts) / (maxVolts - minVolts)
-    return (int) pct * 100
-}
  
 private Map parseReportAttributeMessage(String description) {
 	Map descMap = (description - "read attr - ").split(",").inject([:]) { map, param ->
@@ -142,29 +131,23 @@ private Map parseReportAttributeMessage(String description) {
  
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
-		log.debug "TEMP"
-		resultMap.name = "temperature"
-		resultMap.value = getTemperature(descMap.value)
+		def value = getTemperature(descMap.value)
+		resultMap = getTemperatureResult(value)
 	}
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
-		log.debug "Battery"
-		resultMap.name = "battery"
-		resultMap.value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
+		resultMap = getBatteryResult(Integer.parseInt(descMap.value, 16))
 	}
  
 	return resultMap
 }
  
 private Map parseCustomMessage(String description) {
-	def name = null
-	def value = null
+	Map resultMap = [:]
 	if (description?.startsWith('temperature: ')) {
-		log.debug "TEMP"
-		name = 'temperature'
-		value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		def value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		resultMap = getTemperatureResult(value)
 	}
-	def unit = name == "temperature" ? getTemperatureScale() : null
-	return [name: name, value: value, unit: unit]
+	return resultMap
 }
 
 private Map parseIasMessage(String description) {
@@ -174,15 +157,11 @@ private Map parseIasMessage(String description) {
     Map resultMap = [:]
     switch(msgCode) {
         case '0x0020': // Closed/No Motion/Dry
-            log.debug 'water'
-            resultMap.name = 'water'
-            resultMap.value = 'dry'
+        	resultMap = getMoistureResult('dry')
             break
 
         case '0x0021': // Open/Motion/Wet
-            log.debug 'water'
-            resultMap.name = 'water'
-            resultMap.value = 'wet'
+        	resultMap = getMoistureResult('wet')
             break
 
         case '0x0022': // Tamper Alarm
@@ -193,14 +172,12 @@ private Map parseIasMessage(String description) {
 
         case '0x0024': // Supervision Report
         	 log.debug 'dry with tamper alarm'
-            resultMap.name = 'water'
-            resultMap.value = 'dry'
+        	resultMap = getMoistureResult('dry')
             break
 
         case '0x0025': // Restore Report
         	log.debug 'water with tamper alarm'
-            resultMap.name = 'water'
-            resultMap.value = 'wet'
+        	resultMap = getMoistureResult('wet')
             break
 
         case '0x0026': // Trouble/Failure
@@ -219,6 +196,51 @@ def getTemperature(value) {
 	} else {
 		return celsiusToFahrenheit(celsius) as Integer
 	}
+}
+
+private Map getBatteryResult(rawValue) {
+	log.debug 'Battery'
+	def linkText = getLinkText(device)
+    
+    def result = [
+    	name: 'battery'
+    ]
+    
+	def volts = rawValue / 10
+	def descriptionText
+	if (volts > 3.3) {
+		result.descriptionText = "${linkText} battery has too much power (${volts} volts)."
+	}
+	else {
+		def minVolts = 2.1
+    	def maxVolts = 3.0
+		def pct = (volts - minVolts) / (maxVolts - minVolts)
+		result.value = Math.min(100, (int) pct * 100)
+		result.descriptionText = "${linkText} battery was ${result.value}%"
+	}
+
+	return result
+}
+
+private Map getTemperatureResult(value) {
+	log.debug 'TEMP'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} was ${value}°${temperatureScale}"
+	return [
+		name: 'temperature',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getMoistureResult(value) {
+	log.debug 'water'
+	String descriptionText = "${device.displayName} is ${value}"
+	return [
+		name: 'water',
+		value: value,
+		descriptionText: descriptionText
+	]
 }
 
 def refresh()
