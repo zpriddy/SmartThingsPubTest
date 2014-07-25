@@ -24,7 +24,7 @@ metadata {
         command "enrollResponse"
  
  
-		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", manufacturer: "CentraLite", model: "3315-S"
+		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", model: "3315-S"
 	}
  
 	simulator {
@@ -208,7 +208,7 @@ private Map getBatteryResult(rawValue) {
     
 	def volts = rawValue / 10
 	def descriptionText
-	if (volts > 3.3) {
+	if (volts > 3.5) {
 		result.descriptionText = "${linkText} battery has too much power (${volts} volts)."
 	}
 	else {

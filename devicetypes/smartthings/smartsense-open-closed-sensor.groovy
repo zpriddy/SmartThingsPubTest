@@ -97,8 +97,7 @@ private Map parseCatchAllMessage(String description) {
     if (shouldProcessMessage(cluster)) {
         switch(cluster.clusterId) {
             case 0x0001:
-            	def value = getBatteryPercentage(cluster.data.last())
-            	resultMap = getBatteryResult(value)
+            	resultMap = getBatteryResult(cluster.data.last())
                 break
 
             case 0x0402:
@@ -127,14 +126,6 @@ private boolean shouldProcessMessage(cluster) {
 private int getHumidity(value) {
     return Math.round(Double.parseDouble(value))
 }
-
-private int getBatteryPercentage(int value) {
-    def minVolts = 2.1
-    def maxVolts = 3.0
-    def volts = value / 10
-    def pct = (volts - minVolts) / (maxVolts - minVolts)
-    return Math.min(100, (int) pct * 100)
-}
  
 private Map parseReportAttributeMessage(String description) {
 	Map descMap = (description - "read attr - ").split(",").inject([:]) { map, param ->
@@ -149,8 +140,7 @@ private Map parseReportAttributeMessage(String description) {
 		resultMap = getTemperatureResult(value)
 	}
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
-		def value = getBatteryPercentage(Integer.parseInt(descMap.value, 16))
-		resultMap = getBatteryResult(value)
+		resultMap = getBatteryResult(Integer.parseInt(descMap.value, 16))
 	}
  
 	return resultMap
@@ -211,15 +201,28 @@ def getTemperature(value) {
 	}
 }
 
-private Map getBatteryResult(value) {
+private Map getBatteryResult(rawValue) {
 	log.debug 'Battery'
 	def linkText = getLinkText(device)
-	def descriptionText = "${linkText} battery was ${value}%"
-	return [
-		name: 'battery',
-		value: value,
-		descriptionText: descriptionText
-	]
+    
+    def result = [
+    	name: 'battery'
+    ]
+    
+	def volts = rawValue / 10
+	def descriptionText
+	if (volts > 3.5) {
+		result.descriptionText = "${linkText} battery has too much power (${volts} volts)."
+	}
+	else {
+		def minVolts = 2.1
+    	def maxVolts = 3.0
+		def pct = (volts - minVolts) / (maxVolts - minVolts)
+		result.value = Math.min(100, (int) pct * 100)
+		result.descriptionText = "${linkText} battery was ${result.value}%"
+	}
+
+	return result
 }
 
 private Map getTemperatureResult(value) {
