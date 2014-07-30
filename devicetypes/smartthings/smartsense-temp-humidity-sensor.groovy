@@ -248,8 +248,11 @@ def configure() {
 	def configCmds = [	
   
         
-        "zcl global send-me-a-report 1 0x20 0x20 0x600 0x3600 {0100}", "delay 500",
+        "zcl global send-me-a-report 1 0x20 0x20 600 3600 {0100}", "delay 500",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
+        
+        "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
