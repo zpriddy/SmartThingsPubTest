@@ -176,12 +176,16 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatsetpointv2.ThermostatSetpo
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv3.SensorMultilevelReport cmd)
 {
-	def cmdScale = cmd.scale == 1 ? "F" : "C"
-
 	def map = [:]
-	map.value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmdScale, cmd.precision)
-	map.unit = getTemperatureScale()
-	map.name = "temperature"
+	if (cmd.sensorType == 1) {
+		map.value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmd.scale == 1 ? "F" : "C", cmd.precision)
+		map.unit = getTemperatureScale()
+		map.name = "temperature"
+	} else if (cmd.sensorType == 5) {
+		map.value = cmd.scaledSensorValue
+		map.unit = "%"
+		map.name = "humidity"
+	}
 	map
 }
 
