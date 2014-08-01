@@ -1,5 +1,5 @@
 /**
- *  SmartSense Open/Closed Sensor
+ *  SmartSense Temp/Humidity Sensor
  *
  *  Copyright 2014 SmartThings
  *
@@ -13,19 +13,16 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
- 
 metadata {
-	definition (name: "SmartSense Open/Closed Sensor", namespace: "smartthings", author: "SmartThings") {
-    	capability "Battery"
+	definition (name: "SmartSense Temp/Humidity Sensor",namespace: "smartthings", author: "SmartThings") {
 		capability "Configuration"
-        capability "Contact Sensor"
+		capability "Battery"
 		capability "Refresh"
 		capability "Temperature Measurement"
-        
-        command "enrollResponse"
+		capability "Relative Humidity Measurement"
  
  
-		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", manufacturer: "CentraLite", model: "3300-S"
+		fingerprint endpointId: "01", inClusters: "0001,0003,0020,0402,0B05,FC45", outClusters: "0019,0003"
 	}
  
 	simulator {
@@ -33,12 +30,7 @@ metadata {
 	}
  
 	tiles {
-    	standardTile("contact", "device.contact", width: 2, height: 2) {
-			state("open", label:'${name}', icon:"st.contact.contact.open", backgroundColor:"#ffa81e")
-			state("closed", label:'${name}', icon:"st.contact.contact.closed", backgroundColor:"#79b821")
-		}
-    	
-		valueTile("temperature", "device.temperature", inactiveLabel: false) {
+		valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
 			state "temperature", label:'${currentValue}°',
 				backgroundColors:[
 					[value: 31, color: "#153591"],
@@ -50,22 +42,26 @@ metadata {
 					[value: 96, color: "#bc2323"]
 				]
 		}
+		valueTile("humidity", "device.humidity", inactiveLabel: false) {
+			state "humidity", label:'${currentValue}% humidity', unit:""
+		}
+ 
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
-			state "battery", label:'${currentValue}% battery', unit:""
+			state "battery", label:'${currentValue}% battery'
 		}
         
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
  
-		main (["contact", "temperature"])
-		details(["contact","temperature","battery","refresh"])
+		main "temperature", "humidity"
+		details(["temperature","humidity","battery","refresh"])
 	}
 }
  
 def parse(String description) {
 	log.debug "description: $description"
-    
+
 	Map map = [:]
 	if (description?.startsWith('catchall:')) {
 		map = parseCatchAllMessage(description)
@@ -73,22 +69,12 @@ def parse(String description) {
 	else if (description?.startsWith('read attr -')) {
 		map = parseReportAttributeMessage(description)
 	}
-	else if (description?.startsWith('temperature: ')) {
+	else if (description?.startsWith('temperature: ') || description?.startsWith('humidity: ')) {
 		map = parseCustomMessage(description)
 	}
-    else if (description?.startsWith('zone status')) {
-    	map = parseIasMessage(description)
-    }
  
 	log.debug "Parse returned $map"
-	def result = map ? createEvent(map) : null
-    
-    if (description?.startsWith('enroll request')) {
-    	List cmds = enrollResponse()
-        log.debug "enroll response: ${cmds}"
-        result = cmds?.collect { new physicalgraph.device.HubAction(it) }
-    }
-    return result
+	return map ? createEvent(map) : null
 }
  
 private Map parseCatchAllMessage(String description) {
@@ -101,11 +87,17 @@ private Map parseCatchAllMessage(String description) {
                 break
 
             case 0x0402:
-                log.debug 'TEMP'
                 // temp is last 2 data values. reverse to swap endian
                 String temp = cluster.data[-2..-1].reverse().collect { cluster.hex1(it) }.join()
                 def value = getTemperature(temp)
                 resultMap = getTemperatureResult(value)
+                break
+
+			case 0xFC45:
+                // value was not in hex so we need to convert it back
+                String pctStr = cluster.data[-2, -1].collect { Integer.toHexString(it) }.join('.')
+                def value = getHumidity(pctStr)
+                resultMap = getHumidityResult(value)
                 break
         }
     }
@@ -142,8 +134,26 @@ private Map parseReportAttributeMessage(String description) {
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
 		resultMap = getBatteryResult(Integer.parseInt(descMap.value, 16))
 	}
+	else if (descMap.cluster == "FC45" && descMap.attrId == "0000") {
+		def value = getReportAttributeHumidity(descMap.value)
+		resultMap = getHumidityResult(value)
+	}
  
 	return resultMap
+}
+ 
+def getReportAttributeHumidity(String value) {
+    def humidity = null
+    if (value?.trim()) {
+        try {
+        	// value is hex with no decimal
+            def pct = Integer.parseInt(value.trim(), 16) / 100
+            humidity = String.format('%3.0f', pct)
+        } catch(NumberFormatException nfe) {
+            log.debug "Error converting $value to humidity"
+        }
+    }
+    return humidity
 }
  
 private Map parseCustomMessage(String description) {
@@ -152,44 +162,16 @@ private Map parseCustomMessage(String description) {
 		def value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
 		resultMap = getTemperatureResult(value)
 	}
+	else if (description?.startsWith('humidity: ')) {
+		def pct = (description - "humidity: " - "%").trim()
+		if (pct.isNumber()) {
+			def value = Math.round(new BigDecimal(pct)).toString()
+			resultMap = getHumidityResult(value)
+		} else {
+			log.error "invalid humidity: ${pct}"
+		}
+	}
 	return resultMap
-}
-
-private Map parseIasMessage(String description) {
-    List parsedMsg = description.split(' ')
-    String msgCode = parsedMsg[2]
-    
-    Map resultMap = [:]
-    switch(msgCode) {
-        case '0x0020': // Closed/No Motion/Dry
-        	resultMap = getContactResult('closed')
-            break
-
-        case '0x0021': // Open/Motion/Wet
-        	resultMap = getContactResult('open')
-            break
-
-        case '0x0022': // Tamper Alarm
-            break
-
-        case '0x0023': // Battery Alarm
-            break
-
-        case '0x0024': // Supervision Report
-        	resultMap = getContactResult('closed')
-            break
-
-        case '0x0025': // Restore Report
-        	resultMap = getContactResult('open')
-            break
-
-        case '0x0026': // Trouble/Failure
-            break
-
-        case '0x0028': // Test Mode
-            break
-    }
-    return resultMap
 }
  
 def getTemperature(value) {
@@ -236,24 +218,25 @@ private Map getTemperatureResult(value) {
 	]
 }
 
-private Map getContactResult(value) {
-	log.debug 'Contact Status'
-	def linkText = getLinkText(device)
-	def descriptionText = "${linkText} was ${value == 'open' ? 'opened' : 'closed'}"
+private Map getHumidityResult(value) {
+	log.debug 'Humidity'
 	return [
-		name: 'contact',
+		name: 'humidity',
 		value: value,
-		descriptionText: descriptionText
+		unit: '%'
 	]
 }
 
 def refresh()
 {
-	log.debug "Refreshing Temperature and Battery"
+	log.debug "refresh temperature, humidity, and battery"
 	[
-    
+		
+		"zcl mfg-code 0xC2DF", "delay 1000",
+		"zcl global read 0xFC45 0", "delay 1000",
+		"send 0x${device.deviceNetworkId} 1 1", "delay 1000",
         "st rattr 0x${device.deviceNetworkId} 1 0x402 0", "delay 200",
-		"st rattr 0x${device.deviceNetworkId} 1 1 0x20"
+        "st rattr 0x${device.deviceNetworkId} 1 1 0x20"
 
 	]
 }
@@ -261,37 +244,23 @@ def refresh()
 def configure() {
 
 	String zigbeeId = swapEndianHex(device.hub.zigbeeId)
-	log.debug "Confuguring Reporting, IAS CIE, and Bindings."
-	def configCmds = [
-		"zcl global write 0x500 0x10 0xf0 {${zigbeeId}}", "delay 200",
-		"send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+	log.debug "Confuguring Reporting and Bindings."
+	def configCmds = [	
+  
         
-        "zcl global send-me-a-report 1 0x20 0x20 600 3600 {01}", "delay 200",
-        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        "zcl global send-me-a-report 1 0x20 0x20 600 3600 {0100}", "delay 500",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
         
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
-        
-        //"raw 0x500 {01 23 00 00 00}", "delay 200",
-        //"send 0x${device.deviceNetworkId} 1 1", "delay 1500",
-        
-        
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 1 {${device.zigbeeId}} {}"
 	]
     return configCmds + refresh() // send refresh cmds as part of config
 }
 
-def enrollResponse() {
-	log.debug "Sending enroll response"
-    [	
-    	
-	"raw 0x500 {01 23 00 00 00}", "delay 200",
-    "send 0x${device.deviceNetworkId} 1 1"
-        
-    ]
-}
 private hex(value) {
 	new BigInteger(Math.round(value).toString()).toString(16)
 }

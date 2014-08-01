@@ -404,10 +404,10 @@ def showStates() {
 }
 
 def listPhrasesWithType() {
-	listPhrases().collect {
+	location.helloHome.getPhrases().collect {
 		[
-			"id"   : URLEncoder.encode(it),
-			"label": it,
+			"id"   : it.id,
+			"label": it.label,
 			"type" : "phrase"
 		]
 	}

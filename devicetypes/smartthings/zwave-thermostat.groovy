@@ -11,6 +11,8 @@ metadata {
 
 		command "switchMode"
 		command "switchFanMode"
+        command "quickSetCool"
+        command "quickSetHeat"
 
 		fingerprint deviceId: "0x08"
 		fingerprint inClusters: "0x43,0x40,0x44,0x31"
@@ -85,13 +87,13 @@ metadata {
 			state "fanCirculate", label:'${name}', action:"switchFanMode"
 		}
 		controlTile("heatSliderControl", "device.heatingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "setHeatingSetpoint", action:"thermostat.setHeatingSetpoint", backgroundColor:"#d04e00"
+			state "setHeatingSetpoint", action:"quickSetHeat", backgroundColor:"#d04e00"
 		}
 		valueTile("heatingSetpoint", "device.heatingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "heat", label:'${currentValue}° heat', backgroundColor:"#ffffff"
 		}
 		controlTile("coolSliderControl", "device.coolingSetpoint", "slider", height: 1, width: 2, inactiveLabel: false) {
-			state "setCoolingSetpoint", action:"thermostat.setCoolingSetpoint", backgroundColor: "#1e9cbb"
+			state "setCoolingSetpoint", action:"quickSetCool", backgroundColor: "#1e9cbb"
 		}
 		valueTile("coolingSetpoint", "device.coolingSetpoint", inactiveLabel: false, decoration: "flat") {
 			state "cool", label:'${currentValue}° cool', backgroundColor:"#ffffff"
@@ -177,12 +179,16 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatsetpointv2.ThermostatSetpo
 
 def zwaveEvent(physicalgraph.zwave.commands.sensormultilevelv3.SensorMultilevelReport cmd)
 {
-	def cmdScale = cmd.scale == 1 ? "F" : "C"
-
 	def map = [:]
-	map.value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmdScale, cmd.precision)
-	map.unit = getTemperatureScale()
-	map.name = "temperature"
+	if (cmd.sensorType == 1) {
+		map.value = convertTemperatureIfNeeded(cmd.scaledSensorValue, cmd.scale == 1 ? "F" : "C", cmd.precision)
+		map.unit = getTemperatureScale()
+		map.name = "temperature"
+	} else if (cmd.sensorType == 5) {
+		map.value = cmd.scaledSensorValue
+		map.unit = "%"
+		map.name = "humidity"
+	}
 	map
 }
 
@@ -297,11 +303,16 @@ def poll() {
 	], 2300)
 }
 
-def setHeatingSetpoint(degrees) {
-	setHeatingSetpoint(degrees.toDouble())
+def quickSetHeat(degrees) {
+	setHeatingSetpoint(degrees, 1000)
 }
 
-def setHeatingSetpoint(Double degrees) {
+def setHeatingSetpoint(degrees, delay = 30000) {
+	setHeatingSetpoint(degrees.toDouble(), delay)
+}
+
+def setHeatingSetpoint(Double degrees, Integer delay = 30000) {
+	log.trace "setHeatingSetpoint($degrees, $delay)"
 	def deviceScale = state.scale ?: 1
 	def deviceScaleString = deviceScale == 2 ? "C" : "F"
     def locationScale = getTemperatureScale()
@@ -319,14 +330,19 @@ def setHeatingSetpoint(Double degrees) {
 	delayBetween([
 		zwave.thermostatSetpointV1.thermostatSetpointSet(setpointType: 1, scale: deviceScale, precision: p, scaledValue: convertedDegrees).format(),
 		zwave.thermostatSetpointV1.thermostatSetpointGet(setpointType: 1).format()
-	], standardDelay)
+	], delay)
 }
 
-def setCoolingSetpoint(degrees) {
-	setCoolingSetpoint(degrees.toDouble())
+def quickSetCool(degrees) {
+	setCoolingSetpoint(degrees, 1000)
 }
 
-def setCoolingSetpoint(Double degrees) {
+def setCoolingSetpoint(degrees, delay = 30000) {
+	setCoolingSetpoint(degrees.toDouble(), delay)
+}
+
+def setCoolingSetpoint(Double degrees, Integer delay = 30000) {
+    log.trace "setCoolingSetpoint($degrees, $delay)"
 	def deviceScale = state.scale ?: 1
 	def deviceScaleString = deviceScale == 2 ? "C" : "F"
     def locationScale = getTemperatureScale()
@@ -344,7 +360,7 @@ def setCoolingSetpoint(Double degrees) {
 	delayBetween([
 		zwave.thermostatSetpointV1.thermostatSetpointSet(setpointType: 2, scale: deviceScale, precision: p,  scaledValue: convertedDegrees).format(),
 		zwave.thermostatSetpointV1.thermostatSetpointGet(setpointType: 2).format()
-	], standardDelay)
+	], delay)
 }
 
 def configure() {

@@ -263,10 +263,20 @@ def validateCurrentToken() {
           			uri: tokenUrl
         		]
         		httpGet(params) { refreshResponse ->
-					log.debug "${refreshResponse.data}"
-					log.debug "Setting access token to ${refreshResponse.data.access_token}, refresh token to ${refreshResponse.data.refresh_token}"
-					state.JawboneAccessToken = refreshResponse.data.access_token
-					state.refreshToken = refreshResponse.data.refresh_token
+					def data = refreshResponse.data
+					log.debug "Status: ${refreshResponse.status}, data: ${data}"
+					if (data.error) {
+						if (data.error == "access_denied") {
+							// User has removed authorization (probably)
+							log.warn "Access denied, because: ${data.error_description}"
+							state.remove("JawboneAccessToken")
+							state.remove("refreshToken")
+						}
+					} else {
+						log.debug "Setting access token to ${data.access_token}, refresh token to ${data.refresh_token}"
+						state.JawboneAccessToken = data.access_token
+						state.refreshToken = data.refresh_token
+					}
 				}
             }
         }
@@ -284,32 +294,33 @@ def setup() {
 	// make sure this is going to work
 	validateCurrentToken()
 
-	// log.debug "App Updated"
-	def urlmember = "https://jawbone.com/nudge/api/users/@me/"
-	def member = null    
-	httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
-	    member = response.data.data
-	}
-	
-	if (member) {
-		state.member = member
-		def externalId = "${app.id}.${member.xid}"
-
-		// find the appropriate child device based on my app id and the device network id 
-		def deviceWrapper = getChildDevice("${externalId}")
-
-		// invoke the generatePresenceEvent method on the child device
-		log.debug "Device $externalId: $deviceWrapper"
-		if (!deviceWrapper) {
-		  	def childDevice = addChildDevice('juano2310', "Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
-		    if (childDevice) {
-		       	log.debug "Child Device Successfully Created"
-		        generateInitialEvent (member, childDevice)
-		    }
+	if (state.JawboneAccessToken) {
+		def urlmember = "https://jawbone.com/nudge/api/users/@me/"
+		def member = null    
+		httpGet(uri: urlmember, headers: ["Authorization": "Bearer ${state.JawboneAccessToken}" ]) {response -> 
+		    member = response.data.data
 		}
-	}
+	
+		if (member) {
+			state.member = member
+			def externalId = "${app.id}.${member.xid}"
 
-	initialize()
+			// find the appropriate child device based on my app id and the device network id 
+			def deviceWrapper = getChildDevice("${externalId}")
+
+			// invoke the generatePresenceEvent method on the child device
+			log.debug "Device $externalId: $deviceWrapper"
+			if (!deviceWrapper) {
+			  	def childDevice = addChildDevice('juano2310', "Jawbone User", "${app.id}.${member.xid}",null,[name:"Jawbone UP - " + member.first, completedSetup: true])
+			    if (childDevice) {
+			       	log.debug "Child Device Successfully Created"
+			        generateInitialEvent (member, childDevice)
+			    }
+			}
+		}
+
+		initialize()
+	}
 }
 
 def installed() {
