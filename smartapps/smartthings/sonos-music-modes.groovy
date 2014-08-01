@@ -98,7 +98,9 @@ def mainPage() {
 			href "timeIntervalInput", title: "Only during a certain time", description: timeLabel ?: "Tap to set", state: timeLabel ? "complete" : "incomplete"
 			input "days", "enum", title: "Only on certain days of the week", multiple: true, required: false,
 				options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-			input "modes", "mode", title: "Only when mode is", multiple: true, required: false
+			if (settings.modes) {
+            	input "modes", "mode", title: "Only when mode is", multiple: true, required: false
+            }
 			input "oncePerDay", "bool", title: "Only once per day", required: false, defaultValue: false
 		}
 	}
