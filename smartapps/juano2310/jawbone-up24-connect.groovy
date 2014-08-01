@@ -13,10 +13,11 @@ definition(
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
 	oauth: true,
-    usePreferencesForAuthorization: false) {
-    
-    appSetting "clientId"
-    appSetting "clientSecret"
+    usePreferencesForAuthorization: false
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+	appSetting "serverUrl"
 }
 
 preferences {
@@ -230,7 +231,7 @@ String toQueryString(Map m) {
 	return m.collect { k, v -> "${k}=${URLEncoder.encode(v.toString())}" }.sort().join("&")
 }
 
-def getServerUrl() { return "https://sgraph.api.smartthings.com" }
+def getServerUrl() { return appSettings.serverUrl ?: "https://graph.api.smartthings.com" }
 
 def buildRedirectUrl(page) {
     // log.debug "buildRedirectUrl"
