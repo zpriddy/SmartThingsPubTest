@@ -3,6 +3,7 @@ metadata {
 	definition (name: "Z-Wave Thermostat", namespace: "smartthings", author: "SmartThings") {
 		capability "Actuator"
 		capability "Temperature Measurement"
+		capability "Relative Humidity Measurement"
 		capability "Thermostat"
 		capability "Configuration"
 		capability "Polling"
