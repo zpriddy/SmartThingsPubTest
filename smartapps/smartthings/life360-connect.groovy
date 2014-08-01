@@ -23,7 +23,10 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/life360.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/life360@2x.png",
     oauth: [displayName: "Life360", displayLink: "Life360"]
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+}
 
 preferences {
 	page(name: "Credentials", title: "Life360 Authentication", content: "authPage", nextPage: "listCirclesPage", install: false)
@@ -250,8 +253,8 @@ def testLife360Connection() {
 
 def initializeLife360Connection() {
 
-	def oauthClientId = "pREqugabRetre4EstetherufrePumamExucrEHuc"
-	def oauthClientSecret = "m3frupRetReswerEChAPrE96qakEdr4V"
+	def oauthClientId = appSettings.clientId
+	def oauthClientSecret = appSettings.clientSecret
 
 	log.debug "Installed with settings: ${settings}"
 

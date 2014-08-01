@@ -14,7 +14,10 @@ definition(
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
 	oauth: true,
     usePreferencesForAuthorization: false
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+}
 
 preferences {
     page(name: "Credentials", title: "Jawbone UP", content: "authPage", install: false)
@@ -28,11 +31,11 @@ mappings {
 }
 
 def getSmartThingsClientId() {
-   return "txql_lgXcLA"
+   return appSettings.clientId
 }
 
 def getSmartThingsClientSecret() {
-   return "03c825404c04c9f9cdc72759700718ce"
+   return appSettings.clientSecret
 }
 
 def callback() {
