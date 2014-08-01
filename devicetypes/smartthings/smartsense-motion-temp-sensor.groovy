@@ -24,7 +24,7 @@ metadata {
         
         command "enrollResponse"
 
-		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", model: "3305-S"
+		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05", outClusters: "0019", manufacturer: "CentraLite", model: "3305-S"
 	}
 
 	simulator {
@@ -53,19 +53,14 @@ metadata {
 		}
         
          valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
-			state "battery", label:'${currentValue}% battery', unit:""/*, backgroundColors:[
-				[value: 5, color: "#BC2323"],
-				[value: 10, color: "#D04E00"],
-				[value: 15, color: "#F1D801"],
-				[value: 16, color: "#FFFFFF"]
-			]*/
+			state "battery", label:'${currentValue}% battery'
 		}
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
 		
 		main (["motion","temperature"])
-		details(["motion","temperature","refresh"])
+		details(["motion","temperature","battery","refresh"])
 	}
 }
 
@@ -103,17 +98,14 @@ private Map parseCatchAllMessage(String description) {
     if (shouldProcessMessage(cluster)) {
         switch(cluster.clusterId) {
             case 0x0001:
-                log.debug 'Battery'
-                resultMap.name = 'battery'
-                resultMap.value = getCatchallBatteryPercentage(cluster.data.last())
+            	resultMap = getBatteryResult(cluster.data.last())
                 break
 
             case 0x0402:
-                log.debug 'TEMP'
                 // temp is last 2 data values. reverse to swap endian
                 String temp = cluster.data[-2..-1].reverse().collect { cluster.hex1(it) }.join()
-                resultMap.name = 'temperature'
-                resultMap.value = getTemperature(temp)
+                def value = getTemperature(temp)
+                resultMap = getTemperatureResult(value)
                 break
 
 			case 0x0406:
@@ -136,19 +128,8 @@ private boolean shouldProcessMessage(cluster) {
     return !ignoredMessage
 }
 
-private int getCatchallBatteryPercentage(int value) {
-    def minVolts = 2.1
-    def maxVolts = 3.0
-    def volts = value / 10
-    def pct = (volts - minVolts) / (maxVolts - minVolts)
-    return (int) pct * 100
-}
-
-def parseDescriptionAsMap(description) {
-    (description - "read attr - ").split(",").inject([:]) { map, param ->
-        def nameAndValue = param.split(":")
-        map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
-    }
+private int getHumidity(value) {
+    return Math.round(Double.parseDouble(value))
 }
  
 private Map parseReportAttributeMessage(String description) {
@@ -160,34 +141,27 @@ private Map parseReportAttributeMessage(String description) {
  
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
-		log.debug "TEMP"
-		resultMap.name = "temperature"
-		resultMap.value = getTemperature(descMap.value)
+		def value = getTemperature(descMap.value)
+		resultMap = getTemperatureResult(value)
 	}
 	else if (descMap.cluster == "0001" && descMap.attrId == "0020") {
-		log.debug "Battery"
-		resultMap.name = "battery"
-		resultMap.value = calculateBattery(descMap.value)
+		resultMap = getBatteryResult(Integer.parseInt(descMap.value, 16))
 	}
     else if (descMap.cluster == "0406" && descMap.attrId == "0000") {
-    	log.debug "motion"
-        resultMap.name = "motion"
-        resultMap.value = descMap.value.endsWith("01") ? "active" : "inactive"
+    	def value = descMap.value.endsWith("01") ? "active" : "inactive"
+    	resultMap = getMotionResult(value)
     } 
  
 	return resultMap
 }
  
 private Map parseCustomMessage(String description) {
-	def name = null
-	def value = null
+	Map resultMap = [:]
 	if (description?.startsWith('temperature: ')) {
-		log.debug "TEMP"
-		name = 'temperature'
-		value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		def value = zigbee.parseHATemperatureValue(description, "temperature: ", getTemperatureScale())
+		resultMap = getTemperatureResult(value)
 	}
-	def unit = name == "temperature" ? getTemperatureScale() : null
-	return [name: name, value: value, unit: unit]
+	return resultMap
 }
 
 private Map parseIasMessage(String description) {
@@ -197,21 +171,16 @@ private Map parseIasMessage(String description) {
     Map resultMap = [:]
     switch(msgCode) {
         case '0x0020': // Closed/No Motion/Dry
-            log.debug 'no motion'
-            resultMap.name = 'motion'
-            resultMap.value = 'inactive'
+        	resultMap = getMotionResult('inactive')
             break
 
         case '0x0021': // Open/Motion/Wet
-            log.debug 'motion'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0022': // Tamper Alarm
         	log.debug 'motion with tamper alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0023': // Battery Alarm
@@ -219,8 +188,7 @@ private Map parseIasMessage(String description) {
 
         case '0x0024': // Supervision Report
         	log.debug 'no motion with tamper alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'inactive'
+        	resultMap = getMotionResult('inactive')
             break
 
         case '0x0025': // Restore Report
@@ -228,8 +196,7 @@ private Map parseIasMessage(String description) {
 
         case '0x0026': // Trouble/Failure
         	log.debug 'motion with failure alarm'
-            resultMap.name = 'motion'
-            resultMap.value = 'active'
+        	resultMap = getMotionResult('active')
             break
 
         case '0x0028': // Test Mode
@@ -247,13 +214,58 @@ def getTemperature(value) {
 	}
 }
 
+private Map getBatteryResult(rawValue) {
+	log.debug 'Battery'
+	def linkText = getLinkText(device)
+    
+    def result = [
+    	name: 'battery'
+    ]
+    
+	def volts = rawValue / 10
+	def descriptionText
+	if (volts > 3.5) {
+		result.descriptionText = "${linkText} battery has too much power (${volts} volts)."
+	}
+	else {
+		def minVolts = 2.1
+    	def maxVolts = 3.0
+		def pct = (volts - minVolts) / (maxVolts - minVolts)
+		result.value = Math.min(100, (int) pct * 100)
+		result.descriptionText = "${linkText} battery was ${result.value}%"
+	}
+
+	return result
+}
+
+private Map getTemperatureResult(value) {
+	log.debug 'TEMP'
+	def linkText = getLinkText(device)
+	def descriptionText = "${linkText} was ${value}°${temperatureScale}"
+	return [
+		name: 'temperature',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
+private Map getMotionResult(value) {
+	log.debug 'motion'
+	String linkText = getLinkText(device)
+	String descriptionText = value == 'active' ? "${linkText} detected motion" : "${linkText} motion has stopped"
+	return [
+		name: 'motion',
+		value: value,
+		descriptionText: descriptionText
+	]
+}
+
 def refresh()
 {
 	log.debug "refresh called"
     [
 		"st rattr 0x${device.deviceNetworkId} 1 0x402 0", "delay 200",
-        // "st rattr 0x${device.deviceNetworkId} 1 0x406 0", "delay 200",
-        //"st rattr 0x${device.deviceNetworkId} 1 1 0" //, "delay 200",
+        "st rattr 0x${device.deviceNetworkId} 1 1 0x20"
 		
 	]
 }
@@ -266,7 +278,10 @@ def configure() {
     	"zcl global write 0x500 0x10 0xf0 {${zigbeeId}}", "delay 200",
 		"send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
-        "zcl global send-me-a-report 1 0x20 0x20 0x600 0x3600 {01}", "delay 200",
+        "zcl global send-me-a-report 1 0x20 0x20 300 3600 {01}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        
+        "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
         
@@ -291,14 +306,6 @@ def enrollResponse() {
 
 private hex(value) {
 	new BigInteger(Math.round(value).toString()).toString(16)
-}
-
-private calculateBattery(value) {
-	def min = 2300
-	def percent = (Integer.parseInt(value, 16) - min) / 10
-	// Make sure our percentage is between 0 - 100
-	percent = Math.max(0.0, Math.min(percent, 100.0))
-	percent
 }
 
 private String swapEndianHex(String hex) {
