@@ -84,6 +84,30 @@ def createEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd, Map item1)
 	result
 }
 
+def createEvent(physicalgraph.zwave.commands.basicv1.BasicSet cmd, Map item1) {
+	def result = doCreateEvent(cmd, item1)
+	for (int i = 0; i < result.size(); i++) {
+		result[i].type = "physical"
+	}
+	result
+}
+
+def createEvent(physicalgraph.zwave.commands.switchmultilevelv1.SwitchMultilevelStartLevelChange cmd, Map item1) {
+	[]
+}
+
+def createEvent(physicalgraph.zwave.commands.switchmultilevelv1.SwitchMultilevelStopLevelChange cmd, Map item1) {
+	[response(zwave.basicV1.basicGet())]
+}
+
+def createEvent(physicalgraph.zwave.commands.switchmultilevelv1.SwitchMultilevelSet cmd, Map item1) {
+	def result = doCreateEvent(cmd, item1)
+	for (int i = 0; i < result.size(); i++) {
+		result[i].type = "physical"
+	}
+	result
+}
+
 def createEvent(physicalgraph.zwave.commands.switchmultilevelv1.SwitchMultilevelReport cmd, Map item1) {
 	def result = doCreateEvent(cmd, item1)
 	result[0].descriptionText = "${item1.linkText} is ${item1.value}"
