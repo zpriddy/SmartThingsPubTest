@@ -8,7 +8,7 @@
 
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Life360  User", namespace: "smartthings", author: "SmartThings") {
+	definition (name: "Life360 User", namespace: "smartthings", author: "SmartThings") {
 		capability "Presence Sensor"
 		capability "Sensor"
 	}
