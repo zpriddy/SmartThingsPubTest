@@ -47,10 +47,9 @@ private getVendorName() 	{ "Quirky Wink" }
 private getVendorAuthPath()	{ "https://winkapi.quirky.com/oauth2/authorize?" }
 private getVendorTokenPath(){ "https://winkapi.quirky.com/oauth2/token?" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartthings-device-icons/custom/quirky/quirky-device@2x.png" }
-private getClientId() 		{ "c22d82a7fc3d6faf06dcff1bcf0feb52" } // Dan Lieberman's
-private getClientSecret() 	{ "bd44c524a1df9dce134235d174350603" }
-
-private getServerUrl() 		{ "https://graph.api.smartthings.com" }
+private getClientId() 		{ appSettings.clientId }
+private getClientSecret() 	{ appSettings.clientSecret }
+private getServerUrl() 		{ appSettings.serverUrl }
 
 definition(
     name: "Quirky (Connect)",
@@ -60,7 +59,11 @@ definition(
     category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/quirky.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/quirky@2x.png"
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+    appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "Credentials", title: "Fetch OAuth2 Credentials", content: "authPage", install: false)

@@ -14,7 +14,11 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/withings.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/withings%402x.png",
     oauth: true
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+    appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "auth", title: "Withings", content:"authPage")
@@ -578,7 +582,6 @@ def getChildNamespace() { "smartthings" }
 def getScaleChildName() { "Wireless Scale" }
 def getBodyAnalyzerChildName() { "Smart Body Analyzer" }
 
-def getServerUrl() { return "https://graph.api.smartthings.com" }
-
-def getSmartThingsConsumerKey() { "cc051c51f40db659eb889cc939357769c1feb524b546f45243f3511ef98b63" }
-def getSmartThingsConsumerSecret() { "9eb8339dd516f908d834f69d39c96bc6e3805271757585d1980c1f3d54f" }
+def getServerUrl() { appSettings.serverUrl }
+def getSmartThingsConsumerKey() { appSettings.clientId }
+def getSmartThingsConsumerSecret() { appSettings.clientSecret }

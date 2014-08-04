@@ -9,10 +9,9 @@ private getVendorName() 	{ "netatmo" }
 private getVendorAuthPath()	{ "http://api.netatmo.net/oauth2/authorize?" }
 private getVendorTokenPath(){ "http://api.netatmo.net/oauth2/token" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png" }
-private getClientId() 		{ "534577f41c7759259b8b45dd" }
-private getClientSecret() 	{ "Tp7suzR4WSoUkwTBtFVqUnToZmAEO" }
-
-private getServerUrl() 		{ "https://graph.api.smartthings.com" }
+private getClientId() 		{ appSettings.clientId }
+private getClientSecret() 	{ appSettings.clientSecret }
+private getServerUrl() 		{ appSettings.serverUrl }
 
 // Automatically generated. Make future change here.
 definition(
@@ -24,7 +23,11 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png",
     oauth: true
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+    appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "Credentials", title: "Fetch OAuth2 Credentials", content: "authPage", install: false)
