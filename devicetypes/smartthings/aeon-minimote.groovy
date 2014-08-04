@@ -4,7 +4,6 @@ metadata {
 		capability "Button"
 		capability "Configuration"
 		capability "Sensor"
-		capability "Battery"
 
 		fingerprint deviceId: "0x0101", inClusters: "0x86,0x72,0x70,0x9B", outClusters: "0x26,0x2B"
 		fingerprint deviceId: "0x0101", inClusters: "0x86,0x72,0x70,0x9B,0x85,0x84", outClusters: "0x26" // old style with numbered buttons
@@ -25,11 +24,8 @@ metadata {
 		standardTile("button", "device.button", width: 2, height: 2) {
 			state "default", label: "", icon: "st.unknown.zwave.remote-controller", backgroundColor: "#ffffff"
 		}
-		valueTile("battery", "device.battery", inactiveLabel: false, decoration: "flat") {
-			state "battery", label:'${currentValue}% battery', unit:""
-		}
 		main "button"
-		details(["button", "battery"])
+		details(["button"])
 	}
 }
 
@@ -48,14 +44,10 @@ def parse(String description) {
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv1.WakeUpNotification cmd) {
 	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: false)]
-
-	def prevBattery = device.currentState("battery")
-	if (!prevBattery || (new Date().time - prevBattery.date.time)/60000 >= 60 * 53) {
-		results << response(zwave.batteryV1.batteryGet().format())
-	}
-
-	results += configurationCmds().collect{ response(it) }
+	
+    results += configurationCmds().collect{ response(it) }
 	results << response(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
+
 	return results
 }
 
@@ -78,17 +70,6 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicSet cmd) {
 	Integer button = (cmd.value / 40 + 1) as Integer
 	Boolean held = (button * 40 - cmd.value) <= 20
 	buttonEvent(button, held)
-}
-
-def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
-	def map = [ name: "battery", unit: "%" ]
-	if (cmd.batteryLevel == 0xFF) {
-		map.value = 1
-		map.descriptionText = "${device.displayName} has a low battery"
-	} else {
-		map.value = cmd.batteryLevel
-	}
-	createEvent(map)
 }
 
 def zwaveEvent(physicalgraph.zwave.Command cmd) {
