@@ -17,6 +17,7 @@ definition(
 ) {
 	appSetting "clientId"
 	appSetting "clientSecret"
+    appSetting "serverUrl"
 }
 
 preferences {
@@ -581,7 +582,6 @@ def getChildNamespace() { "smartthings" }
 def getScaleChildName() { "Wireless Scale" }
 def getBodyAnalyzerChildName() { "Smart Body Analyzer" }
 
-def getServerUrl() { return "https://graph.api.smartthings.com" }
-
+def getServerUrl() { appSettings.serverUrl }
 def getSmartThingsConsumerKey() { appSettings.clientId }
 def getSmartThingsConsumerSecret() { appSettings.clientSecret }

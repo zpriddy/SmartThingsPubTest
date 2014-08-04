@@ -47,10 +47,9 @@ private getVendorName() 	{ "Quirky Wink" }
 private getVendorAuthPath()	{ "https://winkapi.quirky.com/oauth2/authorize?" }
 private getVendorTokenPath(){ "https://winkapi.quirky.com/oauth2/token?" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartthings-device-icons/custom/quirky/quirky-device@2x.png" }
-private getClientId() 		{ "c22d82a7fc3d6faf06dcff1bcf0feb52" } // Dan Lieberman's
-private getClientSecret() 	{ appSettings.clientId }
-
-private getServerUrl() 		{ appSettings.clientSecret }
+private getClientId() 		{ appSettings.clientId }
+private getClientSecret() 	{ appSettings.clientSecret }
+private getServerUrl() 		{ appSettings.serverUrl }
 
 definition(
     name: "Quirky (Connect)",
@@ -63,6 +62,7 @@ definition(
 ) {
 	appSetting "clientId"
 	appSetting "clientSecret"
+    appSetting "serverUrl"
 }
 
 preferences {

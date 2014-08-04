@@ -26,6 +26,7 @@ definition(
 ) {
 	appSetting "clientId"
 	appSetting "clientSecret"
+    appSetting "serverUrl"
 }
 
 preferences {
@@ -190,7 +191,7 @@ def getSmartThingsClientId() {
    return "pREqugabRetre4EstetherufrePumamExucrEHuc"
 }
 
-def getServerUrl() { return "https://graph.api.smartthings.com" }
+def getServerUrl() { appSettings.serverUrl }
 
 def buildRedirectUrl()
 {
@@ -526,7 +527,7 @@ def createCircleSubscription() {
     
     createAccessToken() // create our own OAUTH access token to use in webhook url
     
-    def hookUrl = "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/placecallback?access_token=${state.accessToken}".encodeAsURL()
+    def hookUrl = "${serverUrl}/api/smartapps/installations/${app.id}/placecallback?access_token=${state.accessToken}".encodeAsURL()
     
     def url = "https://api.life360.com/v3/circles/${state.circle}/webhook.json"
         

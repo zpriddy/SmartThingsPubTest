@@ -11,8 +11,7 @@ private getVendorTokenPath(){ "http://api.netatmo.net/oauth2/token" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png" }
 private getClientId() 		{ appSettings.clientId }
 private getClientSecret() 	{ appSettings.clientSecret }
-
-private getServerUrl() 		{ "https://graph.api.smartthings.com" }
+private getServerUrl() 		{ appSettings.serverUrl }
 
 // Automatically generated. Make future change here.
 definition(
@@ -27,6 +26,7 @@ definition(
 ) {
 	appSetting "clientId"
 	appSetting "clientSecret"
+	appSetting "serverUrl"
 }
 
 preferences {

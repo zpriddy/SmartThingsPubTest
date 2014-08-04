@@ -16,7 +16,10 @@ definition(
     category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/ecobee.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/ecobee@2x.png"
-)
+) {
+	appSetting "clientId"
+	appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "auth", title: "ecobee", nextPage:"deviceList", content:"authPage", uninstall: true)
@@ -880,8 +883,8 @@ def sendJson(String jsonBody)
 def getChildNamespace() { "smartthings" }
 def getChildName() { "Ecobee Thermostat" }
 
-def getServerUrl() { return "https://graph.api.smartthings.com" }
-def getSmartThingsClientId() { "qqwy6qo0c2lhTZGytelkQ5o8vlHgRsrO" }
+def getServerUrl() { return appSettings.serverUrl }
+def getSmartThingsClientId() { appSettings.clientId }
 
 def debugEvent(message, displayEvent) {
 
