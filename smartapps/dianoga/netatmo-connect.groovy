@@ -387,7 +387,7 @@ def initialize() {
 
 	// Do the initial poll and schedule it to run every minute
 	runIn(1, poll)
-	schedule("0 * * * * ?", poll)
+	schedule("0 */5 * * * ?", poll)
 }
 
 def uninstalled() {
