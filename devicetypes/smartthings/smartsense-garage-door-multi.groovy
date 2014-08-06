@@ -74,6 +74,10 @@ metadata {
 		main(["status","contact", "acceleration"])
 		details(["status","contact", "acceleration", "temperature", "3axis", "battery"/*, "lqi"*/])
 	}
+    
+	preferences {
+		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by plus or minus this many degrees", range: "*..*", required: false, displayDuringSetup: false, defaultValue: 0
+	}    
 }
 
 def parse(String description) {
@@ -298,9 +302,14 @@ private getTempResult(part, description) {
 	def name = "temperature"
 	def temperatureScale = getTemperatureScale()
 	def value = zigbee.parseSmartThingsTemperatureValue(part, "temp: ", temperatureScale)
+	if (tempOffset) {
+		def offset = tempOffset as int
+		def v = value as int
+		value = v + offset
+	}
 	def linkText = getLinkText(device)
-	def descriptionText = "$linkText ${name} was $value°$temperatureScale"
-	def isStateChange = isTemperatureStateChange(device, name, value)
+	def descriptionText = "$linkText was $value°$temperatureScale"
+	def isStateChange = isTemperatureStateChange(device, name, value.toString())
 
 	[
 		name: name,
