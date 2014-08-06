@@ -30,6 +30,11 @@ metadata {
 	simulator {
  
 	}
+
+	preferences {
+		input description: "The offset allows you to calibrate your temperature. Update by entering whole negative or positive number. E.g. -3 or 5.", displayDuringSetup: false, type: "paragraph", element: "paragraph"
+		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by this many degrees", range: "*..*", displayDuringSetup: false
+	}
  
 	tiles {
 		standardTile("water", "device.water", width: 2, height: 2) {
@@ -225,6 +230,11 @@ private Map getBatteryResult(rawValue) {
 private Map getTemperatureResult(value) {
 	log.debug 'TEMP'
 	def linkText = getLinkText(device)
+	if (tempOffset) {
+		def offset = tempOffset as int
+		def v = value as int
+		value = v + offset
+	}
 	def descriptionText = "${linkText} was ${value}°${temperatureScale}"
 	return [
 		name: 'temperature',
