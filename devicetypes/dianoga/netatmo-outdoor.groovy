@@ -40,10 +40,10 @@ metadata {
  			state "humidity", label:'${currentValue}%', unit:"Humidity"
  		}
  		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
- 			state "default", action:"device.refresh", icon:"st.secondary.refresh"
+ 			state "default", action:"device.poll", icon:"st.secondary.refresh"
  		}
- 		main "temperature"
- 		details(["temperature", "humidity"])
+ 		main (["temperature", "humidity"])
+ 		details(["temperature", "humidity", "refresh"])
 	}
 }
 
