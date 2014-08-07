@@ -36,9 +36,9 @@ metadata {
  				]
  				)
  		}
- 		valueTile("humidity", "device.humidity", decoration: "flat") {
-			state "default", label:'${currentValue}% humidity'
-		}
+ 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
+ 			state "humidity", label:'${currentValue}%', unit:"Humidity"
+ 		}
  		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
  			state "default", action:"device.refresh", icon:"st.secondary.refresh"
  		}

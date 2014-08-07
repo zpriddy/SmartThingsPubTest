@@ -41,16 +41,20 @@ metadata {
  				)
  		}
  		valueTile("humidity", "device.humidity", inactiveLabel: false) {
- 			state "default", label:'${currentValue}%', unit:"Humidity"
+ 			state "humidity", label:'${currentValue}%', unit:"Humidity"
  		}
  		valueTile("carbonDioxide", "device.carbonDioxide", inactiveLabel: false) {
- 			state "default", label:'${currentValue}ppm', unit:"CO2"
+ 			state "carbonDioxide", label:'${currentValue}ppm', unit:"CO2", backgroundColors: [
+ 				[value: 600, color: "#44B621"],
+                [value: 999, color: "#ffcc00"],
+                [value: 1000, color: "#e86d13"]
+ 				]
  		}
  		valueTile("noise", "device.noise", inactiveLabel: false) {
- 			state "default", label:'${currentValue}db', unit:"Noise"
+ 			state "noise", label:'${currentValue}db', unit:"Noise"
  		}
  		valueTile("pressure", "device.pressure", inactiveLabel: false) {
- 			state "default", label:'${currentValue}mbar', unit:"Pressure"
+ 			state "pressure", label:'${currentValue}mbar', unit:"Pressure"
  		}
  		standardTile("refresh", "device.pressure", inactiveLabel: false, decoration: "flat") {
  			state "default", action:"device.poll", icon:"st.secondary.refresh"
