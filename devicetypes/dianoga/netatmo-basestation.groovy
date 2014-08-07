@@ -59,8 +59,8 @@ metadata {
  		standardTile("refresh", "device.pressure", inactiveLabel: false, decoration: "flat") {
  			state "default", action:"device.poll", icon:"st.secondary.refresh"
  		}
- 		main "temperature"
- 		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
+ 		main(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
+ 		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure", "refresh"])
 	}
 }
 
