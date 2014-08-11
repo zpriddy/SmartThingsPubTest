@@ -23,7 +23,11 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/life360.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/life360@2x.png",
     oauth: [displayName: "Life360", displayLink: "Life360"]
-)
+) {
+	appSetting "clientId"
+	appSetting "clientSecret"
+    appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "Credentials", title: "Life360 Authentication", content: "authPage", nextPage: "listCirclesPage", install: false)
@@ -187,7 +191,7 @@ def getSmartThingsClientId() {
    return "pREqugabRetre4EstetherufrePumamExucrEHuc"
 }
 
-def getServerUrl() { return "https://graph.api.smartthings.com" }
+def getServerUrl() { appSettings.serverUrl }
 
 def buildRedirectUrl()
 {
@@ -250,8 +254,8 @@ def testLife360Connection() {
 
 def initializeLife360Connection() {
 
-	def oauthClientId = "pREqugabRetre4EstetherufrePumamExucrEHuc"
-	def oauthClientSecret = "m3frupRetReswerEChAPrE96qakEdr4V"
+	def oauthClientId = appSettings.clientId
+	def oauthClientSecret = appSettings.clientSecret
 
 	log.debug "Installed with settings: ${settings}"
 
@@ -523,7 +527,7 @@ def createCircleSubscription() {
     
     createAccessToken() // create our own OAUTH access token to use in webhook url
     
-    def hookUrl = "https://graph.api.smartthings.com/api/smartapps/installations/${app.id}/placecallback?access_token=${state.accessToken}".encodeAsURL()
+    def hookUrl = "${serverUrl}/api/smartapps/installations/${app.id}/placecallback?access_token=${state.accessToken}".encodeAsURL()
     
     def url = "https://api.life360.com/v3/circles/${state.circle}/webhook.json"
         
