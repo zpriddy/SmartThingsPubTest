@@ -60,6 +60,10 @@ def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicReport cmd) {
 	[name: "switch", value: cmd.value ? "on" : "off", type: "physical"]
 }
 
+def zwaveEvent(physicalgraph.zwave.commands.basicv1.BasicSet cmd) {
+	[name: "switch", value: cmd.value ? "on" : "off", type: "physical"]
+}
+
 def zwaveEvent(physicalgraph.zwave.commands.switchbinaryv1.SwitchBinaryReport cmd) {
 	[name: "switch", value: cmd.value ? "on" : "off", type: "digital"]
 }
