@@ -70,10 +70,10 @@ def checkForSevereWeather() {
 }
 
 def descriptionFilter(String description) {
-	def filterList = ["Special", "Statement", "Test"]
+	def filterList = ["special", "statement", "test"]
 	def passesFilter = true
 	filterList.each() { word ->
-		if(description.contains(word)) { passesFilter = false }
+		if(description.toLowerCase().contains(word)) { passesFilter = false }
 	}
 	passesFilter
 }
