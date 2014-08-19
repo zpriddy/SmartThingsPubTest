@@ -19,7 +19,7 @@ definition(
     namespace: "dianoga",
     author: "Brian Steere",
     description: "Netatmo Integration",
-    category: "My Apps",
+    category: "SmartThings Internal",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png",
     oauth: true
