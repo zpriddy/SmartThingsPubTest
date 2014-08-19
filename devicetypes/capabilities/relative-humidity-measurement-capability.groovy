@@ -7,7 +7,7 @@ metadata {
 	// simulator metadata
 	simulator {
 		for (int i = 0; i <= 100; i += 10) {
-			status "${i}%": "humidity: ${i}%"
+			status "${i}%": "humidity: ${i}"
 		}
 	}
 
