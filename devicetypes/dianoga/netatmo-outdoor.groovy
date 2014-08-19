@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition (name: "netatmo-outdoor", namespace: "dianoga", author: "Brian Steere") {
+	definition (name: "Netatmo Outdoor Module", namespace: "dianoga", author: "Brian Steere") {
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
 	}
@@ -25,7 +25,7 @@ metadata {
 
 	tiles {
 		valueTile("temperature", "device.temperature", width: 2, height: 2) {
- 			state("temperature", label: '${currentValue}°', unit:"F", backgroundColors: [
+ 			state("temperature", label: '${currentValue}°', backgroundColors: [
  				[value: 31, color: "#153591"],
  				[value: 44, color: "#1e9cbb"],
  				[value: 59, color: "#90d2a7"],
@@ -37,10 +37,13 @@ metadata {
  				)
  		}
  		valueTile("humidity", "device.humidity", inactiveLabel: false) {
- 			state "default", label:'${currentValue}%', unit:"Humidity"
+ 			state "humidity", label:'${currentValue}%', unit:"Humidity"
  		}
- 		main "temperature"
- 		details(["temperature", "humidity"])
+ 		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
+ 			state "default", action:"device.poll", icon:"st.secondary.refresh"
+ 		}
+ 		main (["temperature", "humidity"])
+ 		details(["temperature", "humidity", "refresh"])
 	}
 }
 
@@ -53,4 +56,8 @@ def parse(String description) {
 	// TODO: handle 'noise' attribute
 	// TODO: handle 'pressure' attribute
 
+}
+
+def poll() {
+	parent.poll()
 }
