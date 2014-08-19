@@ -9,10 +9,9 @@ private getVendorName() 	{ "netatmo" }
 private getVendorAuthPath()	{ "http://api.netatmo.net/oauth2/authorize?" }
 private getVendorTokenPath(){ "http://api.netatmo.net/oauth2/token" }
 private getVendorIcon()		{ "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png" }
-private getClientId() 		{ "534577f41c7759259b8b45dd" }
-private getClientSecret() 	{ "Tp7suzR4WSoUkwTBtFVqUnToZmAEO" }
-
-private getServerUrl() 		{ "https://graph.api.smartthings.com" }
+private getClientId() 		{ appSettings.clientId }
+private getClientSecret() 	{ appSettings.clientSecret }
+private getServerUrl() 		{ appSettings.serverUrl }
 
 // Automatically generated. Make future change here.
 definition(
@@ -24,7 +23,11 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png",
     oauth: true
-)
+){
+	appSetting "clientId"
+	appSetting "clientSecret"
+	appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "Credentials", title: "Fetch OAuth2 Credentials", content: "authPage", install: false)
@@ -386,8 +389,8 @@ def initialize() {
 	delete.each { deleteChildDevice(it.deviceNetworkId) }
 
 	// Do the initial poll and schedule it to run every minute
-	runIn(1, poll)
 	schedule("0 */5 * * * ?", poll)
+    poll()
 }
 
 def uninstalled() {
@@ -406,19 +409,19 @@ def getDeviceList() {
 	apiGet("/api/devicelist") { response ->
 		response.data.body.devices.each { value ->
 			def key = value._id
-			deviceList[key] = value.module_name
+			deviceList[key] = "${value.station_name}: ${value.module_name}"
 			state.deviceDetail[key] = value
             state.deviceState[key] = value.dashboard_data
 		}
 		response.data.body.modules.each { value ->
 			def key = value._id
-			deviceList[key] = value.module_name
+			deviceList[key] = "${state.deviceDetail[value.main_device].station_name}: ${value.module_name}"
 			state.deviceDetail[key] = value
             state.deviceState[key] = value.dashboard_data
 		}
 	}
 
-	return deviceList
+	return deviceList.sort() { it.value.toLowerCase() }
 }
 
 private removeChildDevices(delete) {
@@ -470,7 +473,7 @@ def apiGet(String path, Map query, Closure callback) {
 		path: path,
 		'query': query
 	]
-	log.debug "API Get: $params"
+	// log.debug "API Get: $params"
 
 	try {
 		httpGet(params)	{ response ->
@@ -507,7 +510,7 @@ def poll() {
 		switch(detail.type) {
 			case 'NAMain':
 				log.debug "Updating NAMain $data"
-				child?.sendEvent(name: 'temperature', value: cToF(data['Temperature']) as Integer)
+				child?.sendEvent(name: 'temperature', value: cToPref(data['Temperature']) as Integer, unit: getTemperatureScale())
 				child?.sendEvent(name: 'carbonDioxide', value: data['CO2'])
 				child?.sendEvent(name: 'humidity', value: data['Humidity'])
 				child?.sendEvent(name: 'pressure', value: data['Pressure'])
@@ -515,19 +518,19 @@ def poll() {
 				break;
 			case 'NAModule1':
 				log.debug "Updating NAModule1 $data"
-				child?.sendEvent(name: 'temperature', value: cToF(data['Temperature']) as Integer)
+				child?.sendEvent(name: 'temperature', value: cToPref(data['Temperature']) as Integer, unit: getTemperatureScale())
 				child?.sendEvent(name: 'humidity', value: data['Humidity'])
 				break;
 		}
 	}
 }
 
-def cToF(temp) {
-	return temp * 1.8 + 32
-}
-
-def fToC(temp) {
-	return (temp - 32) / 1.8
+def cToPref(temp) {
+	if(getTemperatureScale() == 'C') {
+    	return temp
+    } else {
+		return temp * 1.8 + 32
+    }
 }
 
 def debugEvent(message, displayEvent) {
