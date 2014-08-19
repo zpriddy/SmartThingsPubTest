@@ -1,5 +1,5 @@
 /**
- *  netatmo-basestation
+ *  netatmo-outdoor
  *
  *  Copyright 2014 Brian Steere
  *
@@ -14,13 +14,9 @@
  *
  */
 metadata {
-	definition (name: "Netatmo Basestation", namespace: "dianoga", author: "Brian Steere") {
+	definition (name: "Netatmo Outdoor Module", namespace: "dianoga", author: "Brian Steere") {
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
-
-		attribute "carbonDioxide", "string"
-		attribute "noise", "string"
-		attribute "pressure", "string"
 	}
 
 	simulator {
@@ -43,24 +39,11 @@ metadata {
  		valueTile("humidity", "device.humidity", inactiveLabel: false) {
  			state "humidity", label:'${currentValue}%', unit:"Humidity"
  		}
- 		valueTile("carbonDioxide", "device.carbonDioxide", inactiveLabel: false) {
- 			state "carbonDioxide", label:'${currentValue}ppm', unit:"CO2", backgroundColors: [
- 				[value: 600, color: "#44B621"],
-                [value: 999, color: "#ffcc00"],
-                [value: 1000, color: "#e86d13"]
- 				]
- 		}
- 		valueTile("noise", "device.noise", inactiveLabel: false) {
- 			state "noise", label:'${currentValue}db', unit:"Noise"
- 		}
- 		valueTile("pressure", "device.pressure", inactiveLabel: false) {
- 			state "pressure", label:'${currentValue}mbar', unit:"Pressure"
- 		}
- 		standardTile("refresh", "device.pressure", inactiveLabel: false, decoration: "flat") {
+ 		standardTile("refresh", "device.thermostatMode", inactiveLabel: false, decoration: "flat") {
  			state "default", action:"device.poll", icon:"st.secondary.refresh"
  		}
- 		main(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
- 		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure", "refresh"])
+ 		main (["temperature", "humidity"])
+ 		details(["temperature", "humidity", "refresh"])
 	}
 }
 
