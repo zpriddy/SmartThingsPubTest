@@ -43,25 +43,24 @@ metadata {
 }
 
 def parse(String description) {
-
-	def parsedZwEvent = zwave.parse(description, [0x30: 1, 0x71: 2, 0x84: 1])
-	def zwEvent = zwaveEvent(parsedZwEvent)
 	def result = []
+	def parsedZwEvent = zwave.parse(description, [0x30: 1, 0x71: 2, 0x84: 1])
 
-	result << createEvent( zwEvent )
+	if(parsedZwEvent) {
+		if(parsedZwEvent.CMD == "8407") {
+			def lastStatus = device.currentState("battery")
+			def ageInMinutes = lastStatus ? (new Date().time - lastStatus.date.time)/60000 : 600
+			log.debug "Battery status was last checked ${ageInMinutes} minutes ago"
 
-	if( parsedZwEvent.CMD == "8407" ) {
-		def lastStatus = device.currentState("battery")
-		def ageInMinutes = lastStatus ? (new Date().time - lastStatus.date.time)/60000 : 600
-		log.debug "Battery status was last checked ${ageInMinutes} minutes ago"
-
-		if (ageInMinutes >= 600) {
-			log.debug "Battery status is outdated, requesting battery report"
-			result << new physicalgraph.device.HubAction(zwave.batteryV1.batteryGet().format())
+			if (ageInMinutes >= 600) {
+				log.debug "Battery status is outdated, requesting battery report"
+				result << new physicalgraph.device.HubAction(zwave.batteryV1.batteryGet().format())
+			}
+			result << new physicalgraph.device.HubAction(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
 		}
-		result << new physicalgraph.device.HubAction(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
+		result << createEvent( zwaveEvent(parsedZwEvent) )
 	}
-
+	if(!result) result = [ descriptionText: parsedZwEvent, displayed: false ]
 	log.debug "Parse returned ${result}"
 	return result
 }
