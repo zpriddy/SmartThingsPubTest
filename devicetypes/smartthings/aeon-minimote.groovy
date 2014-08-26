@@ -44,7 +44,7 @@ def parse(String description) {
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv1.WakeUpNotification cmd) {
 	def results = [createEvent(descriptionText: "$device.displayName woke up", isStateChange: false)]
-	
+
     results += configurationCmds().collect{ response(it) }
 	results << response(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
 
