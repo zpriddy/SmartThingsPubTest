@@ -36,11 +36,9 @@ preferences {
 		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
 	}
 	section ("Zip code (optional, defaults to location coordinates when location services are enabled)...") {
-		input "zipCode", "text", required: false
+		input "zipCode", "text", title: "Zip code", required: false
 	}
 }
-
-
 
 def installed() {
 	initialize()
@@ -58,11 +56,22 @@ def initialize() {
 		subscribe(lightSensor, "illuminance", illuminanceHandler, [filterEvents: false])
 	}
 	else {
+		subscribe(location, "position", locationPositionChange)
+		subscribe(location, "sunriseTime", sunriseSunsetTimeHandler)
+		subscribe(location, "sunsetTime", sunriseSunsetTimeHandler)
 		astroCheck()
-		schedule("0 1 * * * ?", astroCheck) // check every hour since location can change without event?
 	}
 }
 
+def locationPositionChange(evt) {
+	log.trace "locationChange()"
+	astroCheck()
+}
+
+def sunriseSunsetTimeHandler(evt) {
+	log.trace "sunriseSunsetTimeHandler()"
+	astroCheck()
+}
 
 def motionHandler(evt) {
 	log.debug "$evt.name: $evt.value"
