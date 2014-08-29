@@ -14,52 +14,21 @@ definition(
 )
 
 preferences {
-	page(name:"bridgeDiscovery", title:"Hue Device Setup", content:"bridgeDiscovery", refreshTimeout:5)
+	page(name:"mainPage", title:"Hue Device Setup", content:"mainPage", refreshTimeout:5)
+	page(name:"bridgeDiscovery", title:"Hue Bridge Discovery", content:"bridgeDiscovery", refreshTimeout:5)
 	page(name:"bridgeBtnPush", title:"Linking with your Hue", content:"bridgeLinking", refreshTimeout:5)
 	page(name:"bulbDiscovery", title:"Hue Device Setup", content:"bulbDiscovery", refreshTimeout:5)
 }
 //PAGES
 /////////////////////////////////////
-def bridgeDiscovery(params=[:])
-{
-	if(canInstallLabs())
-	{
-		if (params.override) {
-			state.bridgeSelectedOverride = true
-		}
 
+def mainPage() {
+	if(canInstallLabs()) {
 		def bridges = bridgesDiscovered()
-		if (!state.bridgeSelectedOverride && state.username && bridges) {
+		if (state.username && bridges) {
 			return bulbDiscovery()
-		}
-		else {
-			int bridgeRefreshCount = !state.bridgeRefreshCount ? 0 : state.bridgeRefreshCount as int
-			state.bridgeRefreshCount = bridgeRefreshCount + 1
-			def refreshInterval = 3
-
-			def options = bridges ?: []
-			def numFound = options.size() ?: 0
-
-			if(!state.subscribe) {
-				subscribe(location, null, locationHandler, [filterEvents:false])
-				state.subscribe = true
-			}
-
-			//bridge discovery request every 15 //25 seconds
-			if((bridgeRefreshCount % 5) == 0) {
-				discoverBridges()
-			}
-
-			//setup.xml request every 3 seconds except on discoveries
-			if(((bridgeRefreshCount % 1) == 0) && ((bridgeRefreshCount % 5) != 0)) {
-				verifyHueBridges()
-			}
-
-			return dynamicPage(name:"bridgeDiscovery", title:"Discovery Started!", nextPage:"bridgeBtnPush", refreshInterval:refreshInterval, uninstall: true) {
-				section("Please wait while we discover your Hue Bridge. Discovery can take five minutes or more, so sit back and relax! Select your device below once discovered.") {
-					input "selectedHue", "enum", required:false, title:"Select Hue Bridge (${numFound} found)", multiple:false, options:options
-				}
-			}
+		} else {
+			return bridgeDiscovery()
 		}
 	}
 	else
@@ -73,7 +42,38 @@ To update your Hub, access Location Settings in the Main Menu (tap the gear next
 				paragraph "$upgradeNeeded"
 			}
 		}
+	}
+}
 
+def bridgeDiscovery(params=[:])
+{
+	def bridges = bridgesDiscovered()
+	int bridgeRefreshCount = !state.bridgeRefreshCount ? 0 : state.bridgeRefreshCount as int
+	state.bridgeRefreshCount = bridgeRefreshCount + 1
+	def refreshInterval = 3
+
+	def options = bridges ?: []
+	def numFound = options.size() ?: 0
+
+	if(!state.subscribe) {
+		subscribe(location, null, locationHandler, [filterEvents:false])
+		state.subscribe = true
+	}
+
+	//bridge discovery request every 15 //25 seconds
+	if((bridgeRefreshCount % 5) == 0) {
+		discoverBridges()
+	}
+
+	//setup.xml request every 3 seconds except on discoveries
+	if(((bridgeRefreshCount % 1) == 0) && ((bridgeRefreshCount % 5) != 0)) {
+		verifyHueBridges()
+	}
+
+	return dynamicPage(name:"bridgeDiscovery", title:"Discovery Started!", nextPage:"bridgeBtnPush", refreshInterval:refreshInterval, uninstall: true) {
+		section("Please wait while we discover your Hue Bridge. Discovery can take five minutes or more, so sit back and relax! Select your device below once discovered.") {
+			input "selectedHue", "enum", required:false, title:"Select Hue Bridge (${numFound} found)", multiple:false, options:options
+		}
 	}
 }
 /////////////////////////////////////

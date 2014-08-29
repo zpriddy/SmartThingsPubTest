@@ -14,7 +14,7 @@
  *
  */
 metadata {
-	definition (name: "netatmo-basestation", namespace: "dianoga", author: "Brian Steere") {
+	definition (name: "Netatmo Basestation", namespace: "dianoga", author: "Brian Steere") {
 		capability "Relative Humidity Measurement"
 		capability "Temperature Measurement"
 
@@ -29,7 +29,7 @@ metadata {
 
 	tiles {
 		valueTile("temperature", "device.temperature", width: 2, height: 2) {
- 			state("temperature", label: '${currentValue}°', unit:"F", backgroundColors: [
+ 			state("temperature", label: '${currentValue}°', backgroundColors: [
  				[value: 31, color: "#153591"],
  				[value: 44, color: "#1e9cbb"],
  				[value: 59, color: "#90d2a7"],
@@ -41,19 +41,26 @@ metadata {
  				)
  		}
  		valueTile("humidity", "device.humidity", inactiveLabel: false) {
- 			state "default", label:'${currentValue}%', unit:"Humidity"
+ 			state "humidity", label:'${currentValue}%', unit:"Humidity"
  		}
  		valueTile("carbonDioxide", "device.carbonDioxide", inactiveLabel: false) {
- 			state "default", label:'${currentValue}ppm', unit:"CO2"
+ 			state "carbonDioxide", label:'${currentValue}ppm', unit:"CO2", backgroundColors: [
+ 				[value: 600, color: "#44B621"],
+                [value: 999, color: "#ffcc00"],
+                [value: 1000, color: "#e86d13"]
+ 				]
  		}
  		valueTile("noise", "device.noise", inactiveLabel: false) {
- 			state "default", label:'${currentValue}db', unit:"Noise"
+ 			state "noise", label:'${currentValue}db', unit:"Noise"
  		}
  		valueTile("pressure", "device.pressure", inactiveLabel: false) {
- 			state "default", label:'${currentValue}mbar', unit:"Pressure"
+ 			state "pressure", label:'${currentValue}mbar', unit:"Pressure"
  		}
- 		main "temperature"
- 		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
+ 		standardTile("refresh", "device.pressure", inactiveLabel: false, decoration: "flat") {
+ 			state "default", action:"device.poll", icon:"st.secondary.refresh"
+ 		}
+ 		main(["temperature", "humidity", "carbonDioxide", "noise", "pressure"])
+ 		details(["temperature", "humidity", "carbonDioxide", "noise", "pressure", "refresh"])
 	}
 }
 
@@ -67,3 +74,8 @@ def parse(String description) {
 	// TODO: handle 'pressure' attribute
 
 }
+
+def poll() {
+	parent.poll()
+}
+
