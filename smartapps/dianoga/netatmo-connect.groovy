@@ -19,11 +19,11 @@ definition(
     namespace: "dianoga",
     author: "Brian Steere",
     description: "Netatmo Integration",
-    category: "SmartThings Internal",
+    category: "SmartThings Labs",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/netamo-icon-1%402x.png",
     oauth: true
-) {
+){
 	appSetting "clientId"
 	appSetting "clientSecret"
 	appSetting "serverUrl"
@@ -153,9 +153,10 @@ def receiveToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>${getVendorName()} Connection</title>
-        <style type="text/css">
+        <style type="text/css">        
+            * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
                 src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
@@ -177,7 +178,7 @@ def receiveToken() {
                 font-style: normal;
             }
             .container {
-                width: 560px;
+                width: 100%;
                 padding: 40px;
                 /*background: #eee;*/
                 text-align: center;
@@ -193,7 +194,6 @@ def receiveToken() {
                 font-family: 'Swiss 721 W01 Thin';
                 text-align: center;
                 color: #666666;
-                padding: 0 40px;
                 margin-bottom: 0;
             }
         /*
@@ -227,9 +227,10 @@ def receivedToken() {
         <!DOCTYPE html>
         <html>
         <head>
-        <meta name="viewport" content="width=50%,height=50%,  user-scalable = yes">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Withings Connection</title>
-        <style type="text/css">
+        <style type="text/css">        
+            * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
                 src: url('https://s3.amazonaws.com/smartapp-icons/Partner/fonts/swiss-721-thin-webfont.eot');
@@ -267,7 +268,6 @@ def receivedToken() {
                 font-family: 'Swiss 721 W01 Thin';
                 text-align: center;
                 color: #666666;
-                padding: 0 40px;
                 margin-bottom: 0;
             }
         /*
@@ -371,11 +371,11 @@ def initialize() {
 			switch(detail.type) {
 				case 'NAMain':
 					log.debug "Base station"
-					createChildDevice("netatmo-basestation", deviceId, "${detail.type}.${deviceId}", detail.module_name)
+					createChildDevice("Netatmo Basestation", deviceId, "${detail.type}.${deviceId}", detail.module_name)
 					break
 				case 'NAModule1':
 					log.debug "Outdoor module"
-					createChildDevice("netatmo-outdoor", deviceId, "${detail.type}.${deviceId}", detail.module_name)
+					createChildDevice("Netatmo Outdoor Module", deviceId, "${detail.type}.${deviceId}", detail.module_name)
 					break
 			}
 		} catch (Exception e) {
@@ -388,9 +388,9 @@ def initialize() {
 	log.debug "Delete: $delete"
 	delete.each { deleteChildDevice(it.deviceNetworkId) }
 
-	// Do the initial poll and schedule it to run every 5 minutes
-	runIn(1, poll)
-	schedule("0 0/5 * * * ?", poll)
+	// Do the initial poll and schedule it to run every minute
+	schedule("0 */5 * * * ?", poll)
+    poll()
 }
 
 def uninstalled() {
@@ -409,19 +409,19 @@ def getDeviceList() {
 	apiGet("/api/devicelist") { response ->
 		response.data.body.devices.each { value ->
 			def key = value._id
-			deviceList[key] = value.module_name
+			deviceList[key] = "${value.station_name}: ${value.module_name}"
 			state.deviceDetail[key] = value
             state.deviceState[key] = value.dashboard_data
 		}
 		response.data.body.modules.each { value ->
 			def key = value._id
-			deviceList[key] = value.module_name
+			deviceList[key] = "${state.deviceDetail[value.main_device].station_name}: ${value.module_name}"
 			state.deviceDetail[key] = value
             state.deviceState[key] = value.dashboard_data
 		}
 	}
 
-	return deviceList
+	return deviceList.sort() { it.value.toLowerCase() }
 }
 
 private removeChildDevices(delete) {
@@ -473,7 +473,7 @@ def apiGet(String path, Map query, Closure callback) {
 		path: path,
 		'query': query
 	]
-	log.debug "API Get: $params"
+	// log.debug "API Get: $params"
 
 	try {
 		httpGet(params)	{ response ->
@@ -510,7 +510,7 @@ def poll() {
 		switch(detail.type) {
 			case 'NAMain':
 				log.debug "Updating NAMain $data"
-				child?.sendEvent(name: 'temperature', value: cToF(data['Temperature']) as Integer)
+				child?.sendEvent(name: 'temperature', value: cToPref(data['Temperature']) as Integer, unit: getTemperatureScale())
 				child?.sendEvent(name: 'carbonDioxide', value: data['CO2'])
 				child?.sendEvent(name: 'humidity', value: data['Humidity'])
 				child?.sendEvent(name: 'pressure', value: data['Pressure'])
@@ -518,19 +518,19 @@ def poll() {
 				break;
 			case 'NAModule1':
 				log.debug "Updating NAModule1 $data"
-				child?.sendEvent(name: 'temperature', value: cToF(data['Temperature']) as Integer)
+				child?.sendEvent(name: 'temperature', value: cToPref(data['Temperature']) as Integer, unit: getTemperatureScale())
 				child?.sendEvent(name: 'humidity', value: data['Humidity'])
 				break;
 		}
 	}
 }
 
-def cToF(temp) {
-	return temp * 1.8 + 32
-}
-
-def fToC(temp) {
-	return (temp - 32) / 1.8
+def cToPref(temp) {
+	if(getTemperatureScale() == 'C') {
+    	return temp
+    } else {
+		return temp * 1.8 + 32
+    }
 }
 
 def debugEvent(message, displayEvent) {

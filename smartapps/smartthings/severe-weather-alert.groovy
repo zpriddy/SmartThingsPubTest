@@ -28,13 +28,20 @@ preferences {
 
 def installed() {
 	log.debug "Installed with settings: ${settings}"
-	schedule("0 */10 * * * ?", "checkForSevereWeather") //Check at top and half-past of every hour
+	scheduleJob()
 }
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
-	unsubscribe()
-	schedule("0 */10 * * * ?", "checkForSevereWeather") //Check at top and half-past of every hour
+    unschedule()
+	scheduleJob()
+}
+
+def scheduleJob() {
+	def sec = Math.round(Math.floor(Math.random() * 60))
+	def min = Math.round(Math.floor(Math.random() * 60))
+	def cron = "$sec $min * * * ?"
+	schedule(cron, "checkForSevereWeather")
 }
 
 def checkForSevereWeather() {
