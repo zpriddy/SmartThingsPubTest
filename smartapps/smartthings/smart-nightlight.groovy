@@ -59,7 +59,10 @@ def initialize() {
 	}
 	else {
 		astroCheck()
-		schedule("0 1 * * * ?", astroCheck) // check every hour since location can change without event?
+		def sec = Math.round(Math.floor(Math.random() * 60))
+		def min = Math.round(Math.floor(Math.random() * 60))
+		def cron = "$sec $min * * * ?"
+		schedule(cron, astroCheck) // check every hour since location can change without event?
 	}
 }
 
