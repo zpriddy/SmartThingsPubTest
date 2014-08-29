@@ -267,7 +267,7 @@ def locationHandler(evt) {
 		{ // description.xml response (application/xml)
 			body = new XmlSlurper().parseText(bodyString)
 
-			if (body?.device?.modelName?.text().startsWith("Sonos") && !body?.device?.modelName?.text().contains("Bridge") && !body?.device?.modelName?.text().contains("Sub"))
+			if (body?.device?.modelName?.text().startsWith("Sonos") && !body?.device?.modelName?.text().toLowerCase().contains("bridge") && !body?.device?.modelName?.text().contains("Sub"))
 			{
 				def sonoses = getSonosPlayer()
 				def player = sonoses.find {it?.key?.contains(body?.device?.UDN?.text())}

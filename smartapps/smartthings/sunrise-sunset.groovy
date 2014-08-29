@@ -49,29 +49,30 @@ def installed() {
 }
 
 def updated() {
-	unschedule()
+	unsubscribe()
+	//unschedule handled in astroCheck method
 	initialize()
 }
 
 def initialize() {
-	scheduleAstroCheck()
+	subscribe(location, "position", locationPositionChange)
+	subscribe(location, "sunriseTime", sunriseSunsetTimeHandler)
+	subscribe(location, "sunsetTime", sunriseSunsetTimeHandler)
+	
 	astroCheck()
 }
 
-def scheduleAstroCheck() {
-	def min = Math.round(Math.floor(Math.random() * 60))
-	def exp = "0 $min * * * ?"
-    log.debug "$exp"
-	schedule(exp, astroCheck) // check every hour since location can change without event?
-    state.hasRandomSchedule = true
+def locationPositionChange(evt) {
+	log.trace "locationChange()"
+	astroCheck()
+}
+
+def sunriseSunsetTimeHandler(evt) {
+	log.trace "sunriseSunsetTimeHandler()"
+	astroCheck()
 }
 
 def astroCheck() {
-	if (!state.hasRandomSchedule && state.riseTime) {
-    	log.info "Rescheduling random astro check"
-        unschedule("astroCheck")
-    	scheduleAstroCheck()
-    }
 	def s = getSunriseAndSunset(zipCode: zipCode, sunriseOffset: sunriseOffset, sunsetOffset: sunsetOffset)
 
 	def now = new Date()
@@ -79,22 +80,27 @@ def astroCheck() {
 	def setTime = s.sunset
 	log.debug "riseTime: $riseTime"
 	log.debug "setTime: $setTime"
-	if (state.riseTime != riseTime.time || state.setTime != setTime.time) {
+	
+	if (state.riseTime != riseTime.time) {
 		state.riseTime = riseTime.time
-		state.setTime = setTime.time
-
+		
 		unschedule("sunriseHandler")
+		if(riseTime.before(now)) {
+			riseTime.next()
+		}
+		log.info "scheduling sunrise handler for $riseTime"
+		runDaily(riseTime, sunriseHandler)
+	}
+   
+	if (state.setTime != setTime.time) {
+		state.setTime = setTime.time
 		unschedule("sunsetHandler")
 
-		if (riseTime.after(now)) {
-			log.info "scheduling sunrise handler for $riseTime"
-			runOnce(riseTime, sunriseHandler)
-		}
-
-		if (setTime.after(now)) {
-			log.info "scheduling sunset handler for $setTime"
-			runOnce(setTime, sunsetHandler)
-		}
+	    if(setTime.before(now)) {
+	        setTime.next()
+	    }
+	    log.info "scheduling sunset handler for $setTime"
+	    runDaily(setTime, sunsetHandler)
 	}
 }
 
@@ -107,7 +113,6 @@ def sunriseHandler() {
 		sunriseOff.off()
 	}
 	changeMode(sunriseMode)
-	unschedule("sunriseHandler") // Temporary work-around for scheduling bug
 }
 
 def sunsetHandler() {
@@ -119,7 +124,6 @@ def sunsetHandler() {
 		sunsetOff.off()
 	}
 	changeMode(sunsetMode)
-	unschedule("sunsetHandler") // Temporary work-around for scheduling bug
 }
 
 def changeMode(newMode) {

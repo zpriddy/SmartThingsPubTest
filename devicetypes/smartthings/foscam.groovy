@@ -24,7 +24,7 @@ metadata {
 	}
 
 	tiles {
-		standardTile("camera", "device.image", width: 1, height: 1, canChangeIcon: false, inactiveLabel: true, canChangeBackground: true) {
+		standardTile("image", "device.image", width: 1, height: 1, canChangeIcon: false, inactiveLabel: true, canChangeBackground: true) {
 			state "default", label: "", action: "", icon: "st.camera.dropcam-centered", backgroundColor: "#FFFFFF"
 		}
 
@@ -40,7 +40,7 @@ metadata {
 			state "default", label:'', action:"getDeviceInfo", icon:"st.secondary.refresh"
 		}*/
 
-		main "camera"
+		main "image"
 		details(["cameraDetails", "take"])
 	}
 }
