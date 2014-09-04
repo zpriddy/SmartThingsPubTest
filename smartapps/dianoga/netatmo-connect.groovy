@@ -546,7 +546,8 @@ def debugEvent(message, displayEvent) {
 }
 
 private Boolean canInstallLabs() {
-	return hasAllHubsOver("000.011.00603")
+//	return hasAllHubsOver("000.011.00603")
+	return true
 }
 
 private Boolean hasAllHubsOver(String desiredFirmware) {
