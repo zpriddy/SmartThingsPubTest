@@ -25,7 +25,7 @@ preferences {
 		input "time4", "time", title: "Time 4", required: false
 	}
 	section("I forget send me a notification and/or text message..."){
-		input "sendPush", "enum", title: "Push Notifiation", required: false, metadata: [values: ["Yes","No"]]
+		input "sendPush", "enum", title: "Push Notifiation", required: false, options: ["Yes","No"]
 		input "phone1", "phone", title: "Phone Number", required: false
 	}
 	section("Time window (optional, defaults to plus or minus 15 minutes") {

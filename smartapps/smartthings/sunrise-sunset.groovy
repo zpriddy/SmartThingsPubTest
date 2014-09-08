@@ -28,17 +28,17 @@ preferences {
 	}
 	section ("Sunrise offset (optional)...") {
 		input "sunriseOffsetValue", "text", title: "HH:MM", required: false
-		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Sunset offset (optional)...") {
 		input "sunsetOffsetValue", "text", title: "HH:MM", required: false
-		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Zip code (optional, defaults to location coordinates)...") {
 		input "zipCode", "text", required: false
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
+		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
 		input "phoneNumber", "phone", title: "Send a text message?", required: false
 	}
 
