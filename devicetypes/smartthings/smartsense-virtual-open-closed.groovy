@@ -33,6 +33,11 @@ metadata {
 		status "x,y,z: 0,1000,0": "x: 0, y: 1000, z: 0, rssi: 100, lqi: 255"
 		status "x,y,z: 0,0,1000": "x: 0, y: 0, z: 1000, rssi: 100, lqi: 255"
 	}
+    
+	preferences {
+		input description: "The offset allows you to calibrate your temperature. Update by entering whole negative or positive number. E.g. -3 or 5.", displayDuringSetup: false, type: "paragraph", element: "paragraph"
+		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by this many degrees", range: "*..*", displayDuringSetup: false
+	}    
 
 	tiles {
 		standardTile("contact", "device.contact", width: 2, height: 2) {
@@ -261,9 +266,14 @@ private getTempResult(part, description) {
 	def name = "temperature"
 	def temperatureScale = getTemperatureScale()
 	def value = zigbee.parseSmartThingsTemperatureValue(part, "temp: ", temperatureScale)
+	if (tempOffset) {
+		def offset = tempOffset as int
+		def v = value as int
+		value = v + offset
+	}
 	def linkText = getLinkText(device)
-	def descriptionText = "$linkText ${name} was $value°$temperatureScale"
-	def isStateChange = isTemperatureStateChange(device, name, value)
+	def descriptionText = "$linkText was $value°$temperatureScale"
+	def isStateChange = isTemperatureStateChange(device, name, value.toString())
 
 	[
 		name: name,

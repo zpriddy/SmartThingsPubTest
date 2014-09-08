@@ -89,7 +89,7 @@ private noRecentContact()
 	if(contact1) {
 		def contactEvents = contact1.eventsSince(sinceTime)
 		log.trace "Found ${contactEvents?.size() ?: 0} door events"
-		if (motionEvents.find { it.value == "open" }) {
+		if (contactEvents.find { it.value == "open" }) {
 			log.debug "There have been recent 'open' events"
 			return false
 		} else {

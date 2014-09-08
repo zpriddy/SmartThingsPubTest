@@ -195,7 +195,7 @@ private Map parseIasMessage(String description) {
 }
 
 def getTemperature(value) {
-	def celsius = Integer.parseInt(value, 16) / 100
+	def celsius = Integer.parseInt(value, 16).shortValue() / 100
 	if(getTemperatureScale() == "C"){
 		return celsius
 	} else {
