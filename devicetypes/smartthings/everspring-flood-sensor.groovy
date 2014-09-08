@@ -22,12 +22,7 @@ metadata {
 			state "wet", icon:"st.alarm.water.wet", backgroundColor:"#53a7c0"
 		}
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
-			state "battery", label:'${currentValue}% battery', unit:""/*, backgroundColors:[
-				[value: 5, color: "#BC2323"],
-				[value: 10, color: "#D04E00"],
-				[value: 15, color: "#F1D801"],
-				[value: 16, color: "#FFFFFF"]
-			]*/
+			state "battery", label:'${currentValue}% battery', unit:""
 		}
 		standardTile("configure", "device.configure", inactiveLabel: false, decoration: "flat") {
 			state "configure", label:'', action:"configuration.configure", icon:"st.secondary.configure"
@@ -38,31 +33,26 @@ metadata {
 }
 
 def parse(String description) {
-	def result = []
+	def result = null
 	def parsedZwEvent = zwave.parse(description, [0x9C: 1, 0x71: 1, 0x84: 2, 0x30: 1])
-
-	if(parsedZwEvent) {
-		if(parsedZwEvent.CMD == "8407") {
-			def lastStatus = device.currentState("battery")
-			def ageInMinutes = lastStatus ? (new Date().time - lastStatus.date.time)/60000 : 600
-			log.debug "Battery status was last checked ${ageInMinutes} minutes ago"
-
-			if (ageInMinutes >= 600) {
-				log.debug "Battery status is outdated, requesting battery report"
-				result << new physicalgraph.device.HubAction(zwave.batteryV1.batteryGet().format())
-			}
-			result << new physicalgraph.device.HubAction(zwave.wakeUpV1.wakeUpNoMoreInformation().format())
-		}
-		result << createEvent( zwaveEvent(parsedZwEvent) )
+	if (parsedZwEvent) {
+		result = zwaveEvent(parsedZwEvent)
 	}
-	if(!result) result = [ descriptionText: parsedZwEvent, displayed: false ]
-	log.debug "Parse returned ${result}"
+	log.debug "Parse '${description}' returned ${result}"
 	return result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.wakeupv2.WakeUpNotification cmd)
 {
-	[descriptionText: "${device.displayName} woke up", isStateChange:  false]
+	def result = [createEvent(descriptionText: "${device.displayName} woke up", isStateChange: false)]
+	def now = new Date().time
+	if (!state.battreq || now - state.battreq > 53*60*60*1000) {
+		state.battreq = now
+		result << response(zwave.batteryV1.batteryGet())
+	} else {
+		result << response(zwave.wakeUpV1.wakeUpNoMoreInformation())
+	}
+	result
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensoralarmv1.SensorAlarmReport cmd)
@@ -72,8 +62,10 @@ def zwaveEvent(physicalgraph.zwave.commands.sensoralarmv1.SensorAlarmReport cmd)
 		map.name = "water"
 		map.value = cmd.sensorState ? "wet" : "dry"
 		map.descriptionText = "${device.displayName} is ${map.value}"
+	} else {
+		map.descriptionText = "${device.displayName}: ${cmd}"
 	}
-	map
+	createEvent(map)
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.sensorbinaryv1.SensorBinaryReport cmd)
@@ -82,13 +74,16 @@ def zwaveEvent(physicalgraph.zwave.commands.sensorbinaryv1.SensorBinaryReport cm
 	map.name = "water"
 	map.value = cmd.sensorValue ? "wet" : "dry"
 	map.descriptionText = "${device.displayName} is ${map.value}"
-	map
+	createEvent(map)
 }
 
 def zwaveEvent(physicalgraph.zwave.commands.alarmv1.AlarmReport cmd)
 {
 	def map = [:]
 	if (cmd.alarmType == 1 && cmd.alarmLevel == 0xFF) {
+		map.name = "battery"
+		map.value = 1
+		map.unit = "%"
 		map.descriptionText = "${device.displayName} has a low battery"
 		map.displayed = true
 		map
@@ -97,8 +92,10 @@ def zwaveEvent(physicalgraph.zwave.commands.alarmv1.AlarmReport cmd)
 		map.displayed = false
 		map
 	} else {
-		log.debug cmd
+		map.descriptionText = "${device.displayName}: ${cmd}"
+		map.displayed = false
 	}
+	createEvent(map)
 }
 
 
@@ -107,6 +104,7 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 	if (cmd.batteryLevel == 0xFF) {
 		map.name = "battery"
 		map.value = 1
+		map.unit = "%"
 		map.descriptionText = "${device.displayName} has a low battery"
 		map.displayed = true
 	} else {
@@ -115,15 +113,18 @@ def zwaveEvent(physicalgraph.zwave.commands.batteryv1.BatteryReport cmd) {
 		map.unit = "%"
 		map.displayed = false
 	}
-	map
+	[createEvent(map), response(zwave.wakeUpV1.wakeUpNoMoreInformation())]
 }
 
 def zwaveEvent(physicalgraph.zwave.Command cmd)
 {
-	log.debug "COMMAND CLASS: $cmd"
+	createEvent(descriptionText: "${device.displayName}: ${cmd}", displayed: false)
 }
 
 def configure()
 {
-	zwave.associationV1.associationSet(groupingIdentifier:1, nodeId:[1]).format()  // TODO: this nodeId is the hub's node id which isn't necessarily 1
+	if (!device.currentState("battery")) {
+		sendEvent(name: "battery", value:100, unit:"%", descriptionText:"(Default battery event)", displayed:false)
+	}
+	zwave.associationV1.associationSet(groupingIdentifier: 1, nodeId: [zwaveHubNodeId]).format()
 }

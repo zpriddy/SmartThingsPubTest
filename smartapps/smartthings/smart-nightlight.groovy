@@ -29,11 +29,11 @@ preferences {
 	}
 	section ("Sunrise offset (optional)...") {
 		input "sunriseOffsetValue", "text", title: "HH:MM", required: false
-		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Sunset offset (optional)...") {
 		input "sunsetOffsetValue", "text", title: "HH:MM", required: false
-		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Zip code (optional, defaults to location coordinates when location services are enabled)...") {
 		input "zipCode", "text", title: "Zip code", required: false

@@ -32,7 +32,7 @@ preferences {
 	}
 	section("Via a push notification and/or an SMS message"){
 		input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
-		input "pushAndPhone", "enum", title: "Both Push and SMS?", required: false, metadata: [values: ["Yes","No"]]
+		input "pushAndPhone", "enum", title: "Both Push and SMS?", required: false, options: ["Yes","No"]
 	}
 	section("Minimum time between messages (optional, defaults to every message)") {
 		input "frequency", "decimal", title: "Minutes", required: false

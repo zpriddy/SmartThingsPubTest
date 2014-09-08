@@ -21,7 +21,7 @@ preferences {
 		input "temperature1", "number", title: "Temperature?"
 	}
     section( "Notifications" ) {
-        input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes","No"]], required:false
+        input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
         input "phone1", "phone", title: "Send a Text Message?", required: false
     }
 	section("Turn on which A/C or fan...") {

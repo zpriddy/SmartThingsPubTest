@@ -33,7 +33,7 @@ preferences {
 		input "emergencySetpoint", "decimal", title: "Emer Temp", required: false
 	}
 	section("Select 'heat' for a heater and 'cool' for an air conditioner..."){
-		input "mode", "enum", title: "Heating or cooling?", metadata: [values: ["heat","cool"]]
+		input "mode", "enum", title: "Heating or cooling?", options: ["heat","cool"]
 	}
 }
 
