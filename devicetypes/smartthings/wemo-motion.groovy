@@ -103,9 +103,15 @@ private String convertHexToIP(hex) {
 
 private getHostAddress() {
 	def parts = device.deviceNetworkId.split(":")
-	def ip = convertHexToIP(parts[0])
-	def port = convertHexToInt(parts[1])
-	return ip + ":" + port
+	def ip, port
+	if (parts.length == 2) {
+		ip = parts[0]
+		port = parts[1]
+	} else {
+		ip = getDeviceDataByName("ip")
+		port = getDeviceDataByName("port")
+	}
+	return convertHexToIP(ip) + ":" + convertHexToInt(port)
 }
 
 
@@ -136,11 +142,11 @@ User-Agent: CyberGarage-HTTP/1.0
 }
 
 ////////////////////////////
-def subscribe() {
+def subscribe(hostAddress) {
 log.debug "Executing 'subscribe()'"
 def address = getCallBackAddress()
 new physicalgraph.device.HubAction("""SUBSCRIBE /upnp/event/basicevent1 HTTP/1.1
-HOST: ${getHostAddress()}
+HOST: ${hostAddress}
 CALLBACK: <http://${address}/>
 NT: upnp:event
 TIMEOUT: Second-4200
@@ -148,6 +154,25 @@ User-Agent: CyberGarage-HTTP/1.0
 
 
 """, physicalgraph.device.Protocol.LAN)
+}
+
+def subscribe() {
+	subscribe(getHostAddress())
+}
+
+def subscribe(ip, port) {
+	def existingIp = getDataValue("ip")
+	def existingPort = getDataValue("port")
+	if (ip && ip != existingIp) {
+		log.debug "Updating ip from $existingIp to $ip"
+		updateDataValue("ip", ip)
+	}
+	if (port && port != existingPort) {
+		log.debug "Updating port from $existingPort to $port"
+		updateDataValue("port", port)
+	}
+
+	subscribe("${ip}:${port}")
 }
 
 ////////////////////////////
