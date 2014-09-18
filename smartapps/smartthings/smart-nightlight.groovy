@@ -8,7 +8,7 @@ definition(
     name: "Smart Nightlight",
     namespace: "smartthings",
     author: "SmartThings",
-    description: "Turns on lights when it's dark and motion is detected.  Turns lights off when it becomes light or some time after motion ceases.",
+    description: "Turns on lights when it's dark and motion is detected. Turns lights off when it becomes light or some time after motion ceases.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-luminance.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-luminance@2x.png"
