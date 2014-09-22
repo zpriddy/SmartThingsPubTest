@@ -1,7 +1,7 @@
 /**
- *  MacThing Music
+ *  ObyThing Music
  *
- *  Copyright 2014 ObyCode
+ *  Copyright 2014 obycode
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -17,7 +17,7 @@
 import groovy.json.JsonSlurper
 
 metadata {
-	definition (name: "MacThing Music", namespace: "com.obycode", author: "ObyCode") {
+	definition (name: "ObyThing Music", namespace: "com.obycode", author: "obycode") {
 		capability "Music Player"
         capability "Refresh"
         capability "Switch"
@@ -96,7 +96,7 @@ metadata {
 	}
     
 //	mappings {
-//		path("/macthing/:message") {
+//		path("/obything/:message") {
 //        	action: [
 //				GET: "updateState"
 //			]
@@ -304,7 +304,6 @@ private Integer convertHexToInt(hex) {
 
 
 private String convertHexToIP(hex) {
-	log.debug("Convert hex to ip: $hex") 
 	[convertHexToInt(hex[0..1]),convertHexToInt(hex[2..3]),convertHexToInt(hex[4..5]),convertHexToInt(hex[6..7])].join(".")
 }
 
@@ -370,7 +369,7 @@ private subscribeAction(path, callbackPath="") {
         path: path,
         headers: [
             HOST: ip,
-            CALLBACK: "<http://${address}/macthing>",
+            CALLBACK: "<http://${address}/obything>",
             NT: "upnp:event",
             TIMEOUT: "Second-3600"])
 	result

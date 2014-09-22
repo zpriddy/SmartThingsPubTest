@@ -1,5 +1,5 @@
 /**
- *  MacThing Music Setup
+ *  ObyThing Music Setup
  *
  *  Copyright 2014 ObyCode
  *
@@ -14,17 +14,17 @@
  *
  */
 definition(
-    name: "MacThing Music Setup",
+    name: "ObyThing Music Setup",
     namespace: "com.obycode",
-    author: "ObyCode",
-    description: "Use this app to setup MacThing Music (http://macthing.obycode.com) to control your music with SmartThings.",
+    author: "cbycode",
+    description: "Use this app to setup ObyThing Music (http://obything.obycode.com) to control your music with SmartThings.",
     category: "SmartThings Labs",
-    iconUrl: "http://obycode.com/macthing/MacThingSTLogo.png",
-    iconX2Url: "http://obycode.com/macthing/MacThingSTLogo@2x.png")
+    iconUrl: "http://obycode.com/obything/ObyThingSTLogo.png",
+    iconX2Url: "http://obycode.com/obything/ObyThingSTLogo@2x.png")
 
 
 preferences {
-	section("Setup my MacThing with this IP:port (click the icon in the status bar to find this):") {
+	section("Setup my ObyThing with this IP:port (click the icon in the status bar to find this):") {
 		input "theAddr", "string", multiple: false, required: true
 	}
     section("on this hub...") {
@@ -60,8 +60,8 @@ def initialize() {
 	def porthex = convertPortToHex(parts[1])
     def dni = "$iphex:$porthex"
 	def hubNames = location.hubs*.name.findAll { it }
-	def d = addChildDevice("com.obycode", "MacThing Music", dni, theHub.id, [label:"${app.label}", name:"MacThing"])
-	log.trace "created MacThing '${d.displayName}' with id $dni"
+	def d = addChildDevice("com.obycode", "ObyThing Music", dni, theHub.id, [label:"${app.label}", name:"ObyThing"])
+	log.trace "created ObyThing '${d.displayName}' with id $dni"
 }
 
 private String convertIPtoHex(ipAddress) { 
