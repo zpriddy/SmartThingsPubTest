@@ -56,7 +56,7 @@ def changeMode() {
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
+	if ( sendPushMessage == "Yes" ) {
 		log.debug( "sending push message" )
 		sendPush( msg )
 	}
