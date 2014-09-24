@@ -53,7 +53,7 @@ def setupNotifications() {
         
 		section("Via a push notification and/or an SMS message"){
 			input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
-			input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", metadata: [values: ["None","Push","SMS","Both"]]
+			input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", options: ["None","Push","SMS","Both"]
 		}
         
         section("Flash the Lights") {

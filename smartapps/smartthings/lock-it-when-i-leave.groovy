@@ -22,8 +22,8 @@ preferences {
 	}
 	section("Lock the lock...") {
 		input "lock1","capability.lock", multiple: true
-		input "unlock", "enum", title: "Unlock when presence is detected?", metadata: [values: ["Yes","No"]]
-		input "spam", "enum", title: "Send Me Notifications?", metadata: [values: ["Yes","No"]]
+		input "unlock", "enum", title: "Unlock when presence is detected?", options: ["Yes","No"]
+		input "spam", "enum", title: "Send Me Notifications?", options: ["Yes","No"]
 	}
 }
 

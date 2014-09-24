@@ -21,7 +21,7 @@ preferences {
 
 	section("Automatate Sonos"){
 		input "sonos", "capability.refresh", title: "Sonos Device", required: false
-		input "actionType", "enum", title: "Action", required: false, metadata: [values: ["Play","Pause","Stop"]]
+		input "actionType", "enum", title: "Action", required: false, options: ["Play","Pause","Stop"]
 	}
 
 	section("Minimum time between messages (optional, defaults to every message)") {

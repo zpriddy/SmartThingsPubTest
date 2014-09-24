@@ -30,7 +30,7 @@ preferences {
 		input "switches", "capability.switch", multiple: true, required: false
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes","No"]], required:false
+		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
 		input "phoneNumber", "phone", title: "Send a Text Message?", required: false
 	}
 }

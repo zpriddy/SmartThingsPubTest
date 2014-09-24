@@ -24,7 +24,7 @@ preferences {
 		input "newMode", "mode", title: "Mode?"
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", metadata:[values:["Yes", "No"]], required: false
+		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
 		input "phoneNumber", "phone", title: "Send a text message?", required: false
 	}
 }
@@ -56,7 +56,7 @@ def changeMode() {
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
+	if ( sendPushMessage == "Yes" ) {
 		log.debug( "sending push message" )
 		sendPush( msg )
 	}

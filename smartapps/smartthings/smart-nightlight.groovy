@@ -8,7 +8,7 @@ definition(
     name: "Smart Nightlight",
     namespace: "smartthings",
     author: "SmartThings",
-    description: "Turns on lights when it's dark and motion is detected.  Turns lights off when it becomes light or some time after motion ceases.",
+    description: "Turns on lights when it's dark and motion is detected. Turns lights off when it becomes light or some time after motion ceases.",
     category: "Convenience",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-luminance.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/light_motion-outlet-luminance@2x.png"
@@ -29,11 +29,11 @@ preferences {
 	}
 	section ("Sunrise offset (optional)...") {
 		input "sunriseOffsetValue", "text", title: "HH:MM", required: false
-		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunriseOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Sunset offset (optional)...") {
 		input "sunsetOffsetValue", "text", title: "HH:MM", required: false
-		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, metadata: [values: ["Before","After"]]
+		input "sunsetOffsetDir", "enum", title: "Before or After", required: false, options: ["Before","After"]
 	}
 	section ("Zip code (optional, defaults to location coordinates when location services are enabled)...") {
 		input "zipCode", "text", title: "Zip code", required: false
