@@ -75,7 +75,8 @@ def doorOpenTooLong() {
 
 void sendMessage()
 {
-	def msg = "${contact.displayName} has been left open for ${openThreshold} minutes."
+	def minutes = (openThreshold != null && openThreshold != "") ? openThreshold : 10
+	def msg = "${contact.displayName} has been left open for ${minutes} minutes."
 	log.info msg
 	if (phone) {
 		sendSms phone, msg

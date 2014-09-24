@@ -65,8 +65,6 @@ def firstPage()
 			verifyDevices()
 		}
 
-
-
 		def switchesDiscovered = switchesDiscovered()
 		def motionsDiscovered = motionsDiscovered()
 		def lightSwitchesDiscovered = lightSwitchesDiscovered()
@@ -108,7 +106,7 @@ def switchesDiscovered() {
 	def map = [:]
 	switches.each {
 		def value = it.value.name ?: "WeMo Switch ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
-		def key = it.value.ip + ":" + it.value.port
+		def key = it.value.mac
 		map["${key}"] = value
 	}
 	map
@@ -119,7 +117,7 @@ def motionsDiscovered() {
 	def map = [:]
 	motions.each {
 		def value = it.value.name ?: "WeMo Motion ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
-		def key = it.value.ip + ":" + it.value.port
+		def key = it.value.mac
 		map["${key}"] = value
 	}
 	map
@@ -132,7 +130,7 @@ def lightSwitchesDiscovered() {
 	def map = [:]
 	lightSwitches.each {
 		def value = it.value.name ?: "WeMo Light Switch ${it.value.ssdpUSN.split(':')[1][-3..-1]}"
-		def key = it.value.ip + ":" + it.value.port
+		def key = it.value.mac
 		map["${key}"] = value
 	}
 	map
@@ -192,8 +190,6 @@ def refreshDevices() {
 	log.debug "refreshDevices() called"
 	def devices = getAllChildDevices()
 	devices.each { d ->
-		// This is intended to do the same thing the WeMo iOS app does when the "refresh" button is pressed,
-		// according to live traffic captures performed with Wireshark.
 		log.debug "Calling refresh() on device: ${d.id}"
 		d.refresh()
 	}
@@ -211,18 +207,27 @@ def addSwitches() {
 	def switches = getWemoSwitches()
 
 	selectedSwitches.each { dni ->
-		def d = getChildDevice(dni)
-
-		if(!d)
-		{
-			def newWemoSwitch = switches.find { (it.value.ip + ":" + it.value.port) == dni }
-			d = addChildDevice("smartthings", "Wemo Switch", dni, newWemoSwitch?.value?.hub, ["label":newWemoSwitch?.value?.name ?: "Wemo Switch", "data":["mac": newWemoSwitch?.value?.mac]]) //, "preferences":["ip": newWemoSwitch.value.ip, "port":newWemoSwitch.value.port, "path":newWemoSwitch.value.ssdpPath, "term":newWemoSwitch.value.ssdpTerm]])
-
-			log.debug "created ${d.displayName} with id $dni"
-
+		def selectedSwitch = switches.find { it.value.mac == dni } ?: switches.find { "${it.value.ip}:${it.value.port}" == dni }
+		def d
+		if (selectedSwitch) {
+			d = getChildDevices()?.find {
+				it.dni == selectedSwitch.value.mac || it.device.getDataValue("mac") == selectedSwitch.value.mac
+			}
 		}
-		else
-		{
+
+		if (!d) {
+			log.debug "Creating WeMo Switch with dni: ${selectedSwitch.value.mac}"
+			d = addChildDevice("smartthings", "Wemo Switch", selectedSwitch.value.mac, selectedSwitch?.value.hub, [
+				"label": selectedSwitch?.value?.name ?: "Wemo Switch",
+				"data": [
+					"mac": selectedSwitch.value.mac,
+					"ip": selectedSwitch.value.ip,
+					"port": selectedSwitch.value.port
+				]
+			])
+
+			log.debug "Created ${d.displayName} with id: ${d.id}, dni: ${d.deviceNetworkId}"
+		} else {
 			log.debug "found ${d.displayName} with id $dni already exists"
 		}
 	}
@@ -232,18 +237,28 @@ def addMotions() {
 	def motions = getWemoMotions()
 
 	selectedMotions.each { dni ->
-		def d = getChildDevice(dni)
-
-		if(!d)
-		{
-			def newWemoMotion = motions.find { (it.value.ip + ":" + it.value.port) == dni }
-			d = addChildDevice("smartthings", "Wemo Motion", dni, newWemoMotion?.value?.hub, ["label":newWemoMotion?.value?.name ?: "Wemo Motion", "data":["mac": newWemoMotion?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
-
-			log.debug "created ${d.displayName} with id $dni"
+		def selectedMotion = motions.find { it.value.mac == dni } ?: motions.find { "${it.value.ip}:${it.value.port}" == dni }
+		def d
+		if (selectedMotion) {
+			d = getChildDevices()?.find {
+				it.dni == selectedMotion.value.mac || it.device.getDataValue("mac") == selectedMotion.value.mac
+			}
 		}
-		else
-		{
-		   log.debug "found ${d.displayName} with id $dni already exists"
+
+		if (!d) {
+			log.debug "Creating WeMo Motion with dni: ${selectedMotion.value.mac}"
+			d = addChildDevice("smartthings", "Wemo Motion", selectedMotion.value.mac, selectedMotion?.value.hub, [
+				"label": selectedMotion?.value?.name ?: "Wemo Motion",
+				"data": [
+					"mac": selectedMotion.value.mac,
+					"ip": selectedMotion.value.ip,
+					"port": selectedMotion.value.port
+				]
+			])
+
+			log.debug "Created ${d.displayName} with id: ${d.id}, dni: ${d.deviceNetworkId}"
+		} else {
+			log.debug "found ${d.displayName} with id $dni already exists"
 		}
 	}
 }
@@ -252,17 +267,27 @@ def addLightSwitches() {
 	def lightSwitches = getWemoLightSwitches()
 
 	selectedLightSwitches.each { dni ->
-		def d = getChildDevice(dni)
+		def selectedLightSwitch = lightSwitches.find { it.value.mac == dni } ?: lightSwitches.find { "${it.value.ip}:${it.value.port}" == dni }
+		def d
+		if (selectedLightSwitch) {
+			d = getChildDevices()?.find {
+				it.dni == selectedLightSwitch.value.mac || it.device.getDataValue("mac") == selectedLightSwitch.value.mac
+			}
+		}
 
-		if(!d)
-		{
-			def newWemoLightSwitch = lightSwitches.find { (it.value.ip + ":" + it.value.port) == dni }
-			d = addChildDevice("smartthings", "Wemo Light Switch", dni, newWemoLightSwitch?.value?.hub, ["label":newWemoLightSwitch?.value?.name ?: "Wemo Light Switch", "data":["mac": newWemoLightSwitch?.value?.mac]]) //, "preferences":["ip": newWemoMotion.value.ip, "port":newWemoMotion.value.port, "usn":newWemoMotion.value.ssdpUSN, "path":newWemoMotion.value.ssdpPath, "term":newWemoMotion.value.ssdpTerm]])
+		if (!d) {
+			log.debug "Creating WeMo Light Switch with dni: ${selectedLightSwitch.value.mac}"
+			d = addChildDevice("smartthings", "Wemo Light Switch", selectedLightSwitch.value.mac, selectedLightSwitch?.value.hub, [
+				"label": selectedLightSwitch?.value?.name ?: "Wemo Light Switch",
+				"data": [
+					"mac": selectedLightSwitch.value.mac,
+					"ip": selectedLightSwitch.value.ip,
+					"port": selectedLightSwitch.value.port
+				]
+			])
 
 			log.debug "created ${d.displayName} with id $dni"
-		}
-		else
-		{
+		} else {
 		   log.debug "found ${d.displayName} with id $dni already exists"
 		}
 	}
@@ -323,9 +348,8 @@ def locationHandler(evt) {
 				log.debug "Found children ${children}"
 				children.each {
 					if (it.getDeviceDataByName("mac") == parsedEvent.mac) {
-						log.debug "updating dni for device ${it} with mac ${parsedEvent.mac}"
-						it.setDeviceNetworkId((parsedEvent.ip + ":" + parsedEvent.port)) //could error if device with same dni already exists
-						it.subscribe()
+						log.debug "updating ip and port, and resubscribing, for device ${it} with mac ${parsedEvent.mac}"
+						it.subscribe(parsedEvent.ip, parsedEvent.port)
 					}
 				}
 			}
@@ -344,7 +368,7 @@ def locationHandler(evt) {
 		else
 		{ // just update the values
 
-		   log.debug "Device was already found in state..."
+			log.debug "Device was already found in state..."
 
 			def d = motions."${parsedEvent.ssdpUSN.toString()}"
 			boolean deviceChangedValues = false
@@ -361,9 +385,8 @@ def locationHandler(evt) {
 				log.debug "Found children ${children}"
 				children.each {
 					if (it.getDeviceDataByName("mac") == parsedEvent.mac) {
-						log.debug "updating dni for device ${it} with mac ${parsedEvent.mac}"
-						it.setDeviceNetworkId((parsedEvent.ip + ":" + parsedEvent.port)) //could error if device with same dni already exists
-						it.subscribe()
+						log.debug "updating ip and port, and resubscribing, for device ${it} with mac ${parsedEvent.mac}"
+						it.subscribe(parsedEvent.ip, parsedEvent.port)
 					}
 				}
 			}
@@ -398,9 +421,8 @@ def locationHandler(evt) {
 				log.debug "Found children ${children}"
 				children.each {
 					if (it.getDeviceDataByName("mac") == parsedEvent.mac) {
-						log.debug "updating dni for device ${it} with mac ${parsedEvent.mac}"
-						it.setDeviceNetworkId((parsedEvent.ip + ":" + parsedEvent.port)) //could error if device with same dni already exists
-						it.subscribe()
+						log.debug "updating ip and port, and resubscribing, for device ${it} with mac ${parsedEvent.mac}"
+						it.subscribe(parsedEvent.ip, parsedEvent.port)
 					}
 				}
 			}
