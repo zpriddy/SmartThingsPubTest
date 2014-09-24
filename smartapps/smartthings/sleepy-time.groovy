@@ -1,3 +1,4 @@
+package smartapps.smartthings
 /**
  *  Sleepy Time
  *
@@ -16,7 +17,7 @@
 
 definition(
     name: "Sleepy Time",
-    namespace: "smarthings",
+    namespace: "smartthings",
     author: "SmartThings",
     description: "Use Jawbone sleep mode events to automatically execute Hello, Home phrases. Automatially put the house to bed or wake it up in the morning by pushing the button on your UP24.",
 	category: "SmartThings Labs",
