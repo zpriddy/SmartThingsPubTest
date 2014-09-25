@@ -130,6 +130,7 @@ def installed() {
 }
 
 def updated() {
+	unschedule()
 	initialize();
 }
 
@@ -137,6 +138,12 @@ def initialize() {
 	if (selectedBulbs) {
 		addBulbs()
 	}
+    schedule("* 0/5 * * * ?", updateGatewayIP)
+}
+
+def uninstalled()
+{
+    unschedule()
 }
 
 def addBulbs() {
