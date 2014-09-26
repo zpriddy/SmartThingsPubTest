@@ -723,8 +723,7 @@ private String convertHexToIP(hex) {
 
 private Boolean canInstallLabs()
 {
-//	return hasAllHubsOver("000.011.00603")
-	return true
+	return hasAllHubsOver("000.011.00603")
 }
 
 private Boolean hasAllHubsOver(String desiredFirmware)
