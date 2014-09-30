@@ -23,9 +23,7 @@ metadata {
 			state "power", label: '${currentValue} W'
 		}
 
-		tile(name: "powerChart", attribute: "powerContent", type: "HTML", content: '${currentValue}', width: 3, height: 2) {
-			state "powerContent", label: ''
-		}
+		tile(name: "powerChart", attribute: "powerContent", type: "HTML", url: '${currentValue}', width: 3, height: 2) { }
 
 		standardTile("refresh", "device.power", inactiveLabel: false, decoration: "flat") {
 			state "default", label: '', action: "refresh.refresh", icon: "st.secondary.refresh"
@@ -38,6 +36,7 @@ metadata {
 }
 
 def refresh() {
+	parent.getDataFromWattvision()
 	setGraphUrl(parent.getGraphUrl(device.deviceNetworkId))
 }
 
