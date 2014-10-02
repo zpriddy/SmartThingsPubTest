@@ -13,13 +13,13 @@
  *
  */
 definition(
-    name: "Gentle Wake Up",
-    namespace: "smartthings",
-    author: "SmartThings",
-    description: "Gentle Wake Up turns on your lights slowly, allowing you to wake up more naturally. Once your lights have reached full brightness, optionally turn on more things, or send yourself a text for a more gentle nudge into the waking world (you may want to set your normal alarm as a backup plan).",
-    category: "Health & Wellness",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime@2x.png"
+	name: "Gentle Wake Up",
+	namespace: "smartthings",
+	author: "SmartThings",
+	description: "Gentle Wake Up turns on your lights slowly, allowing you to wake up more naturally. Once your lights have reached full brightness, optionally turn on more things, or send yourself a text for a more gentle nudge into the waking world (you may want to set your normal alarm as a backup plan).",
+	category: "Health & Wellness",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime@2x.png"
 )
 
 preferences {
@@ -247,6 +247,7 @@ private increment() {
 		if (completionDelay) {
 			log.debug "Finished with steps. Scheduling completion for ${completionDelay} second(s) from now"
 			runIn(completionDelay, 'completion', [overwrite: true])
+			unschedule("healthCheck") // don't let the health check start incrementing again while we wait for the delayed execution of completion
 		} else {
 			log.debug "Finished with steps. Execution completion"
 			completion()
@@ -413,10 +414,6 @@ def completionPercentage() {
 	int totalRunTime = totalRunTimeMillis()
 	int percentOfRunTime = (diff / totalRunTime) * 100
 	log.debug "percentOfRunTime: ${percentOfRunTime}"
-
-	if (percentOfRunTime >= 99) {
-		completion()
-	}
 
 	percentOfRunTime
 }
