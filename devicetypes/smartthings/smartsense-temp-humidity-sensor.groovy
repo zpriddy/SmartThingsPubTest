@@ -30,7 +30,7 @@ metadata {
 	}
 
 	preferences {
-		input description: "The offset allows you to calibrate your temperature. Update by entering a whole negative or positive number. E.g. -3 or 5.", displayDuringSetup: false, type: "paragraph", element: "paragraph"
+		input description: "The offset allows you to calibrate your temperature. Update by entering whole negative or positive number. E.g. -3 or 5.", displayDuringSetup: false, type: "paragraph", element: "paragraph"
 		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by this many degrees", range: "*..*", displayDuringSetup: false
 	}
 
@@ -262,6 +262,9 @@ def configure() {
         "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
         
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        
+        "zcl global send-me-a-report 0xFC45 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
