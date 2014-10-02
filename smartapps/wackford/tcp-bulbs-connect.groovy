@@ -1,5 +1,5 @@
 /*
- *  TCP-Bulbs-Service-Manager.groovy
+ *  Tcp Bulbs (Connect)
  *
  *  Author: todd@wackford.net
  *
@@ -30,10 +30,11 @@
  *  Change 4:   2014-05-02 (twackford) 	
  *                  a. Added current power usage functionality
  *
- *  Change 5:	2014-09-14 (twackford)
+ *  Change 5:	2014-10-02 (twackford)
  *					a. Fixed on/off tile update
  *					b. Fixed var type issues with power calculations
  *					c. Added IP checker for DHCP environments
+ 					d. Added delete device that is not selected in bulb picker
  *
  ******************************************************************************
  *                                   Code
@@ -170,6 +171,19 @@ def addBulbs() {
 		} else {
 			log.debug "We already added this device"
 		}
+	}
+
+	// Delete any that are no longer in settings
+	def delete = getChildDevices().findAll { !selectedBulbs?.contains(it.deviceNetworkId) }
+	removeChildDevices(delete)
+}
+
+private removeChildDevices(delete)
+{
+	log.debug "deleting ${delete.size()} bulbs"
+    log.debug "deleting ${delete}"
+	delete.each {
+		deleteChildDevice(it.device.deviceNetworkId)
 	}
 }
 
