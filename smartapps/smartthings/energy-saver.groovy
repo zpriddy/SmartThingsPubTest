@@ -18,7 +18,7 @@ definition(
     namespace: "smartthings",
     author: "Steve Vlaminck",
 		description: "Turn things off if you're using too much energy",
-    category: "Green Living",
+//    category: "Green Living",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
