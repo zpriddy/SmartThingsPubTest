@@ -32,8 +32,10 @@ preferences {
 		input "time0", "time", title: "From what time?"
 		input "time1", "time", title: "Until what time?"
 	}
-	section("Text me an alert at (sends push notification if not specified)...") {
-		input "phone1", "phone", title: "Phone number?", required: false
+	section("then alert the following people...") {
+		input("recipients", "contact", title: "People to notify", description: "Select recipients") {
+			input "phone1", "phone", title: "Phone number?", required: false
+		}
 	}
 }
 
@@ -55,11 +57,16 @@ def scheduleCheck()
 		def person = person1 ?: "your elder"
 		def msg = "Alert! There has been no activity at ${person}'s place ${timePhrase}"
 		log.debug msg
-		if (phone1) {
-			sendSms(phone1, msg)
+
+		if (recipients) {
+			sendNotification(recipients, msg)
 		}
 		else {
-			sendPush(msg)
+			if (phone1) {
+				sendSms(phone1, msg)
+			} else {
+				sendPush(msg)
+			}
 		}
 	} else {
 		log.debug "There has been activity ${timePhrase}, not sending alert"
