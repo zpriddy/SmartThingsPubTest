@@ -14,7 +14,9 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png",
     oauth: true
-)
+) {
+  appSetting "serverUrl"
+}
 
 preferences {
 	page(name: "auth", title: "Sign in", content: "authPage", uninstall:true)
@@ -86,14 +88,19 @@ def buildUrl(String key, String endpoint="increment", Boolean absolute=true)
 
 	if(absolute)
 	{
-		url = serverName + url
+		url = serverUrl + url
 	}
 
 	return url
 }
 
+//Deprecated
 def getServerName() {
-	return "https://graph.api.smartthings.com"
+	return getServerUrl()
+}
+
+def getServerUrl() {
+  return appSettings.serverUrl
 }
 
 def listAvailableCameras() {
