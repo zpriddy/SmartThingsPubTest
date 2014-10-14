@@ -328,9 +328,7 @@ private handleCompletionSwitches() {
 
 		if (completionSwitchesLevel && isDimmer) {
 			completionSwitch.setLevel(completionSwitchesLevel)
-		}
-
-		if (!isDimmer) {
+		} else {
 			def command = completionSwitchesState ?: "on"
 			completionSwitch."${command}"()
 		}
