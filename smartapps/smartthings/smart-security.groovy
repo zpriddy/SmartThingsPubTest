@@ -24,7 +24,7 @@ preferences {
 	}
 	section("Alarm settings and actions") {
 		input "alarms", "capability.alarm", title: "Which Alarm(s)", multiple: true, required: false
-		input "silent", "text", title: "Silent alarm only (Yes/No)"
+        input "silent", "enum", options: ["Yes","No"], title: "Silent alarm only (Yes/No)"
 		input "seconds", "number", title: "Delay in seconds before siren sounds"
 		input "lights", "capability.switch", title: "Flash these lights (optional)", multiple: true, required: false
 		input "newMode", "mode", title: "Change to this mode (optional)", required: false
