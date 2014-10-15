@@ -31,7 +31,7 @@ preferences {
 	}
 	section("Notify others (optional)") {
 		input "textMessage", "text", title: "Send this message", multiple: false, required: false
-		input "phone", "text", title: "To this phone", multiple: false, required: false
+		input "phone", "phone", title: "To this phone", multiple: false, required: false
 	}
 	section("Arm system when residents quiet for (default 3 minutes)") {
 		input "residentsQuietThreshold", "number", title: "Time in minutes", required: false
