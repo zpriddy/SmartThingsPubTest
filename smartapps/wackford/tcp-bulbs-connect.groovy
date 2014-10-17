@@ -34,7 +34,11 @@
  *					a. Fixed on/off tile update
  *					b. Fixed var type issues with power calculations
  *					c. Added IP checker for DHCP environments
- 					d. Added delete device that is not selected in bulb picker
+ *					d. Added delete device that is not selected in bulb picker
+ *
+ *  Change 6:	2014-10-17 (twackford)
+ *					a. added uninstallFromChildDevice to handle removing from settings                   
+ *
  *
  ******************************************************************************
  *                                   Code
@@ -185,6 +189,20 @@ private removeChildDevices(delete)
 	delete.each {
 		deleteChildDevice(it.device.deviceNetworkId)
 	}
+}
+
+def uninstallFromChildDevice(childDevice) //called from child and will remove from settings
+{
+	log.debug "in uninstallFromChildDevice"
+
+    //now remove the child from settings. Unselects from list of devices, not delete
+    log.debug "Settings size = ${settings['selectedBulbs']}"
+    
+    if (!settings['selectedBulbs']) //empty list, bail
+    	return
+    
+    def newDeviceList = settings['selectedBulbs'] - childDevice.device.deviceNetworkId
+    app.updateSetting("selectedBulbs", newDeviceList)
 }
 
 def getBulbs()

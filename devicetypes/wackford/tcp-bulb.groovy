@@ -28,6 +28,12 @@
  *				b. Call IP checker for DHCP environments from refresh. Parent
  *				   service manager has method to call every 5 minutes too.
  *
+ *  Change 6:	2014-10-17 (wackford)
+ *				a. added step size input to settings of device
+ *				b. added refresh on udate
+ *				c. added uninstallFromChildDevice to handle removing from settings
+ *				d. Changed to allow bulb to 100%, was possible to get past logic at 99
+ *
  *****************************************************************
  *                       Code
  *****************************************************************
@@ -41,6 +47,8 @@ metadata {
 		capability "Refresh"
 		capability "Switch Level"
 
+		attribute "stepsize", "string"
+        
 		command "levelUp"
 		command "levelDown"
         command "on"
@@ -50,7 +58,11 @@ metadata {
 	simulator {
 		// TODO: define status and reply messages here
 	}
-
+    
+    preferences {
+		input "stepsize", "number", title: "Step Size", description: "Dimmer Step Size", defaultValue: 5
+	}
+    
 	tiles {
 		standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
 			state "on", label:'${name}', action:"off", icon:"st.Lighting.light14", backgroundColor:"#79b821"
@@ -84,7 +96,10 @@ metadata {
 def parse(description) {
 	log.debug "parse() - $description"
 	def results = []
-
+	
+    if ( description == "updated" )
+    	return
+        
 	if (description?.name && description?.value)
 	{
 		results << createEvent(name: "${description?.name}", value: "${description?.value}")
@@ -106,19 +121,21 @@ def off() {
 
 def levelUp() {
 	def level = device.latestValue("level") as Integer ?: 0
+    def step = state.stepsize as float
     
-    level+= 10
+    level+= step
     
-    if ( level > 99 )
-    	level = 99
+    if ( level > 100 )
+    	level = 100
     
     setLevel(level)
 }
 
 def levelDown() {
 	def level = device.latestValue("level") as Integer ?: 0
+    def step = state.stepsize as float
     
-    level-= 10
+    level-= step
     
 	if ( level <  1 )
     	level = 1
@@ -129,7 +146,7 @@ def levelDown() {
 def setLevel(value) {
 	def level = value as Integer
 
-    if (( level > 0 ) && ( level < 100 ))
+    if (( level > 0 ) && ( level <= 100 ))
     	on()
     else
     	off()
@@ -148,4 +165,25 @@ def refresh() {
 	log.debug "Executing refresh()"
     parent.updateGatewayIP()
 	parent.poll(this)
+}
+
+def installed() {
+	initialize()
+}
+
+def updated() {
+    initialize()
+    refresh()
+}
+
+def initialize() {
+	if ( !settings.stepsize )
+        state.stepsize = 10 //set the default stepsize
+    else
+    	state.stepsize = settings.stepsize
+}
+
+def uninstalled() {
+	log.debug "Executing 'uninstall' in child"
+    parent.uninstallFromChildDevice(this)
 }
