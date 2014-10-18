@@ -33,7 +33,7 @@ preferences {
 		input "time1", "time", title: "Until what time?"
 	}
 	section("then alert the following people...") {
-		input("recipients", "contact", title: "People to notify", description: "Select recipients") {
+		input("recipients", "contact", title: "People to notify", description: "Send notifications to") {
 			input "phone1", "phone", title: "Phone number?", required: false
 		}
 	}

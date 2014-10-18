@@ -28,7 +28,7 @@ definition(
 preferences {
 	section() {
 		input(name: "driver", type: "capability.presenceSensor", required: true, multiple: false, title: "When this person arrives", description: "Who's driving?")
-		input("recipients", "contact", title: "Notify", description: "Select recipients") {
+		input("recipients", "contact", title: "Notify", description: "Send notifications to") {
 			input(name: "phoneNumber", type: "phone", required: true, multiple: false, title: "Send a text to", description: "Phone number")
 		}
 		input(name: "message", type: "text", required: false, multiple: false, title: "With the message:", description: "Your ride is here!")

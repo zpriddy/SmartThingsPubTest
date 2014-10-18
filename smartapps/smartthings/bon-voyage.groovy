@@ -28,7 +28,7 @@ preferences {
 		input "falseAlarmThreshold", "decimal", title: "Number of minutes", required: false
 	}
 	section( "Notifications" ) {
-		input("recipients", "contact", title: "And notify the following people") {
+		input("recipients", "contact", title: "Send notifications to") {
 			input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
 			input "phone", "phone", title: "Send a Text Message?", required: false
 		}

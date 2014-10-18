@@ -18,7 +18,7 @@ preferences {
 		input "alarm", "capability.waterSensor", title: "Where?"
 	}
 	section("Send a notification to...") {
-		input("recipients", "contact", title: "Recipients", description: "Select recipients") {
+		input("recipients", "contact", title: "Recipients", description: "Send notifications to") {
 			input "phone", "phone", title: "Phone number?", required: false
 		}
 	}

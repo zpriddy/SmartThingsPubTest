@@ -32,7 +32,7 @@ preferences {
         input "threshold", "number", title: "Minutes"
     }
     section("To these contacts") {
-		input("recipients", "contact", title: "Recipients", description: "Select recipients") {
+		input("recipients", "contact", title: "Recipients", description: "Send notifications to") {
 			input "phone1", "phone", required: false
 			input "phone2", "phone", required: false
 			input "phone3", "phone", required: false
