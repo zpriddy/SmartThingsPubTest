@@ -48,8 +48,8 @@ def waterWetHandler(evt) {
 		def msg = "${alarm.displayName} is wet!"
 		log.debug "$alarm is wet, texting $phone"
 
-		if (recipients) {
-			sendNotification(recipients, msg)
+		if (location.contactBookEnabled) {
+			sendNotification(msg, recipients)
 		}
 		else {
 			sendPush(msg)

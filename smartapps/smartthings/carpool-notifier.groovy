@@ -94,8 +94,8 @@ def riderIsHome() {
 }
 
 def sendText() {
-	if (recipients) {
-		sendNotification(recipients, message ?: "Your ride is here!")
+	if (location.contactBookEnabled) {
+		sendNotification(msg, recipients)
 	}
 	else {
 		sendSms(phoneNumber, message ?: "Your ride is here!")

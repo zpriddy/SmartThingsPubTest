@@ -94,8 +94,8 @@ def sendMessage() {
 	def msg = warnMessage
     log.info msg
 
-	if (recipients) {
-		sendNotification(recipients, msg)
+	if (location.contactBookEnabled) {
+		sendNotification(msg, recipients)
 	}
 	else {
 		sendPush msg

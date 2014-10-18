@@ -58,8 +58,8 @@ def scheduleCheck()
 		def msg = "Alert! There has been no activity at ${person}'s place ${timePhrase}"
 		log.debug msg
 
-		if (recipients) {
-			sendNotification(recipients, msg)
+		if (location.contactBookEnabled) {
+			sendNotification(msg, recipients)
 		}
 		else {
 			if (phone1) {
