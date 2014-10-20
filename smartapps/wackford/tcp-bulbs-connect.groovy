@@ -1,5 +1,5 @@
 /*
- *  TCP-Bulbs-Service-Manager.groovy
+ *  Tcp Bulbs (Connect)
  *
  *  Author: todd@wackford.net
  *
@@ -23,14 +23,30 @@
  *					b. Fixed on()/off() during level changes			
  *					c. Minor code cleanup and UI changes
  *
- *
- * Change 3 (lieberman) 2014-04-02	a. Added RoomGetCarousel to poll()
+ *  Change 3:   2014-04-02 (lieberman) 	
+ *                  a. Added RoomGetCarousel to poll()
  * 					b. Added checks in locationHandler() to sync ST status with TCP status
+ *
+ *  Change 4:   2014-05-02 (twackford) 	
+ *                  a. Added current power usage functionality
+ *
+ *  Change 5:	2014-10-02 (twackford)
+ *					a. Fixed on/off tile update
+ *					b. Fixed var type issues with power calculations
+ *					c. Added IP checker for DHCP environments
+ *					d. Added delete device that is not selected in bulb picker
+ *
+ *  Change 6:	2014-10-17 (twackford)
+ *					a. added uninstallFromChildDevice to handle removing from settings                   
+ *
+ *
  ******************************************************************************
  *                                   Code
  ******************************************************************************
  */
 
+
+// Automatically generated. Make future change here.
 definition(
     name: "Tcp Bulbs (Connect)",
     namespace: "wackford",
@@ -44,6 +60,11 @@ definition(
 preferences {
 	page(name:"Gateway", title: "Begin Connected by TCP Device Discovery", content: "discoverGateway", nextPage: "bulbDiscovery", install: false)
 	page(name:"bulbDiscovery", title:"TCP Device Setup", content:"bulbDiscovery", refreshTimeout:5)
+}
+
+def updateGatewayIP() {
+	log.debug "Checking to see if IP changed"
+    sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:greenwavereality-com:service:gop:1", physicalgraph.device.Protocol.LAN))
 }
 
 def discoverGateway() {
@@ -68,6 +89,7 @@ def discoverGateway() {
 
 To update your Hub, access Location Settings in the Main Menu (tap the gear next to your location name), select your Hub, and choose "Update Hub"."""
 
+
 		return dynamicPage(name:"Gateway", title:"Upgrade needed!", nextPage:"", install:false, uninstall: true) {
 			section {
 				paragraph "$upgradeNeeded"
@@ -80,7 +102,7 @@ To update your Hub, access Location Settings in the Main Menu (tap the gear next
 private bulbDiscovery() {
 	log.debug "In bulbDiscovery"
 
-	def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
+	def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,power,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
 
 	def qParams = [
 		cmd: "GWRBatch",
@@ -92,6 +114,7 @@ private bulbDiscovery() {
 
 	// Check for bulbs 
 	state.bulbs = state.bulbs ?: [:]
+
 
 	if (state.bulbs.size() == 0) {
 		sendCommand(cmd)
@@ -112,6 +135,7 @@ def installed() {
 }
 
 def updated() {
+	unschedule()
 	initialize();
 }
 
@@ -119,6 +143,12 @@ def initialize() {
 	if (selectedBulbs) {
 		addBulbs()
 	}
+    schedule("* 0/5 * * * ?", updateGatewayIP)
+}
+
+def uninstalled()
+{
+    unschedule()
 }
 
 def addBulbs() {
@@ -146,6 +176,33 @@ def addBulbs() {
 			log.debug "We already added this device"
 		}
 	}
+
+	// Delete any that are no longer in settings
+	def delete = getChildDevices().findAll { !selectedBulbs?.contains(it.deviceNetworkId) }
+	removeChildDevices(delete)
+}
+
+private removeChildDevices(delete)
+{
+	log.debug "deleting ${delete.size()} bulbs"
+    log.debug "deleting ${delete}"
+	delete.each {
+		deleteChildDevice(it.device.deviceNetworkId)
+	}
+}
+
+def uninstallFromChildDevice(childDevice) //called from child and will remove from settings
+{
+	log.debug "in uninstallFromChildDevice"
+
+    //now remove the child from settings. Unselects from list of devices, not delete
+    log.debug "Settings size = ${settings['selectedBulbs']}"
+    
+    if (!settings['selectedBulbs']) //empty list, bail
+    	return
+    
+    def newDeviceList = settings['selectedBulbs'] - childDevice.device.deviceNetworkId
+    app.updateSetting("selectedBulbs", newDeviceList)
 }
 
 def getBulbs()
@@ -173,6 +230,21 @@ Map bulbsDiscovered() {
 	map
 }
 
+def calculateCurrentPowerUse(deviceCapability, usePercentage) {
+	log.debug "In calculateCurrentPowerUse()"
+    
+    log.debug "deviceCapability: ${deviceCapability}"
+    log.debug "usePercentage: ${usePercentage}"
+    
+    def calcPower = usePercentage * 1000
+    def reportPower = calcPower.round(1) as String
+    reportPower += " Watt(s)"
+    
+    log.debug "report power = ${reportPower}"
+    
+    return reportPower
+}
+
 def locationHandler(evt) {
 	log.debug "In locationHandler()"
 
@@ -186,11 +258,11 @@ def locationHandler(evt) {
 	{
 		//stuff the gateway data
 		state.gateway = []
-		state.gateway = ([ 'ip' 		: parsedEvent.ip,
-			'port'    	: "0050", //tcp returns zeros for some reason, dunno
-			'type'   	: 'gateway',
-			'dni'     	: parsedEvent.ssdpUSN,
-			'path'		: parsedEvent.ssdpPath
+		state.gateway = ([ 	'ip' 		: parsedEvent.ip,
+                            'port'    	: "0050", //tcp returns zeros for some reason, dunno
+							'type'   	: 'gateway',
+							'dni'     	: parsedEvent.ssdpUSN,
+							'path'		: parsedEvent.ssdpPath
 		])
 	}
 
@@ -221,40 +293,49 @@ def locationHandler(evt) {
 						if (state.bulbs == null) {
 							state.bulbs = [:]
 						}
-						def bulbDid = it.did.text() as String
-						def bulbState = it.state.text()
-						def bulbLevel = it.level.text() ? it.level.text() as Integer : 0
-						def theBulb = getChildDevice( bulbDid )
+                        
+                        def bulbDid =             it.did.text() as String
+		         		def bulbState =           it.state.text()
+                		def bulbLevel =           it.level.text()
+                        def bulbPowerCapability = it.other.bulbpower.text()// as Integer                       
+                        def bulbPowerPercentage = it.power.text() as Double
+                        def bulbPower = calculateCurrentPowerUse(bulbPowerCapability, bulbPowerPercentage)
+                        
+                        def theBulb = getChildDevice( bulbDid )
 
 						if ( theBulb ) {
 							log.debug( "bulb exists in state and the bulb's state is ${bulbState}" )
 							def currentBulbState = theBulb.currentValue("switch")
 							def currentBulbLevel = theBulb.currentValue( "level" ) as Integer
-
+                            sendEvent( bulbDid, [name: "power", value: bulbPower] )
+                            
 							if ( currentBulbState == "on" && bulbState == "0" ) {
 								log.debug( "ST thinks the bulb is on, but TCP says the bulb is off" )
-								sendEvent( bulbDid, [name:"switch",value:"off"] )
+								sendEvent( bulbDid, [name: "switch",value:"off"] )
+                                sendEvent( bulbDid, [name: "power", value: "0 Watt(s)"] )
 							}
-
+                            
 							if ( currentBulbState == "off" && bulbState == "1" ) {
 								log.debug( "ST thinks the bulb is off, but TCP says the bulb is on" )
-								sendEvent( bulbDid, [name:"switch",value:"on"] )
+								sendEvent( bulbDid, [name: "switch",value:"on"] )
+                                sendEvent( bulbDid, [name: "power", value: bulbPower] )
 							}
-
+                            
 							if ( currentBulbLevel != bulbLevel ) {
 								log.debug( "ST thinks the bulb level is ${currentBulbLevel} but TCP says the level is ${bulbLevel}" )
 								sendEvent( bulbDid, [name: "level", value: bulbLevel] )
 								sendEvent( bulbDid, [name: "switch.setLevel", value:bulbLevel] )
-
+								sendEvent( bulbDid, [name: "power", value: bulbPower] )
 							}
 						} else {
-							state.bulbs[it.did.text()] = [  id 		: it.did.text(),
-								name 	: "${roomName} ${it.name.text()} ${bulbIndex}",
-								state	: it.state.text(),
-								level 	: it.level.text() ]
+							state.bulbs[it.did.text()] = [id 	: it.did.text(),
+								                          name 	: "${roomName} ${it.name.text()} ${bulbIndex}",
+								                          state	: bulbState,
+								                          level : bulbLevel,
+                                                          power : bulbPower ]
 							lastRoomName = roomName
 							bulbIndex++
-						}
+                        }
 					}
 				});
 			}
@@ -373,9 +454,10 @@ def off(childDevice) {
 		data: "${data}",
 		fmt: "xml"
 	]
+    
+    sendEvent( dni, [name: "power", value: "0 Watt(s)"] )
 
 	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-
 	sendCommand(cmd)
 }
 
@@ -395,11 +477,13 @@ def setLevel(childDevice, value) {
 	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
 
 	sendCommand(cmd)
+    
+    poll()
 }
 
 def poll(childDevice) {
 	log.debug "In poll()"
-	def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
+    def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,power,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
 
 	def qParams = [
 		cmd: "GWRBatch",
@@ -442,4 +526,3 @@ private List getRealHubFirmwareVersions()
 {
 	return location.hubs*.firmwareVersionString.findAll { it }
 }
-
