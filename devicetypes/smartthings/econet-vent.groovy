@@ -17,7 +17,7 @@
 
 metadata {
 	// Automatically generated. Make future change here.
-	definition (name: "Econet Vent", namespace: "smartthings", author: "SmartThings") {
+	definition (name: "EcoNet Vent", namespace: "smartthings", author: "SmartThings") {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Switch"
@@ -180,7 +180,7 @@ def refresh() {
 def poll() {
     
 	if (secondsPast(state.lastbatt, 36*60*60)) {
-		return zwave.batteryV1.batteryGet().format
+		return zwave.batteryV1.batteryGet().format()
 	} else {
     
 		return zwave.switchMultilevelV1.switchMultilevelGet().format()
