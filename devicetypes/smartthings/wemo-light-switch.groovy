@@ -125,6 +125,7 @@ private getHostAddress() {
 			log.warn "Can't figure out ip and port for device: ${device.id}"
 		}
 	}
+	log.debug "Using ip: ${ip} and port: ${port} for device: ${device.id}"
 	return convertHexToIP(ip) + ":" + convertHexToInt(port)
 }
 
