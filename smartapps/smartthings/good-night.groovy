@@ -31,8 +31,10 @@ preferences {
 		input "newMode", "mode", title: "Mode?"
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
-		input "phoneNumber", "phone", title: "Send a Text Message?", required: false
+        input("recipients", "contact", title: "Send notifications to", required: false) {
+            input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+            input "phoneNumber", "phone", title: "Send a Text Message?", required: false
+        }
 	}
 
 }
@@ -166,15 +168,20 @@ private allQuiet() {
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
-		log.debug( "sending push message" )
-		sendPush( msg )
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (sendPushMessage != "No") {
+            log.debug("sending push message")
+            sendPush(msg)
+        }
 
-	if ( phoneNumber ) {
-		log.debug( "sending text message" )
-		sendSms( phoneNumber, msg )
-	}
+        if (phoneNumber) {
+            log.debug("sending text message")
+            sendSms(phoneNumber, msg)
+        }
+    }
 
 	log.debug msg
 }
