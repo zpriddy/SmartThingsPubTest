@@ -21,7 +21,7 @@ preferences {
 		input "time1", "time", title: "When?"
 	}
 	section("Text me if I forget...") {
-        input("recipients", "contact", title: "Send notifications to", required: false) {
+        input("recipients", "contact", title: "Send notifications to") {
             input "phone1", "phone", title: "Phone number?"
         }
 	}

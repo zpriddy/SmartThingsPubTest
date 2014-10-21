@@ -31,7 +31,7 @@ preferences {
 		input "newMode", "mode", title: "Mode?"
 	}
 	section( "Notifications" ) {
-        input("recipients", "contact", title: "Send notifications to", required: false) {
+        input("recipients", "contact", title: "Send notifications to") {
             input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
             input "phoneNumber", "phone", title: "Send a Text Message?", required: false
         }

@@ -94,7 +94,7 @@ def completionPage() {
 		}
 
 		section("Notifications") {
-            input("recipients", "contact", title: "Send notifications to", required: false) {
+            input("recipients", "contact", title: "Send notifications to") {
                 input(name: "completionPhoneNumber", type: "phone", title: "Text This Number", description: "Phone number", required: false)
                 input(name: "completionPush", type: "bool", title: "Send A Push Notification", description: "Phone number", required: false)
             }
