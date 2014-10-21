@@ -23,7 +23,9 @@ preferences {
 		input "openThreshold", "number", description: "Number of minutes", required: false
 	}
 	section("Via text message at this number (or via push notification if not specified") {
-		input "phone", "phone", title: "Phone number (optional)", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Phone number (optional)", required: false
+        }
 	}
 }
 
@@ -78,10 +80,14 @@ void sendMessage()
 	def minutes = (openThreshold != null && openThreshold != "") ? openThreshold : 10
 	def msg = "${contact.displayName} has been left open for ${minutes} minutes."
 	log.info msg
-	if (phone) {
-		sendSms phone, msg
-	}
-	else {
-		sendPush msg
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (phone) {
+            sendSms phone, msg
+        } else {
+            sendPush msg
+        }
+    }
 }
