@@ -52,8 +52,10 @@ def setupNotifications() {
 		}
         
 		section("Via a push notification and/or an SMS message"){
-			input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
-			input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", options: ["None","Push","SMS","Both"]
+            input("recipients", "contact", title: "Send notifications to") {
+                input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
+                input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", options: ["None", "Push", "SMS", "Both"]
+            }
 		}
         
         section("Flash the Lights") {
@@ -209,12 +211,18 @@ def stepHandler(evt) {
     
     	if (settings.notificationType != "None") { // Push or SMS Notification requested
 
+            if (location.contactBookEnabled) {
+                sendNotification(stepMessage, recipients)
+            }
+            else {
+
 			def options = [
 				method: settings.notificationType.toLowerCase(),
 				phone: settings.phone
 			]
             
             sendNotification(stepMessage, options)
+            }
         }
         
         if (settings.sonos) { // play a song on the Sonos as requested
