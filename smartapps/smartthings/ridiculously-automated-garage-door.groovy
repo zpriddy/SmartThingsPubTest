@@ -117,13 +117,8 @@ def carPresence(evt)
 		else {
 			if (doorSensor.currentContact == "closed") {
 				openDoor()
-                if (location.contactBookEnabled) {
-                    sendNotification("Opening garage door due to arrival of ${car.displayName}", recipients)
-                }
-                else {
-                    sendPush "Opening garage door due to arrival of ${car.displayName}"
-                }
-				state.appOpenedDoor = now()
+                sendPush "Opening garage door due to arrival of ${car.displayName}"
+                state.appOpenedDoor = now()
 			}
 			else {
 				log.debug "door already open"
@@ -135,12 +130,8 @@ def carPresence(evt)
 		if (doorSensor.currentContact == "open") {
 			closeDoor()
 			log.debug "Closing ${doorSwitch.displayName} after departure"
-            if (location.contactBookEnabled) {
-                sendNotification("Closing ${doorSwitch.displayName} after departure", recipients)
-            }
-            else {
-                sendPush("Closing ${doorSwitch.displayName} after departure")
-            }
+            sendPush("Closing ${doorSwitch.displayName} after departure")
+
 		}
 		else {
 			log.debug "Not closing ${doorSwitch.displayName} because its already closed"
