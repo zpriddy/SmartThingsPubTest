@@ -18,7 +18,9 @@ preferences {
 		input "contact1", "capability.contactSensor", title: "Where?"
 	}
 	section("Text me at...") {
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -36,5 +38,10 @@ def updated()
 def contactOpenHandler(evt) {
 	log.trace "$evt.value: $evt, $settings"
 	log.debug "$contact1 was opened, texting $phone1"
-	sendSms(phone1, "Your ${contact1.label ?: contact1.name} was opened")
+    if (location.contactBookEnabled) {
+        sendNotification("Your ${contact1.label ?: contact1.name} was opened", recipients)
+    }
+    else {
+        sendSms(phone1, "Your ${contact1.label ?: contact1.name} was opened")
+    }
 }
