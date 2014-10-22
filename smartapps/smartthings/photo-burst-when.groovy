@@ -33,7 +33,9 @@ preferences {
 		input "messageText", "text", title: "Message Text"
 	}
 	section("And as text message to this number (optional)"){
-		input "phone", "phone", title: "Phone Number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Phone Number", required: false
+        }
 	}
 
 }
@@ -60,14 +62,19 @@ def subscribeToEvents() {
 
 def sendMessage(evt) {
 	log.debug "$evt.name: $evt.value, $messageText"
-	sendPush(messageText)
 
-	camera.take()
+    camera.take()
 	(1..((burstCount ?: 5) - 1)).each {
 		camera.take(delay: (500 * it))
 	}
 
-	if (phone) {
-		sendSms(phone, messageText)
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(messageText, recipients)
+    }
+    else {
+        sendPush(messageText)
+        if (phone) {
+            sendSms(phone, messageText)
+        }
+    }
 }
