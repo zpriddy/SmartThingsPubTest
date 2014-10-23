@@ -18,12 +18,6 @@ definition(
 
 preferences {
 	page(name: "rootPage")
-	page(name: "oldRootPage", title: "Wattvision", install: true, uninstall: true) {
-		section {
-			input(name: "wattvisionDataType", type: "enum", required: false, multiple: false, defaultValue: "rate", options: ["rate", "consumption"])
-			label(title: "Assign a name")
-		}
-	}
 }
 
 def rootPage() {
@@ -316,11 +310,6 @@ sensor json: /partners/smartthings/sensor_list?api_id=...&api_key=...
 
 */
 
-private makeLoginRequest() {
-	log.trace "makeLoginRequest"
-	httpGet(uri: loginURL())
-}
-
 def loginCallback() {
 	log.trace "loginCallback"
 
@@ -383,10 +372,10 @@ private wattvisionBaseURL() { "https://www.wattvision.com" }
 
 private loginPath() { "/partners/smartthings/login?callback_url=${loginCallbackURL().encodeAsURL()}" }
 
-private getServerUrl() { "https://graph.api.smartthings.com" }
-
-private loginCallbackURL() { "${getServerUrl()}/api/t/${getMyAccessToken()}/s/${app.id}/${loginCallbackPath()}" }
-
+private loginCallbackURL() {
+	if (!atomicState.accessToken) { createAccessToken() }
+	buildActionUrl(loginCallbackPath())
+}
 private loginCallbackPath() { "login/callback" }
 
 // ========================================================

@@ -115,8 +115,7 @@ def parse(description) {
 	def results = []
 	try {
 
-
-		def msg = parseSoapMessage(description)
+		def msg = parseLanMessage(description)
 		if (msg.headers)
 		{
 			def hdr = msg.header.split('\n')[0]

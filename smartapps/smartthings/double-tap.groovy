@@ -46,7 +46,7 @@ def switchHandler(evt) {
 	def recentStates = master.eventsSince(new Date(now() - 4000), [all:true, max: 10]).findAll{it.name == "switch"}
 	log.debug "${recentStates?.size()} STATES FOUND, LAST AT ${recentStates ? recentStates[0].dateCreated : ''}"
 
-	if (evt.isPhysical()) {
+	if (evt.physical) {
 		if (evt.value == "on" && lastTwoStatesWere("on", recentStates, evt)) {
 			log.debug "detected two taps, turn on other light(s)"
 			onSwitches()*.on()
@@ -73,7 +73,7 @@ private lastTwoStatesWere(value, states, evt) {
 	if (states) {
 
 		log.trace "unfiltered: [${states.collect{it.dateCreated + ':' + it.value}.join(', ')}]"
-		def onOff = states.findAll { it.isPhysical() || !it.type }
+		def onOff = states.findAll { it.physical || !it.type }
 		log.trace "filtered:   [${onOff.collect{it.dateCreated + ':' + it.value}.join(', ')}]"
 
 		// This test was needed before the change to use Event rather than DeviceState. It should never pass now.

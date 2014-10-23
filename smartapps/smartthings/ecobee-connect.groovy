@@ -270,7 +270,7 @@ def buildRedirectUrl()
 def swapToken()
 {
 	log.debug "swapping token: $params"
-	debugEvent ("swapping token: $params", true)
+	debugEvent ("swapping token: $params")
 
 	def code = params.code
 	def oauthState = params.state
@@ -299,7 +299,7 @@ def swapToken()
 	}
 
 	log.debug "SCOTT: swapped token for $jsonMap"
-	debugEvent ("swapped token for $jsonMap", true)
+	debugEvent ("swapped token for $jsonMap")
 
 	atomicState.refreshToken = jsonMap.refresh_token
 	atomicState.authToken = jsonMap.access_token
@@ -382,29 +382,29 @@ def getPollRateMillis() { return 15 * 60 * 1000 }
 def pollChild( child )
 {
 	log.debug "poll child"
-	debugEvent ("poll child", true)
+	debugEvent ("poll child")
 	def now = new Date().time
 
-	debugEvent ("Last Poll Millis = ${atomicState.lastPollMillis}", true)
+	debugEvent ("Last Poll Millis = ${atomicState.lastPollMillis}")
 	def last = atomicState.lastPollMillis ?: 0
 	def next = last + pollRateMillis
 
 	log.debug "pollChild( ${child.device.deviceNetworkId} ): $now > $next ?? w/ current state: ${atomicState.thermostats}"
-	debugEvent ("pollChild( ${child.device.deviceNetworkId} ): $now > $next ?? w/ current state: ${atomicState.thermostats}", true)
+	debugEvent ("pollChild( ${child.device.deviceNetworkId} ): $now > $next ?? w/ current state: ${atomicState.thermostats}")
 
 	// if( now > next )
 	if( true ) // for now let's always poll/refresh
 	{
 		log.debug "polling children because $now > $next"
-		debugEvent("polling children because $now > $next", true)
+		debugEvent("polling children because $now > $next")
 
 		pollChildren()
 
 		log.debug "polled children and looking for ${child.device.deviceNetworkId} from ${atomicState.thermostats}"
-		debugEvent ("polled children and looking for ${child.device.deviceNetworkId} from ${atomicState.thermostats}", true)
+		debugEvent ("polled children and looking for ${child.device.deviceNetworkId} from ${atomicState.thermostats}")
 
 		def currentTime = new Date().time
-		debugEvent ("Current Time = ${currentTime}", true)
+		debugEvent ("Current Time = ${currentTime}")
 		atomicState.lastPollMillis = currentTime
 
 		def tData = atomicState.thermostats[child.device.deviceNetworkId]
@@ -457,13 +457,13 @@ def pollChild( child )
 def availableModes(child)
 {
 
-	debugEvent ("atomicState.Thermos = ${atomicState.thermostats}", true)
+	debugEvent ("atomicState.Thermos = ${atomicState.thermostats}")
 
-	debugEvent ("Child DNI = ${child.device.deviceNetworkId}", true)
+	debugEvent ("Child DNI = ${child.device.deviceNetworkId}")
 
 	def tData = atomicState.thermostats[child.device.deviceNetworkId]
 
-	debugEvent("Data = ${tData}", true)
+	debugEvent("Data = ${tData}")
 
 	if(!tData)
 	{
@@ -490,13 +490,13 @@ def availableModes(child)
 def currentMode(child)
 {
 
-	debugEvent ("atomicState.Thermos = ${atomicState.thermostats}", true)
+	debugEvent ("atomicState.Thermos = ${atomicState.thermostats}")
 
-	debugEvent ("Child DNI = ${child.device.deviceNetworkId}", true)
+	debugEvent ("Child DNI = ${child.device.deviceNetworkId}")
 
 	def tData = atomicState.thermostats[child.device.deviceNetworkId]
 
-	debugEvent("Data = ${tData}", true)
+	debugEvent("Data = ${tData}")
 
 	if(!tData)
 	{
@@ -538,7 +538,7 @@ def pollChildren()
 	log.debug "json Request: " + jsonRequestBody
 
 	log.debug "State AuthToken: ${atomicState.authToken}"
-	debugEvent "State AuthToken: ${atomicState.authToken}", true
+	debugEvent "State AuthToken: ${atomicState.authToken}"
 
 
 	def pollParams = [
@@ -548,14 +548,14 @@ def pollChildren()
 		query: [format: 'json', body: jsonRequestBody]
 	]
 
-	debugEvent ("Before HTTPGET to ecobee.", true)
+	debugEvent ("Before HTTPGET to ecobee.")
 
 	try{
 		httpGet(pollParams) { resp ->
 
 			if (resp.data) {
-				debugEvent ("Response from ecobee GET = ${resp.data}", true)
-				debugEvent ("Response Status = ${resp.status}", true)
+				debugEvent ("Response from ecobee GET = ${resp.data}")
+				debugEvent ("Response Status = ${resp.status}")
 			}
 
 			if(resp.status == 200) {
@@ -578,7 +578,7 @@ def pollChildren()
 						thermostatMode: stat.settings.hvacMode
 					]
 
-					debugEvent ("Event Data = ${data}", true)
+					debugEvent ("Event Data = ${data}")
 
 					collector[dni] = [data:data]
 					return collector
@@ -608,7 +608,7 @@ def pollChildren()
 	catch(Exception e)
 	{
 		log.debug "___exception polling children: " + e
-		debugEvent ("${e}", true)
+		debugEvent ("${e}")
 
 		refreshAuthToken()
 	}
@@ -617,7 +617,7 @@ def pollChildren()
 
 def pollHandler() {
 
-	debugEvent ("in Poll() method.", true)
+	debugEvent ("in Poll() method.")
 	pollChildren() // Hit the ecobee API for update on all thermostats
 
 	atomicState.thermostats.each {stat ->
@@ -625,15 +625,15 @@ def pollHandler() {
 		def dni = stat.key
 
 		log.debug ("DNI = ${dni}")
-		debugEvent ("DNI = ${dni}", true)
+		debugEvent ("DNI = ${dni}")
 
 		def d = getChildDevice(dni)
 
 		if(d)
 		{
 			log.debug ("Found Child Device.")
-			debugEvent ("Found Child Device.", true)
-			debugEvent("Event Data before generate event call = ${stat}", true)
+			debugEvent ("Found Child Device.")
+			debugEvent("Event Data before generate event call = ${stat}")
 
 			d.generateEvent(atomicState.thermostats[dni].data)
 
@@ -660,7 +660,7 @@ def toQueryString(Map m)
 
 private refreshAuthToken() {
 	log.debug "refreshing auth token"
-	debugEvent("refreshing OAUTH token", true)
+	debugEvent("refreshing OAUTH token")
 
 	def stcid = getSmartThingsClientId()
 
@@ -684,7 +684,7 @@ private refreshAuthToken() {
 			{
 				log.debug "Token refreshed...calling saved RestAction now!"
 
-				debugEvent("Token refreshed ... calling saved RestAction now!", true)
+				debugEvent("Token refreshed ... calling saved RestAction now!")
 
 				log.debug resp
 
@@ -693,13 +693,13 @@ private refreshAuthToken() {
 				if (resp.data) {
 
 					log.debug resp.data
-					debugEvent ("Response = ${resp.data}", true)
+					debugEvent ("Response = ${resp.data}")
 
 					atomicState.refreshToken = resp?.data?.refresh_token
 					atomicState.authToken = resp?.data?.access_token
 
-					debugEvent ("Refresh Token = ${atomicState.refreshToken}", true)
-					debugEvent ("OAUTH Token = ${atomicState.authToken}", true)
+					debugEvent ("Refresh Token = ${atomicState.refreshToken}")
+					debugEvent ("OAUTH Token = ${atomicState.authToken}")
 
 					if (data?.action && data?.action != "") {
 						log.debug data.action
@@ -768,7 +768,7 @@ def setMode(child, mode)
 	def jsonRequestBody = '{"selection":{"selectionType":"thermostats","selectionMatch":"' + thermostatIdsString + '","includeRuntime":true},"thermostat": {"settings":{"hvacMode":"'+"${mode}"+'"}}}'
 
 	log.debug "Mode Request Body = ${jsonRequestBody}"
-	debugEvent ("Mode Request Body = ${jsonRequestBody}", true)
+	debugEvent ("Mode Request Body = ${jsonRequestBody}")
 
 	def result = sendJson(jsonRequestBody)
 
@@ -785,21 +785,21 @@ def changeSetpoint (child, amount)
 	def tData = atomicState.thermostats[child.device.deviceNetworkId]
 
 	log.debug "In changeSetpoint."
-	debugEvent ("In changeSetpoint.", true)
+	debugEvent ("In changeSetpoint.")
 
 	if (tData) {
 
 		def thermostat = tData.data
 
 		log.debug "Thermostat=${thermostat}"
-		debugEvent ("Thermostat=${thermostat}", true)
+		debugEvent ("Thermostat=${thermostat}")
 
 		if (thermostat.thermostatMode == "heat") {
 			thermostat.heatingSetpoint = thermostat.heatingSetpoint + amount
 			child.setHeatingSetpoint (thermostat.heatingSetpoint)
 
 			log.debug "New Heating Setpoint = ${thermostat.heatingSetpoint}"
-			debugEvent ("New Heating Setpoint = ${thermostat.heatingSetpoint}", true)
+			debugEvent ("New Heating Setpoint = ${thermostat.heatingSetpoint}")
 
 		}
 		else if (thermostat.thermostatMode == "cool") {
@@ -807,7 +807,7 @@ def changeSetpoint (child, amount)
 			child.setCoolingSetpoint (thermostat.coolingSetpoint)
 
 			log.debug "New Cooling Setpoint = ${thermostat.coolingSetpoint}"
-			debugEvent ("New Cooling Setpoint = ${thermostat.coolingSetpoint}", true)
+			debugEvent ("New Cooling Setpoint = ${thermostat.coolingSetpoint}")
 		}
 	}
 }
@@ -834,32 +834,32 @@ def sendJson(String jsonBody)
 			if(resp.status == 200) {
 
 				log.debug "updated ${resp.data}"
-				debugEvent("updated ${resp.data}", true)
+				debugEvent("updated ${resp.data}")
 				returnStatus = resp.data.status.code
 				if (resp.data.status.code == 0)
 					log.debug "Successful call to ecobee API."
 				else {
 					log.debug "Error return code = ${resp.data.status.code}"
-					debugEvent("Error return code = ${resp.data.status.code}", true)
+					debugEvent("Error return code = ${resp.data.status.code}")
 				}
 			}
 			else
 			{
 				log.error "sent Json & got http status ${resp.status} - ${resp.status.code}"
-				debugEvent ("sent Json & got http status ${resp.status} - ${resp.status.code}", true)
+				debugEvent ("sent Json & got http status ${resp.status} - ${resp.status.code}")
 
 				//refresh the auth token
 				if (resp.status == 500 && resp.status.code == 14)
 				{
 					//log.debug "Storing the failed action to try later"
 					log.debug "Refreshing your auth_token!"
-					debugEvent ("Refreshing OAUTH Token", true)
+					debugEvent ("Refreshing OAUTH Token")
 					refreshAuthToken()
 					return false
 				}
 				else
 				{
-					debugEvent ("Authentication error, invalid authentication method, lack of credentials, etc.", true)
+					debugEvent ("Authentication error, invalid authentication method, lack of credentials, etc.")
 					log.error "Authentication error, invalid authentication method, lack of credentials, etc."
 					return false
 				}
@@ -869,7 +869,7 @@ def sendJson(String jsonBody)
 	catch(Exception e)
 	{
 		log.debug "Exception Sending Json: " + e
-		debugEvent ("Exception Sending JSON: " + e, true)
+		debugEvent ("Exception Sending JSON: " + e)
 		return false
 	}
 
@@ -886,7 +886,7 @@ def getChildName() { "Ecobee Thermostat" }
 def getServerUrl() { return appSettings.serverUrl }
 def getSmartThingsClientId() { appSettings.clientId }
 
-def debugEvent(message, displayEvent) {
+def debugEvent(message, displayEvent = false) {
 
 	def results = [
 		name: "appdebug",
