@@ -24,14 +24,14 @@ preferences {
 	}
 	section("Alarm settings and actions") {
 		input "alarms", "capability.alarm", title: "Which Alarm(s)", multiple: true, required: false
-		input "silent", "text", title: "Silent alarm only (Yes/No)"
+        input "silent", "enum", options: ["Yes","No"], title: "Silent alarm only (Yes/No)"
 		input "seconds", "number", title: "Delay in seconds before siren sounds"
 		input "lights", "capability.switch", title: "Flash these lights (optional)", multiple: true, required: false
 		input "newMode", "mode", title: "Change to this mode (optional)", required: false
 	}
 	section("Notify others (optional)") {
 		input "textMessage", "text", title: "Send this message", multiple: false, required: false
-		input "phone", "text", title: "To this phone", multiple: false, required: false
+		input "phone", "phone", title: "To this phone", multiple: false, required: false
 	}
 	section("Arm system when residents quiet for (default 3 minutes)") {
 		input "residentsQuietThreshold", "number", title: "Time in minutes", required: false
