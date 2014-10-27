@@ -93,6 +93,20 @@ def getButtonSections(buttonNumber) {
 				input "phrase_${buttonNumber}_held", "enum", title: "Held", required: false, options: phrases
 			}
 		}
+        section("Sirens") {
+            input "sirens_${buttonNumber}_pushed","capability.alarm" ,title: "Pushed", multiple: true, required: false
+            input "sirens_${buttonNumber}_held", "capability.alarm", title: "Held", multiple: true, required: false
+        }
+
+        section("Push Notifications") {
+            input "notifications_${buttonNumber}_pushed","bool" ,title: "Pushed", required: false, defaultValue: false
+            input "notifications_${buttonNumber}_held", "bool", title: "Held", required: false, defaultValue: false
+        }
+
+        section("Sms Notifications") {
+            input "phone_${buttonNumber}_pushed","phone" ,title: "Pushed", required: false
+            input "phone_${buttonNumber}_held", "phone", title: "Held", required: false
+        }
 	}
 }
 
@@ -117,7 +131,11 @@ def buttonConfigured(idx) {
 	return settings["lights_$idx_pushed"] ||
 		settings["locks_$idx_pushed"] ||
 		settings["sonos_$idx_pushed"] ||
-		settings["mode_$idx_pushed"]
+		settings["mode_$idx_pushed"] ||
+        settings["notifications_$idx_pushed"] ||
+        settings["sirens_$idx_pushed"] ||
+        settings["notifications_$idx_pushed"]   ||
+        settings["phone_$idx_pushed"]
 }
 
 def buttonEvent(evt){
@@ -168,6 +186,17 @@ def executeHandlers(buttonNumber, value) {
 
 	def phrase = find('phrase', buttonNumber, value)
 	if (phrase != null) location.helloHome.execute(phrase)
+
+    def notifications = find('notifications', buttonNumber, value)
+    log.debug $notifications
+    if (notifications != null) sendPush( "Button $buttonNumber was pressed" )
+
+    def phone = find('phone', buttonNumber, value)
+    log.debug $phone
+    if (phone != null) sendSms(phone, "Button $buttonNumber was pressed")
+
+    def sirens = find('sirens', buttonNumber, value)
+    if (sirens != null) toggle(sirens)
 }
 
 def find(type, buttonNumber, value) {
@@ -192,9 +221,9 @@ def toggle(devices) {
 	else if (devices*.currentValue('lock').contains('locked')) {
 		devices.unlock()
 	}
-	else if (devices*.currentValue('lock').contains('unlocked')) {
-		devices.lock()
-	}
+	else if (devices*.currentValue('alarm').contains('off')) {
+        devices.siren()
+    }
 	else {
 		devices.on()
 	}
