@@ -264,6 +264,9 @@ def configure() {
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
+        "zcl global send-me-a-report 0xFC45 0 0x29 300 3600 {6400}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 1 {${device.zigbeeId}} {}"
