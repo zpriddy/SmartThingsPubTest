@@ -19,8 +19,6 @@ preferences {
 	page(name:"bridgeBtnPush", title:"Linking with your Hue", content:"bridgeLinking", refreshTimeout:5)
 	page(name:"bulbDiscovery", title:"Hue Device Setup", content:"bulbDiscovery", refreshTimeout:5)
 }
-//PAGES
-/////////////////////////////////////
 
 def mainPage() {
 	if(canInstallLabs()) {
@@ -76,7 +74,7 @@ def bridgeDiscovery(params=[:])
 		}
 	}
 }
-/////////////////////////////////////
+
 def bridgeLinking()
 {
 	int linkRefreshcount = !state.linkRefreshcount ? 0 : state.linkRefreshcount as int
@@ -102,7 +100,7 @@ def bridgeLinking()
 		}
 	}
 }
-/////////////////////////////////////
+
 def bulbDiscovery()
 {
 	int bulbRefreshCount = !state.bulbRefreshCount ? 0 : state.bulbRefreshCount as int
@@ -127,9 +125,7 @@ def bulbDiscovery()
 		}
 	}
 }
-//END PAGES
 
-/////////////////////////////////////
 private discoverBridges()
 {
 	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:schemas-upnp-org:device:basic:1", physicalgraph.device.Protocol.LAN))
@@ -175,7 +171,6 @@ private verifyHueBridges() {
 	}
 }
 
-/////////////////////////////////////
 Map bridgesDiscovered() {
 	def vbridges = getVerifiedHueBridges()
 	def map = [:]
@@ -187,7 +182,6 @@ Map bridgesDiscovered() {
 	map
 }
 
-/////////////////////////////////////
 Map bulbsDiscovered() {
 	def bulbs =  getHueBulbs()
 	def map = [:]
@@ -207,37 +201,34 @@ Map bulbsDiscovered() {
 	map
 }
 
-/////////////////////////////////////
 def getHueBulbs()
 {
 	state.bulbs = state.bulbs ?: [:]
 }
 
-/////////////////////////////////////
 def getHueBridges()
 {
 	state.bridges = state.bridges ?: [:]
 }
-/////////////////////////////////////
+
 def getVerifiedHueBridges()
 {
 	getHueBridges().findAll{ it?.value?.verified == true }
 }
 
-/////////////////////////////////////
 def installed() {
-	//log.debug "Installed with settings: ${settings}"
+	log.trace "Installed with settings: ${settings}"
 	initialize()
 
-	runIn(300, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 15 minutes
 }
-/////////////////////////////////////
+
 def updated() {
-	//log.debug "Updated with settings: ${settings}"
+	log.trace "Updated with settings: ${settings}"
 	unsubscribe()
 	initialize()
 }
-/////////////////////////////////////
+
 def initialize() {
 	// remove location subscription aftwards
 	log.debug "INITIALIZE"
@@ -260,20 +251,18 @@ def initialize() {
 // Handles events to add new bulbs
 def bulbListHandler(evt) {
 	def bulbs = [:]
-	log.info "Adding bulbs to state!"
+	log.trace "Adding bulbs to state..."
 	state.bridgeProcessedLightList = true
 	evt.jsonData.each { k,v ->
-		log.info "$k: $v"
+		log.trace "$k: $v"
 		if (v instanceof Map) {
-			bulbs[k] = [id: k, name: v.name, hub:evt.value]
+			bulbs[k] = [id: k, name: v.name, type: v.type, hub:evt.value]
 		}
 	}
 	state.bulbs = bulbs
 	log.info "${bulbs.size()} bulbs found"
 }
 
-
-/////////////////////////////////////
 def addBulbs() {
 
 	def bulbs = getHueBulbs()
@@ -283,8 +272,13 @@ def addBulbs() {
 			def newHueBulb
 			if (bulbs instanceof java.util.Map) {
 				newHueBulb = bulbs.find { (app.id + "/" + it.value.id) == dni }
-				d = addChildDevice("smartthings", "Hue Bulb", dni, newHueBulb?.value.hub, ["label":newHueBulb?.value.name])
-			} else { //backwards compatable
+				if (newHueBulb?.value?.type?.equalsIgnoreCase("Dimmable light")) {
+					d = addChildDevice("smartthings", "Hue Lux Bulb", dni, newHueBulb?.value.hub, ["label":newHueBulb?.value.name])
+				} else {
+					d = addChildDevice("smartthings", "Hue Bulb", dni, newHueBulb?.value.hub, ["label":newHueBulb?.value.name])
+				}
+			} else { 
+            	//backwards compatable
 				newHueBulb = bulbs.find { (app.id + "/" + it.id) == dni }
 				d = addChildDevice("smartthings", "Hue Bulb", dni, newHueBulb?.hub, ["label":newHueBulb?.name])
 			}
@@ -292,10 +286,17 @@ def addBulbs() {
 			log.debug "created ${d.displayName} with id $dni"
 			d.refresh()
 		} else {
-			log.debug "found ${d.displayName} with id $dni already exists"
+			log.debug "found ${d.displayName} with id $dni already exists, type: '$d.typeName'"
+			if (bulbs instanceof java.util.Map) {
+            	def newHueBulb = bulbs.find { (app.id + "/" + it.value.id) == dni }
+				if (newHueBulb?.value?.type?.equalsIgnoreCase("Dimmable light") && d.typeName == "Hue Bulb") {
+					d.setDeviceType("Hue Lux Bulb")
+				}
+			}
 		}
 	}
 }
+
 def addBridge() {
 	def vbridges = getVerifiedHueBridges()
 	def vbridge = vbridges.find {(it.value.ip + ":" + it.value.port) == selectedHue}
@@ -318,7 +319,6 @@ def addBridge() {
 }
 
 
-/////////////////////////////////////
 def locationHandler(evt) {
 	log.info "LOCATION HANDLER: $evt.description"
 	def description = evt.description
@@ -423,7 +423,6 @@ def locationHandler(evt) {
 	}
 }
 
-/////////////////////////////////////
 private def parseEventMessage(Map event) {
 	//handles bridge attribute events
 	return event
@@ -514,10 +513,9 @@ private def parseEventMessage(String description) {
 	event
 }
 
-/////////////////////////////////////
 def doDeviceSync(){
 	log.debug "Doing Hue Device Sync!"
-	runIn(300, "doDeviceSync" , [overwrite: false]) //schedule to run again in 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //schedule to run again in 15 minutes
 
 	//shrink the large bulb lists
 	convertBulbListToMap()
@@ -534,7 +532,6 @@ def doDeviceSync(){
 
 ////////////////////////////////////////////
 //CHILD DEVICE METHODS
-
 /////////////////////////////////////
 def parse(childDevice, description) {
 	def parsedEvent = parseEventMessage(description)
@@ -605,7 +602,6 @@ def parse(childDevice, description) {
 	}
 }
 
-/////////////////////////////////////
 def on(childDevice) {
 	log.debug "Executing 'on'"
 	put("lights/${getId(childDevice)}/state", [on: true])
