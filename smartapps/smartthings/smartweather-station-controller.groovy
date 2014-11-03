@@ -55,9 +55,9 @@ def scheduledEvent() {
 	def timeSinceLastRunMS = state.lastRunTime ? now() - state.lastRunTime : null //how long since it last ran?
 
 	if(!timeSinceLastRunMS || timeSinceLastRunMS > runAgainWindowMS){
-		runIn(3600, scheduledEvent, [overwrite: false])
-		weatherDevices.refresh()
+		runIn(delayTimeSecs, scheduledEvent, [overwrite: false])
 		state.lastRunTime = now()
+		weatherDevices.refresh()
 	} else {
 		log.trace "Trying to run smartweather-station-controller too soon. Has only been ${timeSinceLastRunMS} ms but needs to be at least ${runAgainWindowMS} ms"
 	}
