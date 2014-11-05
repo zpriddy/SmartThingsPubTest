@@ -55,16 +55,16 @@ def initialize() {
 			//runDaily(endTime, "scheduleCheck${index}")
 			switch (index) {
 				case 0:
-					runDaily(endTime, scheduleCheck0)
+					schedule(endTime, scheduleCheck0)
 					break
 				case 1:
-					runDaily(endTime, scheduleCheck1)
+					schedule(endTime, scheduleCheck1)
 					break
 				case 2:
-					runDaily(endTime, scheduleCheck2)
+					schedule(endTime, scheduleCheck2)
 					break
 				case 3:
-					runDaily(endTime, scheduleCheck3)
+					schedule(endTime, scheduleCheck3)
 					break
 			}
 		}

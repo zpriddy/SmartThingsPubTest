@@ -102,7 +102,7 @@ def astroCheck() {
 	        setTime.next()
 	    }
 	    log.info "scheduling sunset handler for $setTime"
-	    runDaily(setTime, sunsetHandler)
+	    schedule(setTime, sunsetHandler)
 	}
 }
 
