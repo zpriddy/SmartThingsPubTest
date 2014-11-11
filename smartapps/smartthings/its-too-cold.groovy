@@ -53,7 +53,7 @@ def temperatureHandler(evt) {
 		// Don't send a continuous stream of text messages
 		def deltaMinutes = 10 // TODO: Ask for "retry interval" in prefs?
 		def timeAgo = new Date(now() - (1000 * 60 * deltaMinutes).toLong())
-		def recentEvents = temperatureSensor1.eventsSince(timeAgo)
+		def recentEvents = temperatureSensor1.eventsSince(timeAgo)?.findAll { it.name == "temperature" }
 		log.trace "Found ${recentEvents?.size() ?: 0} events in the last $deltaMinutes minutes"
 		def alreadySentSms = recentEvents.count { it.doubleValue <= tooCold } > 1
 
