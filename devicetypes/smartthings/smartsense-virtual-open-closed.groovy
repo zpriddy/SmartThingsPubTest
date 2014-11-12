@@ -202,19 +202,21 @@ private List parseOrientationMessage(String description) {
 	results << xyz
 
 	// Looks for Z-axis orientation as virtual contact state
-	log.debug "xyz = $xyz"
-	log.debug "value = '$xyz.value'"
-	log.debug "values = ${xyz.value.split(',')}"
 	def a = xyz.value.split(',').collect{it.toInteger()}
-	def absValue = Math.abs(a[2])
-	log.debug "absValue: $absValue"
-	if (absValue > 175) {
-		log.info "contact: OPEN"
-		results << createEvent(name: "contact", value: "open")
+	def absValueXY = Math.max(Math.abs(a[0]), Math.abs(a[1]))
+	def absValueZ = Math.abs(a[2])
+	log.debug "absValueXY: $absValueXY, absValueZ: $absValueZ"
+
+
+	if (absValueZ > 825 && absValueXY < 175) {
+		results << createEvent(name: "contact", value: "open", unit: "")
+		results << createEvent(name: "status", value: "open", unit: "")
+		log.debug "STATUS: open"
 	}
-	else {
-		log.info "contact: CLOSED"
-		results << createEvent(name: "contact", value: "closed")
+	else if (absValueZ < 75 && absValueXY > 825) {
+		results << createEvent(name: "contact", value: "closed", unit: "")
+		results << createEvent(name: "status", value: "closed", unit: "")
+		log.debug "STATUS: closed"
 	}
 
 	results

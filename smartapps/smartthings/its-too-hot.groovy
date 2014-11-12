@@ -21,8 +21,10 @@ preferences {
 		input "temperature1", "number", title: "Temperature?"
 	}
     section( "Notifications" ) {
-        input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
-        input "phone1", "phone", title: "Send a Text Message?", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+            input "phone1", "phone", title: "Send a Text Message?", required: false
+        }
     }
 	section("Turn on which A/C or fan...") {
 		input "switch1", "capability.switch", required: false
@@ -67,14 +69,20 @@ def temperatureHandler(evt) {
 }
 
 private send(msg) {
-    if ( sendPushMessage != "No" ) {
-        log.debug( "sending push message" )
-        sendPush( msg )
+    if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+        sendNotification(msg, recipients)
     }
+    else {
+        if (sendPushMessage != "No") {
+            log.debug("sending push message")
+            sendPush(msg)
+        }
 
-    if ( phone1 ) {
-        log.debug( "sending text message" )
-        sendSms( phone1, msg )
+        if (phone1) {
+            log.debug("sending text message")
+            sendSms(phone1, msg)
+        }
     }
 
     log.debug msg

@@ -134,6 +134,13 @@ def inputPage() {
 			input(type: "time", name: "timeRequired", title: "required:true", required: true, multiple: false)
 			input(type: "time", name: "timeWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
 		}
+        section("contact-book") {
+            input("recipients", "contact", title: "Notify", description: "Send notifications to") {
+                input(type: "phone", name: "phone", title: "Send text message to", required: false, multiple: false)
+                input(type: "boolean", name: "boolean", title: "Send push notification", required: false, multiple: false)
+
+            }
+        }
 	}
 }
 

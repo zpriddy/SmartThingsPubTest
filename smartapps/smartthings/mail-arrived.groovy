@@ -18,8 +18,10 @@ preferences {
 		input "accelerationSensor", "capability.accelerationSensor", title: "Where?"
 	}
 	section("Notify me...") {
-		input "pushNotification", "bool", title: "Push notification", required: false, defaultValue: "true"
-		input "phone1", "phone", title: "Phone number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "pushNotification", "bool", title: "Push notification", required: false, defaultValue: "true"
+            input "phone1", "phone", title: "Phone number", required: false
+        }
 	}
 }
 
@@ -46,13 +48,19 @@ def accelerationActiveHandler(evt) {
 		log.debug "Notifications already sent within the last $deltaSeconds seconds (phone1: $phone1, pushNotification: $pushNotification)"
 	}
 	else {
-		if (phone1 != null && phone1 != "") {
-			log.debug "$accelerationSensor has moved, texting $phone1"
-			sendSms(phone1, "Mail has arrived!")
-		}
-		if (pushNotification) {
-			log.debug "$accelerationSensor has moved, sending push"
-			sendPush("Mail has arrived!")
-		}
+        if (location.contactBookEnabled) {
+            log.debug "$accelerationSensor has moved, notifying ${recipients?.size()}"
+            sendNotification("Mail has arrived!", recipients)
+        }
+        else {
+        if (phone1 != null && phone1 != "") {
+            log.debug "$accelerationSensor has moved, texting $phone1"
+            sendSms(phone1, "Mail has arrived!")
+        }
+        if (pushNotification) {
+            log.debug "$accelerationSensor has moved, sending push"
+            sendPush("Mail has arrived!")
+        }
+    }
 	}
 }

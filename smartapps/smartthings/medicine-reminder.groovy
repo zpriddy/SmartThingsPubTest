@@ -25,8 +25,10 @@ preferences {
 		input "time4", "time", title: "Time 4", required: false
 	}
 	section("I forget send me a notification and/or text message..."){
-		input "sendPush", "enum", title: "Push Notifiation", required: false, options: ["Yes","No"]
-		input "phone1", "phone", title: "Phone Number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "sendPush", "enum", title: "Push Notification", required: false, options: ["Yes", "No"]
+            input "phone1", "phone", title: "Phone Number", required: false
+        }
 	}
 	section("Time window (optional, defaults to plus or minus 15 minutes") {
 		input "timeWindow", "decimal", title: "Minutes", required: false
@@ -93,12 +95,17 @@ def scheduleCheck()
 private sendMessage() {
 	def msg = "Please remember to take your medicine"
 	log.info msg
-	if (phone1) {
-		sendSms(phone1, msg)
-	}
-	if (sendPush == "Yes") {
-		sendPush(msg)
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (phone1) {
+            sendSms(phone1, msg)
+        }
+        if (sendPush == "Yes") {
+            sendPush(msg)
+        }
+    }
 }
 
 def getTimeWindowMsec() {
