@@ -138,13 +138,6 @@ private List parseAccelerationMessage(String description) {
 		if (part.startsWith('acceleration:')) {
 			def event = getAccelerationResult(part, description)
 			results << event
-
-			if (event.value == "active") {
-				def direction = motionDirection()
-				log.info "Generating opening/closing status of ${direction}"
-				results << createEvent(name: "status", value: direction)
-			}
-
 		}
 		else if (part.startsWith('rssi:')) {
 			results << getRssiResult(part, description)
