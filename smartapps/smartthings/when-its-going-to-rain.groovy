@@ -25,7 +25,9 @@ preferences {
 		input "sensors", "capability.contactSensor", multiple: true
 	}
 	section("Text me if I anything is open..."){
-		input "phone", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -46,7 +48,12 @@ def scheduleCheck() {
 	if (isStormy(response)) {
 		def open = sensors.findAll { it?.latestValue("contact") == 'open' }
 		if (open) {
-			sendSms(phone, "A storm is a coming and the following things are open: ${open.join(', ')}")
+            if (location.contactBookEnabled) {
+                sendNotification("A storm is a coming and the following things are open: ${open.join(', ')}", recipients)
+            }
+            else {
+                sendSms(phone, "A storm is a coming and the following things are open: ${open.join(', ')}")
+            }
 		}
 	}
 }

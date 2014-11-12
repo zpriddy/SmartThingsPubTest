@@ -18,7 +18,9 @@ preferences {
 		input "presence", "capability.presenceSensor", title: "Which sensor?"
 	}
 	section("Send a text message to...") {
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -35,9 +37,21 @@ def updated() {
 def presenceHandler(evt) {
 	if (evt.value == "present") {
 		log.debug "${presence.label ?: presence.name} has arrived at the ${location}"
-    	sendSms(phone1, "${presence.label ?: presence.name} has arrived at the ${location}")
+
+        if (location.contactBookEnabled) {
+            sendNotification("${presence.label ?: presence.name} has arrived at the ${location}", recipients)
+        }
+        else {
+            sendSms(phone1, "${presence.label ?: presence.name} has arrived at the ${location}")
+        }
 	} else if (evt.value == "not present") {
 		log.debug "${presence.label ?: presence.name} has left the ${location}"
-		sendSms(phone1, "${presence.label ?: presence.name} has left the ${location}")
+
+        if (location.contactBookEnabled) {
+            sendNotification("${presence.label ?: presence.name} has left the ${location}", recipients)
+        }
+        else {
+            sendSms(phone1, "${presence.label ?: presence.name} has left the ${location}")
+        }
 	}
 }

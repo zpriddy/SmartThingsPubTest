@@ -16,9 +16,11 @@ definition(
 
 preferences {
 	section ("In addition to push notifications, send text alerts to...") {
-		input "phone1", "phone", title: "Phone Number 1", required: false
-		input "phone2", "phone", title: "Phone Number 2", required: false
-		input "phone3", "phone", title: "Phone Number 3", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone Number 1", required: false
+            input "phone2", "phone", title: "Phone Number 2", required: false
+            input "phone3", "phone", title: "Phone Number 3", required: false
+        }
 	}
 
 	section ("Zip code (optional, defaults to location coordinates)...") {
@@ -94,14 +96,20 @@ def zipcodeIsValid() {
 }
 
 private send(message) {
-	sendPush message
-	if (settings.phone1) {
-		sendSms phone1, message
-	}
-	if (settings.phone2) {
-		sendSms phone2, message
-	}
-	if (settings.phone3) {
-		sendSms phone3, message
-	}
+    if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+        sendNotification(msg, recipients)
+    }
+    else {
+        sendPush message
+        if (settings.phone1) {
+            sendSms phone1, message
+        }
+        if (settings.phone2) {
+            sendSms phone2, message
+        }
+        if (settings.phone3) {
+            sendSms phone3, message
+        }
+    }
 }

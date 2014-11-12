@@ -9,8 +9,10 @@ preferences {
 			input "battery", "capability.battery", title: "Which Devices?", required: true, multiple: true
 		}
 		section("Notification method") {
-			input "pushNotification", "bool", title: "Push notification", description: " ", required: false
-			input "phone", "phone", title: "Text message at", description: "Tap to enter phone number", required: false
+            input("recipients", "contact", title: "Send notifications to") {
+                input "pushNotification", "bool", title: "Push notification", description: " ", required: false
+                input "phone", "phone", title: "Text message at", description: "Tap to enter phone number", required: false
+            }
 		}
 	}
 }
@@ -44,14 +46,20 @@ def lowBatteryHandler(evt) {
 
 def sendNotification(device, value) {
 	def msg = "Your device: ${device} has only ${value}% battery remaining"
-	log.debug "Low battery detected, sending message: '$msg', push:$pushNotification, phone:$phone"
+	log.debug "Low battery detected, sending message: '$msg', push:$pushNotification, phone:$phone, contacts:${recipients?.size()}"
 
-	if (pushNotification) {
-		sendPush(msg)
-	}
-	if (phone) {
-		sendSms(phone, msg)
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+
+        if (pushNotification) {
+            sendPush(msg)
+        }
+        if (phone) {
+            sendSms(phone, msg)
+        }
+    }
 }
 
 def sendLowBatteryWarning(device, warningLevel, value) {

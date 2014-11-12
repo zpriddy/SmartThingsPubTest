@@ -23,7 +23,9 @@ preferences {
 		input "sensor1", "capability.accelerationSensor"
 	}
 	section("Via this number (optional, sends push notification if not specified)"){
-		input "phone", "phone", title: "Phone Number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Phone Number", required: false
+        }
 	}
 	section("And by turning on these lights (optional)") {
 		input "switches", "capability.switch", required: false, multiple: true, title: "Which lights?"
@@ -88,11 +90,18 @@ def checkRunning() {
 				def msg = "${sensor1.displayName} is finished"
 				log.info msg
 
-				if (phone) {
-					sendSms phone, msg
-				} else {
-					sendPush msg
-				}
+                if (location.contactBookEnabled) {
+                    sendNotification(msg, recipients)
+                }
+                else {
+
+                    if (phone) {
+                        sendSms phone, msg
+                    } else {
+                        sendPush msg
+                    }
+
+                }
 
 				if (switches) {
 					if (lightMode?.equals("Turn On Lights")) {

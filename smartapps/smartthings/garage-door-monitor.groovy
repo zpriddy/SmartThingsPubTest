@@ -21,7 +21,9 @@ preferences {
 		input "maxOpenTime", "number", title: "Minutes?"
 	}
 	section("Text me at (optional, sends a push notification if not specified)...") {
-		input "phone", "phone", title: "Phone number?", required: false
+        input("recipients", "contact", title: "Notify", description: "Send notifications to") {
+            input "phone", "phone", title: "Phone number?", required: false
+        }
 	}
 }
 
@@ -82,12 +84,16 @@ def sendTextMessage() {
 	updateSmsHistory()
 	def openMinutes = maxOpenTime * (state.smsHistory?.size() ?: 1)
 	def msg = "Your ${multisensor.label ?: multisensor.name} has been open for more than ${openMinutes} minutes!"
-	if (phone) {
-		sendSms(phone, msg)
-	}
-	else {
-		sendPush msg
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (phone) {
+            sendSms(phone, msg)
+        } else {
+            sendPush msg
+        }
+    }
 }
 
 def updateSmsHistory() {

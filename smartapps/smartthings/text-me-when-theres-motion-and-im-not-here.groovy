@@ -22,7 +22,9 @@ preferences {
 		input "presence1", "capability.presenceSensor", title: "Who?"
 	}
 	section("Text me at...") {
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -49,8 +51,14 @@ def motionActiveHandler(evt) {
 		if (alreadySentSms) {
 			log.debug "SMS already sent to $phone1 within the last $deltaSeconds seconds"
 		} else {
-			log.debug "$motion1 has moved while you were out, texting $phone1"
-			sendSms(phone1, "${motion1.label} ${motion1.name} moved while you were out")
+            if (location.contactBookEnabled) {
+                log.debug "$motion1 has moved while you were out, sending notifications to: ${recipients?.size()}"
+                sendNotification("${motion1.label} ${motion1.name} moved while you were out", recipients)
+            }
+            else {
+                log.debug "$motion1 has moved while you were out, texting $phone1"
+                sendSms(phone1, "${motion1.label} ${motion1.name} moved while you were out")
+            }
 		}
 	} else {
 		log.debug "Motion detected, but presence sensor indicates you are present"

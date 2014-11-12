@@ -21,8 +21,10 @@ preferences {
 		input "temperature1", "number", title: "Temperature?"
 	}
     section( "Notifications" ) {
-        input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
-        input "phone1", "phone", title: "Send a Text Message?", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+            input "phone1", "phone", title: "Send a Text Message?", required: false
+        }
     }
 	section("Turn on a heater...") {
 		input "switch1", "capability.switch", required: false
@@ -60,21 +62,27 @@ def temperatureHandler(evt) {
 			// TODO: Send "Temperature back to normal" SMS, turn switch off
 		} else {
 			log.debug "Temperature dropped below $tooCold:  sending SMS to $phone1 and activating $mySwitch"
-			send("${temperatureSensor1.label} is too cold, reporting a temperature of ${evt.value}${evt.unit}")
+			send("${temperatureSensor1.label} is too cold, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
 			switch1?.on()
 		}
 	}
 }
 
 private send(msg) {
-    if ( sendPushMessage != "No" ) {
-        log.debug( "sending push message" )
-        sendPush( msg )
+    if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+        sendNotification(msg, recipients)
     }
+    else {
+        if (sendPushMessage != "No") {
+            log.debug("sending push message")
+            sendPush(msg)
+        }
 
-    if ( phone1 ) {
-        log.debug( "sending text message" )
-        sendSms( phone1, msg )
+        if (phone1) {
+            log.debug("sending text message")
+            sendSms(phone1, msg)
+        }
     }
 
     log.debug msg

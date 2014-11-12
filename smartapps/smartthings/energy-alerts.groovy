@@ -32,8 +32,10 @@ preferences {
         input(name: "belowThreshold", type: "number", title: "Or Reports Below...", required: true, description: "in either watts or kw.")
 	}
     section {
-    	input(name: "sms", type:"phone", title: "Send A Text To", description: null, required: false)
-        input(name: "pushNotification", type: "bool", title: "Send a push notification", description: null, defaultValue: true)
+        input("recipients", "contact", title: "Send notifications to") {
+            input(name: "sms", type: "phone", title: "Send A Text To", description: null, required: false)
+            input(name: "pushNotification", type: "bool", title: "Send a push notification", description: null, defaultValue: true)
+        }
     }
 }
 
@@ -86,10 +88,15 @@ def meterHandler(evt) {
 }
 
 def sendMessage(msg) {
-	if (sms) {
-    	sendSms(sms, msg)
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
     }
-    if (pushNotification) {
-    	sendPush(msg)
+    else {
+        if (sms) {
+            sendSms(sms, msg)
+        }
+        if (pushNotification) {
+            sendPush(msg)
+        }
     }
 }

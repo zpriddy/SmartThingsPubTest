@@ -22,7 +22,9 @@ preferences {
 		input "time1", "time", title: "When?"
 	}
 	section("Text me at..."){
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -43,6 +45,13 @@ def scheduleCheck()
 
 	def message = message1 ?: "SmartThings - Habit Helper Reminder!"
 
-	log.debug "Texting reminder: ($message) to $phone1"
-	sendSms(phone1, message)
+    if (location.contactBookEnabled) {
+        log.debug "Texting reminder: ($message) to contacts:${recipients?.size()}"
+        sendNotification(message, recipients)
+    }
+    else {
+
+        log.debug "Texting reminder: ($message) to $phone1"
+        sendSms(phone1, message)
+    }
 }

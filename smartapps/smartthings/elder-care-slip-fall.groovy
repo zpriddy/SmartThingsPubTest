@@ -31,10 +31,12 @@ preferences {
     	input "warnMessage", "text", title: "Warning Message"
         input "threshold", "number", title: "Minutes"
     }
-    section("And text message to these numbers (optional)") {
-    	input "phone1", "phone", required: false
-        input "phone2", "phone", required: false
-        input "phone3", "phone", required: false
+    section("To these contacts") {
+		input("recipients", "contact", title: "Recipients", description: "Send notifications to") {
+			input "phone1", "phone", required: false
+			input "phone2", "phone", required: false
+			input "phone3", "phone", required: false
+		}
     }
 }
 
@@ -91,15 +93,21 @@ def sendMessage() {
 	log.debug "sendMessage"
 	def msg = warnMessage
     log.info msg
-    sendPush msg
-    if (phone1) {
-        sendSms phone1, msg
-    }
-    if (phone2) {
-        sendSms phone2, msg
-    }
-    if (phone3) {
-        sendSms phone3, msg
-    }
+
+	if (location.contactBookEnabled) {
+		sendNotification(msg, recipients)
+	}
+	else {
+		sendPush msg
+		if (phone1) {
+			sendSms phone1, msg
+		}
+		if (phone2) {
+			sendSms phone2, msg
+		}
+		if (phone3) {
+			sendSms phone3, msg
+		}
+	}
     state.status = null
 }

@@ -28,8 +28,10 @@ preferences {
 		input "falseAlarmThreshold", "decimal", title: "Number of minutes", required: false
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes","No"], required:false
-		input "phone", "phone", title: "Send a Text Message?", required: false
+		input("recipients", "contact", title: "Send notifications to", required: false) {
+			input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+			input "phone", "phone", title: "Send a Text Message?", required: false
+		}
 	}
 
 }
@@ -106,16 +108,21 @@ private everyoneIsAway()
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
-		log.debug( "sending push message" )
-		sendPush( msg )
+	if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+		sendNotification(msg, recipients)
 	}
+	else  {
+		if (sendPushMessage != "No") {
+			log.debug("sending push message")
+			sendPush(msg)
+		}
 
-	if ( phone ) {
-		log.debug( "sending text message" )
-		sendSms( phone, msg )
+		if (phone) {
+			log.debug("sending text message")
+			sendSms(phone, msg)
+		}
 	}
-
 	log.debug msg
 }
 

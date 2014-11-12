@@ -94,8 +94,10 @@ def completionPage() {
 		}
 
 		section("Notifications") {
-			input(name: "completionPhoneNumber", type: "phone", title: "Text This Number", description: "Phone number", required: false)
-			input(name: "completionPush", type: "bool", title: "Send A Push Notification", description: "Phone number", required: false)
+            input("recipients", "contact", title: "Send notifications to") {
+                input(name: "completionPhoneNumber", type: "phone", title: "Text This Number", description: "Phone number", required: false)
+                input(name: "completionPush", type: "bool", title: "Send A Push Notification", description: "Phone number", required: false)
+            }
 			input(name: "completionMusicPlayer", type: "capability.musicPlayer", title: "Speak Using This Music Player", required: false)
 			input(name: "completionMessage", type: "text", title: "With This Message", description: null, required: false)
 		}
@@ -337,12 +339,17 @@ private handleCompletionSwitches() {
 
 private handleCompletionMessaging() {
 	if (completionMessage) {
-		if (completionPhoneNumber) {
-			sendSms(completionPhoneNumber, completionMessage)
-		}
-		if (completionPush) {
-			sendPush(completionMessage)
-		}
+        if (location.contactBookEnabled) {
+            sendNotification(completionMessage, recipients)
+        }
+        else {
+            if (completionPhoneNumber) {
+                sendSms(completionPhoneNumber, completionMessage)
+            }
+            if (completionPush) {
+                sendPush(completionMessage)
+            }
+        }
 		if (completionMusicPlayer) {
 			speak(completionMessage)
 		}

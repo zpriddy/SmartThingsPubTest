@@ -23,7 +23,9 @@ preferences {
 	section("Lock the lock...") {
 		input "lock1","capability.lock", multiple: true
 		input "unlock", "enum", title: "Unlock when presence is detected?", options: ["Yes","No"]
-		input "spam", "enum", title: "Send Me Notifications?", options: ["Yes","No"]
+        input("recipients", "contact", title: "Send notifications to") {
+            input "spam", "enum", title: "Send Me Notifications?", options: ["Yes", "No"]
+        }
 	}
 }
 
@@ -62,7 +64,13 @@ def presence(evt)
 }
 
 def sendMessage(msg) {
-	if (spam == "Yes") {
-		sendPush msg
-	}
+
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (spam == "Yes") {
+            sendPush msg
+        }
+    }
 }

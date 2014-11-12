@@ -38,8 +38,10 @@ preferences {
 		input "zipCode", "text", required: false
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
-		input "phoneNumber", "phone", title: "Send a text message?", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+            input "phoneNumber", "phone", title: "Send a text message?", required: false
+        }
 	}
 
 }
@@ -139,15 +141,21 @@ def changeMode(newMode) {
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
-		log.debug( "sending push message" )
-		sendPush( msg )
-	}
+    if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (sendPushMessage != "No") {
+            log.debug("sending push message")
+            sendPush(msg)
+        }
 
-	if ( phoneNumber ) {
-		log.debug( "sending text message" )
-		sendSms( phoneNumber, msg )
-	}
+        if (phoneNumber) {
+            log.debug("sending text message")
+            sendSms(phoneNumber, msg)
+        }
+    }
 
 	log.debug msg
 }

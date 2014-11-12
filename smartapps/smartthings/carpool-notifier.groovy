@@ -28,7 +28,9 @@ definition(
 preferences {
 	section() {
 		input(name: "driver", type: "capability.presenceSensor", required: true, multiple: false, title: "When this person arrives", description: "Who's driving?")
-		input(name: "phoneNumber", type: "phone", required: true, multiple: false, title: "Send a text to", description: "Phone number")
+		input("recipients", "contact", title: "Notify", description: "Send notifications to") {
+			input(name: "phoneNumber", type: "phone", required: true, multiple: false, title: "Send a text to", description: "Phone number")
+		}
 		input(name: "message", type: "text", required: false, multiple: false, title: "With the message:", description: "Your ride is here!")
 		input(name: "rider", type: "capability.presenceSensor", required: true, multiple: false, title: "But only when this person is not with you", description: "Who are you picking up?")
 	}
@@ -92,5 +94,10 @@ def riderIsHome() {
 }
 
 def sendText() {
-	sendSms(phoneNumber, message ?: "Your ride is here!")
+	if (location.contactBookEnabled) {
+		sendNotification(message ?: "Your ride is here!", recipients)
+	}
+	else {
+		sendSms(phoneNumber, message ?: "Your ride is here!")
+	}
 }

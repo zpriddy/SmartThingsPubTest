@@ -22,7 +22,9 @@ preferences {
 		input "tv", "device.zwaveMeteringSwitch", title: "Select your television(s)"
 	}
 	section("Contacting You"){
-		input "phone", "phone", title: "Enter a phone number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Enter a phone number", required: false
+        }
 	}
 }
 
