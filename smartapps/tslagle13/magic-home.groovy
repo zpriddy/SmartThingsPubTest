@@ -75,7 +75,6 @@ def selectPhrases() {
 }
 
 def installed() {
-  init()
   initialize()
 
 }
@@ -83,12 +82,6 @@ def installed() {
 def updated() {
   unsubscribe()
   initialize()
-
-  init()
-}
-
-def init() {
-  subscribe(people, "presence", presence)
 }
 
 def uninstalled() {
@@ -96,11 +89,13 @@ unsubscribe()
 }
 
 def initialize() {
+	subscribe(people, "presence", presence)
     runIn(60, checkSun)
 	subscribe(location, "sunrise", setSunrise)
 	subscribe(location, "sunset", setSunset)
 }
 
+//check current sun state when installed.
 def checkSun() {
   def zip     = settings.zip as String
   def sunInfo = getSunriseAndSunset(zipCode: zip)
@@ -130,19 +125,21 @@ log.info("sunMode: ${state.sunMode}")
  }
 }
 
+//change to sunrise mode on sunrise event
 def setSunrise(evt) {
   state.sunMode = "sunrise";
   changeSunMode(newMode);
   sendNotificationEvent("Setting Sunrise Mode")
 }
 
+//change to sunset mode on sunset event
 def setSunset(evt) {
   state.sunMode = "sunset";
   changeSunMode(newMode)
   sendNotificationEvent("Setting Sunset Mode")
 }
 
-
+//change mode on sun event
 def changeSunMode(newMode) {
   if(allOk) {
 
@@ -167,6 +164,7 @@ def changeSunMode(newMode) {
 }
 }
 
+//presence change run logic based on presence state of home
 def presence(evt) {
   if(allOk) {
   if(evt.value == "not present") {
@@ -191,6 +189,7 @@ else {
 }
 }
 
+//if empty set home to one of the away modes
 def setAway() {
   if(everyoneIsAway()) {
     if(state.sunMode == "sunset") {
@@ -216,6 +215,7 @@ def setAway() {
   }
 }
 
+//set home mode when house is occupied
 def setHome() {
 
 log.info("Setting Home Mode!!")
