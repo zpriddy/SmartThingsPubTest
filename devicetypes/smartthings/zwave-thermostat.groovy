@@ -445,7 +445,7 @@ def getModeMap() { [
 	"heat": 1,
 	"cool": 2,
 	"auto": 3,
-	"emergency heat": 4
+	"emergencyHeat": 4
 ]}
 
 def setThermostatMode(String value) {
