@@ -84,24 +84,28 @@ def astroCheck() {
 	log.debug "setTime: $setTime"
 
 	if (state.riseTime != riseTime.time) {
-		state.riseTime = riseTime.time
-
 		unschedule("sunriseHandler")
+
 		if(riseTime.before(now)) {
 			riseTime.next()
 		}
+
+		state.riseTime = riseTime.time
+
 		log.info "scheduling sunrise handler for $riseTime"
 		schedule(riseTime, sunriseHandler)
 	}
 
 	if (state.setTime != setTime.time) {
-		state.setTime = setTime.time
 		unschedule("sunsetHandler")
 
 	    if(setTime.before(now)) {
 	        setTime.next()
 	    }
-	    log.info "scheduling sunset handler for $setTime"
+
+		state.setTime = setTime.time
+
+		log.info "scheduling sunset handler for $setTime"
 	    schedule(setTime, sunsetHandler)
 	}
 }
