@@ -556,7 +556,7 @@ void raiseSetpoint() {
         coolingSetpoint++
         
         if (coolingSetpoint > 99)
-           heatingSetpoint = 99
+            coolingSetpoint = 99
         
         sendEvent("name":"thermostatSetpoint", "value":coolingSetpoint.toString()+"°")
         sendEvent("name":"coolingSetpoint", "value":coolingSetpoint)       

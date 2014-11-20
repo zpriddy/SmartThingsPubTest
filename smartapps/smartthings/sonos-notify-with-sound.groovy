@@ -213,7 +213,7 @@ def subscribeToEvents() {
 	}
 
 	if (timeOfDay) {
-		runDaily(timeOfDay, scheduledTimeHandler)
+		schedule(timeOfDay, scheduledTimeHandler)
 	}
 
 	if (song) {

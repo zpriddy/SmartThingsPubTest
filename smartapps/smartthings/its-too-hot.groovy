@@ -47,22 +47,22 @@ def temperatureHandler(evt) {
 	def mySwitch = settings.switch1
 
 	// TODO: Replace event checks with internal state (the most reliable way to know if an SMS has been sent recently or not).
-	if (evt.doubleValue <= tooHot) {
+	if (evt.doubleValue >= tooHot) {
 		log.debug "Checking how long the temperature sensor has been reporting <= $tooHot"
 
 		// Don't send a continuous stream of text messages
 		def deltaMinutes = 10 // TODO: Ask for "retry interval" in prefs?
 		def timeAgo = new Date(now() - (1000 * 60 * deltaMinutes).toLong())
-		def recentEvents = temperatureSensor1.eventsSince(timeAgo)
+		def recentEvents = temperatureSensor1.eventsSince(timeAgo)?.findAll { it.name == "temperature" }
 		log.trace "Found ${recentEvents?.size() ?: 0} events in the last $deltaMinutes minutes"
-		def alreadySentSms = recentEvents.count { it.doubleValue <= tooHot } > 1
+		def alreadySentSms = recentEvents.count { it.doubleValue >= tooHot } > 1
 
 		if (alreadySentSms) {
 			log.debug "SMS already sent to $phone1 within the last $deltaMinutes minutes"
 			// TODO: Send "Temperature back to normal" SMS, turn switch off
 		} else {
 			log.debug "Temperature rose above $tooHot:  sending SMS to $phone1 and activating $mySwitch"
-			send("${temperatureSensor1.label} is too hot, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
+			send("${temperatureSensor1.displayName} is too hot, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
 			switch1?.on()
 		}
 	}

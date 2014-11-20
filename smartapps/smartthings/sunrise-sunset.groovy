@@ -60,7 +60,7 @@ def initialize() {
 	subscribe(location, "position", locationPositionChange)
 	subscribe(location, "sunriseTime", sunriseSunsetTimeHandler)
 	subscribe(location, "sunsetTime", sunriseSunsetTimeHandler)
-	
+
 	astroCheck()
 }
 
@@ -82,27 +82,31 @@ def astroCheck() {
 	def setTime = s.sunset
 	log.debug "riseTime: $riseTime"
 	log.debug "setTime: $setTime"
-	
+
 	if (state.riseTime != riseTime.time) {
-		state.riseTime = riseTime.time
-		
 		unschedule("sunriseHandler")
+
 		if(riseTime.before(now)) {
 			riseTime.next()
 		}
+
+		state.riseTime = riseTime.time
+
 		log.info "scheduling sunrise handler for $riseTime"
-		runDaily(riseTime, sunriseHandler)
+		schedule(riseTime, sunriseHandler)
 	}
-   
+
 	if (state.setTime != setTime.time) {
-		state.setTime = setTime.time
 		unschedule("sunsetHandler")
 
 	    if(setTime.before(now)) {
 	        setTime.next()
 	    }
-	    log.info "scheduling sunset handler for $setTime"
-	    runDaily(setTime, sunsetHandler)
+
+		state.setTime = setTime.time
+
+		log.info "scheduling sunset handler for $setTime"
+	    schedule(setTime, sunsetHandler)
 	}
 }
 
