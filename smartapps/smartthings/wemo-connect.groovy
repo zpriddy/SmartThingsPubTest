@@ -160,7 +160,7 @@ def installed() {
 
 	runIn(5, "subscribeToDevices") //initial subscriptions delayed by 5 seconds
 	runIn(10, "refreshDevices") //refresh devices, delayed by 10 seconds
-	runIn(300, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 15 minutes
 
 	// SUBSCRIBE responses come back with TIMEOUT-1801 (30 minutes), so we refresh things a bit before they expire (29 minutes)
 	runIn(1740, "refresh", [overwrite: false])
@@ -548,7 +548,7 @@ private def parseDiscoveryMessage(String description) {
 
 def doDeviceSync(){
 	log.debug "Doing Device Sync!"
-	runIn(300, "doDeviceSync" , [overwrite: false]) //schedule to run again in 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //schedule to run again in 15 minutes
 
 	if(!state.subscribe) {
 		subscribe(location, null, locationHandler, [filterEvents:false])

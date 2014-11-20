@@ -49,7 +49,16 @@ def initialize() {
 
 def scheduledEvent() {
 	log.trace "scheduledEvent()"
-    runIn(3600, scheduledEvent, [overwrite: false])
-	weatherDevices.refresh()
-    state.lastRun = new Date().toSystemFormat()
+
+	def delayTimeSecs = 60 * 60 // reschedule every 60 minutes
+	def runAgainWindowMS = 58 * 60 * 1000 // can run at most every 58 minutes
+	def timeSinceLastRunMS = state.lastRunTime ? now() - state.lastRunTime : null //how long since it last ran?
+
+	if(!timeSinceLastRunMS || timeSinceLastRunMS > runAgainWindowMS){
+		runIn(delayTimeSecs, scheduledEvent, [overwrite: false])
+		state.lastRunTime = now()
+		weatherDevices.refresh()
+	} else {
+		log.trace "Trying to run smartweather-station-controller too soon. Has only been ${timeSinceLastRunMS} ms but needs to be at least ${runAgainWindowMS} ms"
+	}
 }

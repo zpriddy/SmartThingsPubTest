@@ -53,7 +53,7 @@ def temperatureHandler(evt) {
 		// Don't send a continuous stream of text messages
 		def deltaMinutes = 10 // TODO: Ask for "retry interval" in prefs?
 		def timeAgo = new Date(now() - (1000 * 60 * deltaMinutes).toLong())
-		def recentEvents = temperatureSensor1.eventsSince(timeAgo)
+		def recentEvents = temperatureSensor1.eventsSince(timeAgo)?.findAll { it.name == "temperature" }
 		log.trace "Found ${recentEvents?.size() ?: 0} events in the last $deltaMinutes minutes"
 		def alreadySentSms = recentEvents.count { it.doubleValue <= tooCold } > 1
 
@@ -62,7 +62,7 @@ def temperatureHandler(evt) {
 			// TODO: Send "Temperature back to normal" SMS, turn switch off
 		} else {
 			log.debug "Temperature dropped below $tooCold:  sending SMS to $phone1 and activating $mySwitch"
-			send("${temperatureSensor1.label} is too cold, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
+			send("${temperatureSensor1.displayName} is too cold, reporting a temperature of ${evt.value}${evt.unit?:"F"}")
 			switch1?.on()
 		}
 	}
