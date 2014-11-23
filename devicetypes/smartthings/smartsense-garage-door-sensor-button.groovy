@@ -15,7 +15,7 @@ metadata {
 		capability "Temperature Measurement"
 		capability "Sensor"
 		capability "Battery"
-        capability "Door Control"
+		capability "Door Control"
 
 		attribute "status", "string"
 		attribute "buttonPress", "string"
@@ -76,11 +76,11 @@ metadata {
 		main(["status","contact", "acceleration"])
 		details(["status","contact", "acceleration", "temperature", "3axis", "battery"/*, "lqi"*/])
 	}
-    
+
 	preferences {
 		input description: "This feature allows you to correct any temperature variations by selecting an offset. Ex: If your sensor consistently reports a temp that's 5 degrees too warm, you'd enter \"-5\". If 3 degrees too cold, enter \"+3\".", displayDuringSetup: false, type: "paragraph", element: "paragraph"
 		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by this many degrees", range: "*..*", displayDuringSetup: false
-	}    
+	}
 }
 
 def open() {
@@ -226,16 +226,18 @@ private List parseOrientationMessage(String description) {
 	log.debug "absValueXY: $absValueXY, absValueZ: $absValueZ"
 
 
-    if (absValueZ > 825 && absValueXY < 175) {
-        results << createEvent(name: "contact", value: "open", unit: "")
-        results << createEvent(name: "status", value: "open", unit: "")
-        log.debug "STATUS: open"
-    }
-    else if (absValueZ < 75 && absValueXY > 825) {
-        results << createEvent(name: "contact", value: "closed", unit: "")
-        results << createEvent(name: "status", value: "closed", unit: "")
-        log.debug "STATUS: closed"
-    }
+	if (absValueZ > 825 && absValueXY < 175) {
+		results << createEvent(name: "contact", value: "open", unit: "")
+		results << createEvent(name: "status", value: "open", unit: "")
+		results << createEvent(name: "door", value: "open", unit: "")
+		log.debug "STATUS: open"
+	}
+	else if (absValueZ < 75 && absValueXY > 825) {
+		results << createEvent(name: "contact", value: "closed", unit: "")
+		results << createEvent(name: "status", value: "closed", unit: "")
+		results << createEvent(name: "door", value: "closed", unit: "")
+		log.debug "STATUS: closed"
+	}
 
 	results
 }

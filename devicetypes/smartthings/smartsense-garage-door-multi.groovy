@@ -16,6 +16,7 @@ metadata {
 		capability "Battery"
 
 		attribute "status", "string"
+		attribute "door", "string"
 	}
 
 	simulator {
@@ -217,11 +218,13 @@ private List parseOrientationMessage(String description) {
 	if (absValueZ > 825 && absValueXY < 175) {
 		results << createEvent(name: "contact", value: "open", unit: "")
 		results << createEvent(name: "status", value: "open", unit: "")
+		results << createEvent(name: "door", value: "open", unit: "")
 		log.debug "STATUS: open"
 	}
 	else if (absValueZ < 75 && absValueXY > 825) {
 		results << createEvent(name: "contact", value: "closed", unit: "")
 		results << createEvent(name: "status", value: "closed", unit: "")
+		results << createEvent(name: "door", value: "closed", unit: "")
 		log.debug "STATUS: closed"
 	}
 
