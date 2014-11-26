@@ -30,7 +30,7 @@ metadata {
 	}
 
 	preferences {
-		input description: "The offset allows you to calibrate your temperature. Update by entering whole negative or positive number. E.g. -3 or 5.", displayDuringSetup: false, type: "paragraph", element: "paragraph"
+		input description: "This feature allows you to correct any temperature variations by selecting an offset. Ex: If your sensor consistently reports a temp that's 5 degrees too warm, you'd enter \"-5\". If 3 degrees too cold, enter \"+3\".", displayDuringSetup: false, type: "paragraph", element: "paragraph"
 		input "tempOffset", "number", title: "Temperature Offset", description: "Adjust temperature by this many degrees", range: "*..*", displayDuringSetup: false
 	}
 
@@ -99,10 +99,9 @@ private Map parseCatchAllMessage(String description) {
                 break
 
 			case 0xFC45:
-                // value was not in hex so we need to convert it back
-                String pctStr = cluster.data[-2, -1].collect { Integer.toHexString(it) }.join('.')
-                def value = getHumidity(pctStr)
-                resultMap = getHumidityResult(value)
+                String pctStr = cluster.data[-1, -2].collect { Integer.toHexString(it) }.join('')
+                String display = Math.round(Integer.valueOf(pctStr, 16) / 100)
+                resultMap = getHumidityResult(display)
                 break
         }
     }
@@ -120,10 +119,6 @@ private boolean shouldProcessMessage(cluster) {
     return !ignoredMessage
 }
 
-private int getHumidity(value) {
-    return Math.round(Double.parseDouble(value))
-}
- 
 private Map parseReportAttributeMessage(String description) {
 	Map descMap = (description - "read attr - ").split(",").inject([:]) { map, param ->
 		def nameAndValue = param.split(":")
@@ -153,7 +148,7 @@ def getReportAttributeHumidity(String value) {
         try {
         	// value is hex with no decimal
             def pct = Integer.parseInt(value.trim(), 16) / 100
-            humidity = String.format('%3.0f', pct)
+            humidity = String.format('%3.0f', pct).trim()
         } catch(NumberFormatException nfe) {
             log.debug "Error converting $value to humidity"
         }
@@ -264,7 +259,7 @@ def configure() {
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
-        "zcl global send-me-a-report 0xFC45 0 0x29 300 3600 {6400}", "delay 200",
+        "zcl global send-me-a-report 0xFC45 0 0x29 600 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
         
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
