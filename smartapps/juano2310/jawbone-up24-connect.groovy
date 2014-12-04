@@ -281,6 +281,8 @@ def validateCurrentToken() {
 				}
             }
         }
+	} catch (java.net.SocketTimeoutException e) {
+		log.warn "Connection timed out, not much we can do here"
 	}
 }
 
