@@ -147,6 +147,10 @@ def parse(String description) {
 	log.debug "Parsing '${description}'"
 }
 
+def installed() {
+	runPeriodically(20*60, poll)
+}
+
 // handle commands
 def poll() {
 	log.debug "Executing 'poll', location: ${location.name}"
