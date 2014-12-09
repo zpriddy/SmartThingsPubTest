@@ -87,7 +87,7 @@ def astroCheck() {
 		unschedule("sunriseHandler")
 
 		if(riseTime.before(now)) {
-			riseTime.next()
+			riseTime = riseTime.next()
 		}
 
 		state.riseTime = riseTime.time
@@ -100,7 +100,7 @@ def astroCheck() {
 		unschedule("sunsetHandler")
 
 	    if(setTime.before(now)) {
-	        setTime.next()
+		    setTime = setTime.next()
 	    }
 
 		state.setTime = setTime.time
