@@ -8,6 +8,9 @@ metadata {
 	// Automatically generated. Make future change here.
 	definition (name: "Hue Bridge", namespace: "smartthings", author: "SmartThings") {
 		capability "Refresh"  
+        
+		attribute "serialNumber", "string"		
+		attribute "networkAddress", "string"        
 	}
 
 	simulator {
@@ -49,9 +52,22 @@ def parse(description) {
 		}
 		if (map?.name && map?.value) {
 			results << createEvent(name: "${map?.name}", value: "${map?.value}")
+		} else {		
+			log.trace "HUE BRIDGE, OTHER"		
+			def msg = parseLanMessage(description)		
+			if (msg.body) {		
+				def bulbs = new groovy.json.JsonSlurper().parseText(msg.body)		
+				if (bulbs.state) {		
+					log.warn "NOT PROCESSED: $msg.body"		
+				}		
+				else {		
+					log.debug "HUE BRIDGE, GENERATING BULB LIST EVENT"		
+					sendEvent(name: "bulbList", value: device.hub.id, isStateChange: true, data: bulbs)		
+				}		
+			}		
 		}
 	}
-	results
+	results   
 }
 
 def poll() {
