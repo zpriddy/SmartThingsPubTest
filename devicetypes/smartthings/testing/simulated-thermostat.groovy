@@ -207,15 +207,15 @@ def cool() {
 }
 
 def fanOn() {
-	sendEvent(name: "thermostatFanMode", value: "on")
+	sendEvent(name: "thermostatFanMode", value: "fanOn")
 }
 
 def fanAuto() {
-	sendEvent(name: "thermostatFanMode", value: "auto")
+	sendEvent(name: "thermostatFanMode", value: "fanAuto")
 }
 
 def fanCirculate() {
-	sendEvent(name: "thermostatFanMode", value: "circulate")
+	sendEvent(name: "thermostatFanMode", value: "fanCirculate")
 }
 
 def poll() {
