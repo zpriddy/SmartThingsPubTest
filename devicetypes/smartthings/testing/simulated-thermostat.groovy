@@ -98,7 +98,7 @@ def installed() {
     sendEvent(name: "thermostatSetpoint", value: 70, unit: "F")
     sendEvent(name: "coolingSetpoint", value: 76, unit: "F")
     sendEvent(name: "thermostatMode", value: "off")
-    sendEvent(name: "thermostatFanMode", value: "auto")
+    sendEvent(name: "thermostatFanMode", value: "fanAuto")
     sendEvent(name: "thermostatOperatingState", value: "idle")
 }
 
