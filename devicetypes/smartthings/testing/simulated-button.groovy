@@ -7,8 +7,6 @@ metadata {
         
         command "push1"
         command "hold1"
-
-		fingerprint deviceId: "0x0101", inClusters: "0x86,0x72,0x70,0x9B", outClusters: "0x26,0x2B"
 	}
 
 	simulator {
@@ -22,7 +20,7 @@ metadata {
 			state "default", label: "Push 1", backgroundColor: "#ffffff", action: "push1"
 		} 
  		standardTile("hold1", "device.button", width: 1, height: 1, decoration: "flat") {
-			state "default", label: "Push 1", backgroundColor: "#ffffff", action: "hold1"
+			state "default", label: "Hold 1", backgroundColor: "#ffffff", action: "hold1"
 		}          
 		main "button"
 		details(["button","push1","hold1"])
