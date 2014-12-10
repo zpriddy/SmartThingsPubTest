@@ -92,42 +92,17 @@ metadata {
 	}
 }
 
-def parse(String description)
-{
-	def pair = description.split(":")
-	def map = createEvent(name: pair[0].trim(), value: pair[1].trim())
-	def result = [map]
+def installed() {
+	sendEvent(name: "temperature", value: 72, unit: "F")
+    sendEvent(name: "heatingSetpoint", value: 70, unit: "F")
+    sendEvent(name: "thermostatSetpoint", value: 70, unit: "F")
+    sendEvent(name: "coolingSetpoint", value: 76, unit: "F")
+    sendEvent(name: "thermostatMode", value: "off")
+    sendEvent(name: "thermostatFanMode", value: "auto")
+    sendEvent(name: "thermostatOperatingState", value: "idle")
+}
 
-	if (map.isStateChange && map.name in ["heatingSetpoint","coolingSetpoint","thermostatMode"]) {
-		def map2 = [
-			name: "thermostatSetpoint",
-			unit: "F"
-		]
-		if (map.name == "thermostatMode") {
-			if (map.value == "cool") {
-				map2.value = device.latestValue("coolingSetpoint")
-				log.info "THERMOSTAT, latest cooling setpoint = ${map2.value}"
-			}
-			else {
-				map2.value = device.latestValue("heatingSetpoint")
-				log.info "THERMOSTAT, latest heating setpoint = ${map2.value}"
-			}
-		}
-		else {
-			def mode = device.latestValue("thermostatMode")
-			log.info "THERMOSTAT, latest mode = ${mode}"
-			if ((map.name == "heatingSetpoint" && mode == "heat") || (map.name == "coolingSetpoint" && mode == "cool")) {
-				map2.value = map.value
-				map2.unit = map.unit
-			}
-		}
-		if (map2.value != null) {
-			log.debug "THERMOSTAT, adding setpoint event: $map"
-			result << createEvent(map2)
-		}
-	}
-	log.debug "Parse returned ${result?.descriptionText}"
-	result
+def parse(String description) {
 }
 
 def evaluate(temp, heatingSetpoint, coolingSetpoint) {
@@ -241,6 +216,9 @@ def heatUp() {
 	def ts = device.currentState("heatingSetpoint")
 	def value = ts ? ts.integerValue + 1 : 68 
 	sendEvent(name:"heatingSetpoint", value: value)
+    if (device.currentValue("thermostatMode") != "cool") {
+    	sendEvent(name:"thermostatSetpoint", value: value)
+    }
     evaluate(device.currentValue("temperature"), value, device.currentValue("coolingSetpoint"))
 }
 
@@ -248,6 +226,9 @@ def heatDown() {
 	def ts = device.currentState("heatingSetpoint")
 	def value = ts ? ts.integerValue - 1 : 68 
 	sendEvent(name:"heatingSetpoint", value: value)
+    if (device.currentValue("thermostatMode") != "cool") {
+    	sendEvent(name:"thermostatSetpoint", value: value)
+    }    
     evaluate(device.currentValue("temperature"), value, device.currentValue("coolingSetpoint"))
 }
 
@@ -256,6 +237,9 @@ def coolUp() {
 	def ts = device.currentState("coolingSetpoint")
 	def value = ts ? ts.integerValue + 1 : 76 
 	sendEvent(name:"coolingSetpoint", value: value)
+    if (device.currentValue("thermostatMode") == "cool") {
+    	sendEvent(name:"thermostatSetpoint", value: value)
+    }    
     evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), value)
 }
 
@@ -263,5 +247,8 @@ def coolDown() {
 	def ts = device.currentState("coolingSetpoint")
 	def value = ts ? ts.integerValue - 1 : 76
 	sendEvent(name:"coolingSetpoint", value: value)
+    if (device.currentValue("thermostatMode") == "cool") {
+    	sendEvent(name:"thermostatSetpoint", value: value)
+    }    
     evaluate(device.currentValue("temperature"), device.currentValue("heatingSetpoint"), value)
 }
