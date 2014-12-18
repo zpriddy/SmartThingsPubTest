@@ -469,7 +469,6 @@ def hookEventHandler() {
             	childDevice?.generateSleepingEvent(false) 
                 break 
             case "creation": 
-                childDevice?.generateSleepingEvent(false)  
                 childDevice?.sendEvent(name:"steps", value: 0)
           		break
             case "updation":
