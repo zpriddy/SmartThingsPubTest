@@ -22,6 +22,7 @@ metadata {
 		command "heatDown"
 		command "coolUp"
 		command "coolDown"
+        command "setTemperature", ["number"]
 	}
 
 	tiles {
@@ -218,6 +219,11 @@ def tempDown() {
 	evaluate(value, device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
 }
 
+def setTemperature(value) {
+	def ts = device.currentState("temperature")
+	sendEvent(name:"temperature", value: value)
+	evaluate(value, device.currentValue("heatingSetpoint"), device.currentValue("coolingSetpoint"))
+}
 
 def heatUp() {
 	def ts = device.currentState("heatingSetpoint")
