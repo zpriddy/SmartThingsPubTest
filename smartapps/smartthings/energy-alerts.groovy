@@ -1,7 +1,7 @@
 /**
  *  Energy Saver
  *
- *  Copyright 2014 Steve Vlaminck
+ *  Copyright 2014 SmartThings
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -16,14 +16,13 @@
 definition(
     name: "Energy Alerts",
     namespace: "smartthings",
-    author: "Steve Vlaminck",
+    author: "SmartThings",
     description: "Get notified if you're using too much energy",
-//    category: "Green Living",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+    category: "Green Living",
+    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/text.png",
+    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text@2x.png",
+    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Meta/text@2x.png"
 )
-// TODO: update icon
-
 
 preferences {
 	section {
