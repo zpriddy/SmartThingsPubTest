@@ -5,7 +5,7 @@
  *  Date: 2013-12-19
  */
 definition(
-	name: "Jawbone UP24 (Connect)",
+	name: "Jawbone UP (Connect)",
 	namespace: "juano2310",
 	author: "Juan Pablo Risso",
 	description: "Connect your Jawbone UP to SmartThings",
