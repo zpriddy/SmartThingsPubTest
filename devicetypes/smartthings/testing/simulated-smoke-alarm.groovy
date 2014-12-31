@@ -4,8 +4,6 @@ metadata {
 		capability "Smoke Detector"
 		capability "Sensor"
 
-		attribute "alarmState", "string"
-        
         command "smoke"
         command "test"
         command "clear"
