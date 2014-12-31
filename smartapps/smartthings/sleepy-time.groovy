@@ -1,4 +1,3 @@
-package smartapps.smartthings
 /**
  *  Sleepy Time
  *
@@ -19,10 +18,10 @@ definition(
     name: "Sleepy Time",
     namespace: "smartthings",
     author: "SmartThings",
-    description: "Use Jawbone sleep mode events to automatically execute Hello, Home phrases. Automatially put the house to bed or wake it up in the morning by pushing the button on your UP24.",
-	category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience%402x.png"
+    description: "Use Jawbone sleep mode events to automatically execute Hello, Home phrases. Automatially put the house to bed or wake it up in the morning by pushing the button on your UP.",
+    category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png"
 )
 
 preferences {
@@ -32,8 +31,8 @@ preferences {
 def selectPhrases() {
 	def configured = (settings.sleepPhrase && settings.wakePhrase && settings.jawbone)
     dynamicPage(name: "selectPhrases", title: "Configure Your Jawbone Phrases.", install: configured, uninstall: true) {		
-		section("Select your Jawbone UP24") {
-			input "jawbone", "device.jawboneUser", title: "Jawbone UP24", required: true, multiple: false,  refreshAfterSelection:true
+		section("Select your Jawbone UP") {
+			input "jawbone", "device.jawboneUser", title: "Jawbone UP", required: true, multiple: false,  refreshAfterSelection:true
 		}
         
 		def phrases = location.helloHome?.getPhrases()*.label
