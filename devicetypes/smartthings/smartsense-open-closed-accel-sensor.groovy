@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
- 
+
  metadata {
  	definition (name: "SmartSense Open/Closed Accelerometer Sensor", namespace: "smartthings", author: "SmartThings") {
  		capability "Battery"
@@ -24,6 +24,7 @@
  		capability "Temperature Measurement"
  		command "enrollResponse"
  		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05,FC02", outClusters: "0019", manufacturer: "CentraLite", model: "3320"
+		fingerprint inClusters: "0000,0001,0003,0402,0500,0020,0B05,FC02", outClusters: "0019", manufacturer: "CentraLite", model: "3321"
  	}
 
  	simulator {
@@ -68,7 +69,7 @@
  		details(["contact","acceleration", "temperature","battery","refresh"])
  	}
  }
- 
+
  def parse(String description) {
  	log.debug "description: $description"
 
@@ -96,7 +97,7 @@
  	}
  	return result
  }
- 
+
  private Map parseCatchAllMessage(String description) {
  	Map resultMap = [:]
  	def cluster = zigbee.parse(description)
@@ -125,7 +126,7 @@
     private boolean shouldProcessMessage(cluster) {
     // 0x0B is default response indicating message got through
     // 0x07 is bind message
-    boolean ignoredMessage = cluster.profileId != 0x0104 || 
+    boolean ignoredMessage = cluster.profileId != 0x0104 ||
     cluster.command == 0x0B ||
     cluster.command == 0x07 ||
     (cluster.data.size() > 0 && cluster.data.first() == 0x3e)
@@ -321,7 +322,7 @@ def getTemperature(value) {
 
 def enrollResponse() {
 	log.debug "Sending enroll response"
-	[	
+	[
 
 	"raw 0x500 {01 23 00 00 00}", "delay 200",
 	"send 0x${device.deviceNetworkId} 1 1"
