@@ -20,7 +20,7 @@ preferences {
 
 private discoverAllWemoTypes()
 {
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1/urn:Belkin:device:lightswitch:1", physicalgraph.device.Protocol.LAN))
+	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:insight:1/urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1/urn:Belkin:device:lightswitch:1", physicalgraph.device.Protocol.LAN))
 }
 
 private getFriendlyName(String deviceNetworkId) {
@@ -319,8 +319,9 @@ def locationHandler(evt) {
 	def hub = evt?.hubId
 	def parsedEvent = parseDiscoveryMessage(description)
 	parsedEvent << ["hub":hub]
+    log.debug parsedEvent
 
-	if (parsedEvent?.ssdpTerm?.contains("Belkin:device:controllee")) {
+	if (parsedEvent?.ssdpTerm?.contains("Belkin:device:controllee") || parsedEvent?.ssdpTerm?.contains("Belkin:device:insight")) {
 
 		def switches = getWemoSwitches()
 
@@ -435,8 +436,21 @@ def locationHandler(evt) {
 		def headerString = new String(parsedEvent.headers.decodeBase64())
 		def bodyString = new String(parsedEvent.body.decodeBase64())
 		def body = new XmlSlurper().parseText(bodyString)
-
 		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:controllee:1"))
+		{
+			def switches = getWemoSwitches()
+			def wemoSwitch = switches.find {it?.key?.contains(body?.device?.UDN?.text())}
+			if (wemoSwitch)
+			{
+				wemoSwitch.value << [name:body?.device?.friendlyName?.text(), verified: true]
+			}
+			else
+			{
+				log.error "/setup.xml returned a wemo device that didn't exist"
+			}
+		}
+
+		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:insight:1"))
 		{
 			def switches = getWemoSwitches()
 			def wemoSwitch = switches.find {it?.key?.contains(body?.device?.UDN?.text())}
