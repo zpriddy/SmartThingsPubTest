@@ -20,7 +20,7 @@ definition(
     namespace: "juano2310",
     author: "Juan Risso",
     category: "SmartThings Labs",
-    description: "Holding the button on the Jawbone UP will send a text massage alerting someone of a potential emergency.",
+    description: "Pressing the button on the Jawbone UP will send a text massage alerting someone of a potential emergency.",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
 )
@@ -29,7 +29,7 @@ preferences {
 	section("Use this Jawbone as a panic button and...") {
 		input "jawbone", "device.jawboneUser", multiple: true
 	}
-    section("Send a message when you press and hold the button...") {
+    section("Send a message when you press the button...") {
     	input "warnMessage", "text", title: "Warning Message"
     }
     section("Or text message to these numbers (optional)") {
