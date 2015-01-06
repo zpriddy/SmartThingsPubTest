@@ -16,7 +16,7 @@ definition(
 	name: "Gentle Wake Up",
 	namespace: "smartthings",
 	author: "SmartThings",
-	description: "Gentle Wake Up turns on your lights slowly, allowing you to wake up more naturally. Once your lights have reached full brightness, optionally turn on more things, or send yourself a text for a more gentle nudge into the waking world (you may want to set your normal alarm as a backup plan).",
+	description: "Gentle Wake Up dims your lights slowly, allowing you to wake up more naturally. Once your lights have finished dimming, optionally turn on more things or send yourself a text for a more gentle nudge into the waking world (you may want to set your normal alarm as a backup plan).",
 	category: "Health & Wellness",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/HealthAndWellness/App-SleepyTime@2x.png"
@@ -26,25 +26,24 @@ preferences {
 	page(name: "rootPage")
 	page(name: "schedulingPage")
 	page(name: "completionPage")
+	page(name: "numbersPage")
 }
 
 def rootPage() {
-	dynamicPage(name: "rootPage", title: "Dimming Settings", install: true, uninstall: true) {
+	dynamicPage(name: "rootPage", title: "", install: true, uninstall: true) {
 
 		section {
-			input(name: "dimmers", type: "capability.switchLevel", title: "Dim These Lights", description: null, multiple: true, required: true, refreshAfterSelection: true)
-			if (dimmers || androidClient()) {
-				input(name: "direction", type: "enum", title: "In This Direction", description: null, defaultValue: "Up", options: ["Up", "Down"], required: true, multiple: false, style: "segmented")
-				input(name: "duration", type: "number", title: "For This Many Minutes", description: "30", required: false, defaultValue: 30)
-				if (dimmersWithSetColorCommand()) {
-					input(name: "colorize", type: "bool", title: "Gradually change the color of ${fancyString(dimmersWithSetColorCommand().collect { deviceLabel(it) })}", description: null, required: false, defaultValue: "true")
-				}
-			}
+			input(name: "dimmers", type: "capability.switchLevel", title: "Dimmers", description: null, multiple: true, required: true, refreshAfterSelection: true)
 		}
 
-		if (dimmers || androidClient()) {
+		if (dimmers) {
+
 			section {
-				href(name: "toSchedulingPage", page: "schedulingPage", title: "Rules For Automatically Dimming Your Lights ${direction ?: ''}", description: schedulingHrefDescription(), state: schedulingHrefDescription() ? "complete" : "")
+				href(name: "toNumbersPage", page: "numbersPage", title: "Duration & Direction", description: numbersPageHrefDescription(), state: "complete")
+			}
+
+			section {
+				href(name: "toSchedulingPage", page: "schedulingPage", title: "Rules For Automatically Dimming Your Lights", description: schedulingHrefDescription(), state: schedulingHrefDescription() ? "complete" : "")
 			}
 
 			section {
@@ -56,13 +55,70 @@ def rootPage() {
 				label(title: "Label this SmartApp", required: false, defaultValue: "")
 			}
 		}
-
-
 	}
 }
 
+def numbersPage() {
+	dynamicPage(name:"numbersPage", title:"") {
+
+		section {
+			paragraph(name: "pGraph", title: "These lights will dim", fancyDeviceString(dimmers))
+		}
+
+		section {
+			input(name: "duration", type: "number", title: "For this many minutes", description: "30", required: false, defaultValue: 30)
+		}
+
+		section {
+			input(name: "startLevel", type: "number", range: "0..99", title: "From this level", defaultValue: defaultStart(), description: "Current Level", required: false, multiple: false)
+			input(name: "endLevel", type: "number", range: "0..99", title: "To this level", defaultValue: defaultEnd(), description: "Between 0 and 99", required: true, multiple: false)
+		}
+
+		def colorDimmers = dimmersWithSetColorCommand()
+		if (colorDimmers) {
+			section {
+				input(name: "colorize", type: "bool", title: "Gradually change the color of ${fancyDeviceString(colorDimmers)}", description: null, required: false, defaultValue: "true")
+			}
+		}
+	}
+}
+
+def defaultStart() {
+	if (!endLevel && direction && direction == "Down") {
+		return 99
+	}
+	return 0
+}
+
+def defaultEnd() {
+	if (!endLevel && direction && direction == "Down") {
+		return 0
+	}
+	return 99
+}
+
+def startLevelLabel() {
+	if (!endLevel) { // using old settings
+		if (direction && direction == "Down") { // 99 -> 1
+			return "99%"
+		}
+		return "0%"
+	}
+	return startLevel ? "${startLevel}%" : "Current Level"
+}
+
+def endLevelLabel() {
+	if (!endLevel) { // using old settings
+		if (direction && direction == "Down") { // 99 -> 1
+			return "0%"
+		}
+		return "99%"
+	}
+	return "${endLevel}%"
+}
+
 def schedulingPage() {
-	dynamicPage(name: "schedulingPage", title: "Rules For Automatically Dimming Your Lights ${direction}") {
+	dynamicPage(name: "schedulingPage", title: "Rules For Automatically Dimming Your Lights") {
 
 		section {
 			input(name: "days", type: "enum", title: "Allow Automatic Dimming On These Days", description: "Every day", required: false, multiple: true, options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
@@ -70,7 +126,7 @@ def schedulingPage() {
 
 		section {
 			input(name: "modeStart", title: "Start when entering this mode", type: "mode", required: false, mutliple: false, refreshAfterSelection: true)
-			if (modeStart || androidClient()) {
+			if (modeStart) {
 				input(name: "modeStop", title: "Stop when leaving '${modeStart}' mode", type: "bool", required: false)
 			}
 		}
@@ -94,10 +150,10 @@ def completionPage() {
 		}
 
 		section("Notifications") {
-            input("recipients", "contact", title: "Send notifications to") {
-                input(name: "completionPhoneNumber", type: "phone", title: "Text This Number", description: "Phone number", required: false)
-                input(name: "completionPush", type: "bool", title: "Send A Push Notification", description: "Phone number", required: false)
-            }
+			input("recipients", "contact", title: "Send notifications to") {
+				input(name: "completionPhoneNumber", type: "phone", title: "Text This Number", description: "Phone number", required: false)
+				input(name: "completionPush", type: "bool", title: "Send A Push Notification", description: "Phone number", required: false)
+			}
 			input(name: "completionMusicPlayer", type: "capability.musicPlayer", title: "Speak Using This Music Player", required: false)
 			input(name: "completionMessage", type: "text", title: "With This Message", description: null, required: false)
 		}
@@ -186,6 +242,8 @@ def scheduledStart() {
 def start() {
 	log.trace "START"
 
+	setLevelsInState()
+
 	atomicState.running = true
 
 	atomicState.start = new Date().getTime()
@@ -221,7 +279,7 @@ private healthCheck() {
 private increment() {
 
 	if (!atomicState.running) {
-		return;
+		return
 	}
 
 	def percentComplete = completionPercentage()
@@ -230,11 +288,7 @@ private increment() {
 		percentComplete = 99
 	}
 
-	if (direction == "Down") {
-		down(percentComplete)
-	} else {
-		up(percentComplete)
-	}
+	updateDimmers(percentComplete)
 
 	if (percentComplete < 99) {
 
@@ -249,57 +303,56 @@ private increment() {
 		if (completionDelay) {
 			log.debug "Finished with steps. Scheduling completion for ${completionDelay} second(s) from now"
 			runIn(completionDelay, 'completion', [overwrite: true])
-			unschedule("healthCheck") // don't let the health check start incrementing again while we wait for the delayed execution of completion
+			unschedule("healthCheck")
+			// don't let the health check start incrementing again while we wait for the delayed execution of completion
 		} else {
 			log.debug "Finished with steps. Execution completion"
 			completion()
 		}
 
-		if (direction == "Down") {
-			// just in case setLevel(0) fails
-			dimmers.off()
-		}
-
 	}
 }
 
-private up(level) {
-	int h = getBlueHue(level)
-	setHueColor([hue: h, saturation: 100, level: level])
-}
 
-private down(level) {
-	int h = getRedHue(level)
-	setHueColor([hue: h, saturation: 100, level: (99 - level)])
-//		setHueColor([hue: 100, saturation: level + 1, level: (99 - level)])
-}
-
-def setHueColor(colorMap) {
-	log.debug "Setting dimmers: ${dimmers} to: ${colorMap}"
-
-	def colorizeIsTrue = (colorize && colorize != "false")
-
+def updateDimmers(percentComplete) {
 	dimmers.each { dimmer ->
-		if (colorizeIsTrue && hasSetColorCommand(dimmer)) {
-			dimmer.setColor(colorMap)
+
+		def nextLevel = dynamicLevel(dimmer, percentComplete)
+
+		if (nextLevel == 0) {
+
+			dimmer.off()
+
 		} else {
-			dimmer.setLevel(colorMap.level)
+
+			def shouldChangeColors = (colorize && colorize != "false")
+			def canChangeColors = hasSetColorCommand(dimmer)
+
+			log.debug "Setting ${deviceLabel(dimmer)} to ${nextLevel}"
+
+			if (shouldChangeColors && canChangeColors) {
+				dimmer.setColor([hue: getHue(dimmer, nextLevel), saturation: 100, level: nextLevel])
+			} else {
+				dimmer.setLevel(nextLevel)
+			}
+
 		}
 	}
-
-	int h = colorMap.hue
-	int s = colorMap.saturation
-	log.debug "hex: ${hueSatToHex(h / 100, s / 100)}"
-
-	updateController()
 }
 
-// ========================================================
-// Controller
-// ========================================================
+int dynamicLevel(dimmer, percentComplete) {
+	def start = atomicState.startLevels[dimmer.id]
+	def end = dynamicEndLevel()
 
-def updateController() {
-	// TODO: update controller child device
+	if (!percentComplete) {
+		return start
+	}
+
+	def totalDiff = end - start
+	def actualPercentage = percentComplete / 100
+	def percentOfTotalDiff = totalDiff * actualPercentage
+
+	(start + percentOfTotalDiff) as int
 }
 
 // ========================================================
@@ -339,17 +392,16 @@ private handleCompletionSwitches() {
 
 private handleCompletionMessaging() {
 	if (completionMessage) {
-        if (location.contactBookEnabled) {
-            sendNotification(completionMessage, recipients)
-        }
-        else {
-            if (completionPhoneNumber) {
-                sendSms(completionPhoneNumber, completionMessage)
-            }
-            if (completionPush) {
-                sendPush(completionMessage)
-            }
-        }
+		if (location.contactBookEnabled) {
+			sendNotification(completionMessage, recipients)
+		} else {
+			if (completionPhoneNumber) {
+				sendSms(completionPhoneNumber, completionMessage)
+			}
+			if (completionPush) {
+				sendPush(completionMessage)
+			}
+		}
 		if (completionMusicPlayer) {
 			speak(completionMessage)
 		}
@@ -394,6 +446,22 @@ def resumePlaying() {
 // Helpers
 // ========================================================
 
+def setLevelsInState() {
+	def startLevels = [:]
+	dimmers.each { dimmer ->
+		if (!endLevel) { // old settings
+			startLevels[dimmer.id] = defaultStart()
+		} else if (startLevel) {
+			startLevels[dimmer.id] = startLevel
+		} else {
+			def dimmerIsOff = dimmer.currentValue("switch") == "off"
+			startLevels[dimmer.id] = dimmerIsOff ? 0 : dimmer.currentValue("level")
+		}
+	}
+
+	atomicState.startLevels = startLevels
+}
+
 def canStartAutomatically() {
 
 	def today = new Date().format("EEEE")
@@ -430,6 +498,36 @@ int totalRunTimeMillis() {
 	return millis as int
 }
 
+int dynamicEndLevel() {
+	if (endLevel) {
+		return endLevel as int
+	}
+
+	// old settings
+	if (direction == "Down") {
+		return 0
+	}
+	return 99
+}
+
+def getHue(dimmer, level) {
+	def start = atomicState.startLevels[dimmer.id] as int
+	def end = dynamicEndLevel()
+	if (start > end) {
+		return getDownHue(level)
+	} else {
+		return getUpHue(level)
+	}
+}
+
+def getUpHue(level) {
+	getBlueHue(level)
+}
+
+def getDownHue(level) {
+	getRedHue(level)
+}
+
 private getBlueHue(level) {
 	if (level < 5) return 72
 	if (level < 10) return 71
@@ -454,23 +552,23 @@ private getBlueHue(level) {
 }
 
 private getRedHue(level) {
-	if (level < 6) return 17
-	if (level < 12) return 16
-	if (level < 18) return 15
-	if (level < 24) return 14
-	if (level < 30) return 13
-	if (level < 36) return 12
-	if (level < 42) return 11
-	if (level < 48) return 10
+	if (level < 6) return 1
+	if (level < 12) return 2
+	if (level < 18) return 3
+	if (level < 24) return 4
+	if (level < 30) return 5
+	if (level < 36) return 6
+	if (level < 42) return 7
+	if (level < 48) return 8
 	if (level < 54) return 9
-	if (level < 60) return 8
-	if (level < 66) return 7
-	if (level < 72) return 6
-	if (level < 78) return 5
-	if (level < 84) return 4
-	if (level < 90) return 3
-	if (level < 96) return 2
-	if (level >= 96) return 1
+	if (level < 60) return 10
+	if (level < 66) return 11
+	if (level < 72) return 12
+	if (level < 78) return 13
+	if (level < 84) return 14
+	if (level < 90) return 15
+	if (level < 96) return 16
+	if (level >= 96) return 17
 }
 
 private hasSetLevelCommand(device) {
@@ -554,6 +652,10 @@ def fancyString(listOfStrings) {
 	return fancify(listOfStrings)
 }
 
+def fancyDeviceString(devices = []) {
+	fancyString(devices.collect { deviceLabel(it) })
+}
+
 def deviceLabel(device) {
 	return device.label ?: device.name
 }
@@ -565,7 +667,7 @@ def schedulingHrefDescription() {
 		descriptionParts << "On ${fancyString(days)},"
 	}
 
-	descriptionParts << "${fancyString(dimmers.collect { deviceLabel(it) })} will start dimming"
+	descriptionParts << "${fancyDeviceString(dimmers)} will start dimming"
 
 	if (startTime) {
 		descriptionParts << "at ${humanReadableStartDate()}"
@@ -644,6 +746,19 @@ def completionHrefDescription() {
 	}
 
 	return descriptionParts.join(" ")
+}
+
+def numbersPageHrefDescription() {
+	def title = "All dimmers will dim for ${duration ?: '30'} minutes from ${startLevelLabel()} to ${endLevelLabel()}"
+    if (colorize) {
+			def colorDimmers = dimmersWithSetColorCommand()
+			if (colorDimmers == dimmers) {
+				title += " and will gradually change color."
+			} else {
+				title += ".\n${fancyDeviceString(colorDimmers)} will gradually change color."
+			}
+    }
+    return title
 }
 
 def hueSatToHex(h, s) {
