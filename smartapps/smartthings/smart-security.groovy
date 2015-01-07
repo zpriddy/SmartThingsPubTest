@@ -225,7 +225,7 @@ private startAlarmSequence()
 			log.debug "Silent alarm only"
 			alarms?.strobe()
             if (location.contactBookEnabled) {
-                sendNotification(textMessage ?: "Potential intruder detected", recipients)
+                sendNotificationToContacts(textMessage ?: "Potential intruder detected", recipients)
             }
             else {
                 if (phone) {
@@ -256,7 +256,7 @@ def soundSiren()
 	if (state.alarmActive) {
 		log.debug "Sounding siren"
         if (location.contactBookEnabled) {
-            sendNotification(textMessage ?: "Potential intruder detected", recipients)
+            sendNotificationToContacts(textMessage ?: "Potential intruder detected", recipients)
         }
         else {
             if (phone) {

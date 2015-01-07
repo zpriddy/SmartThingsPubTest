@@ -84,7 +84,7 @@ private sendMessage(evt) {
 	log.debug "$evt.name:$evt.value, pushAndPhone:$pushAndPhone, '$msg'"
 
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
 

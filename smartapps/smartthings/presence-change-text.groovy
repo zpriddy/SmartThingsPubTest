@@ -39,7 +39,7 @@ def presenceHandler(evt) {
 		log.debug "${presence.label ?: presence.name} has arrived at the ${location}"
 
         if (location.contactBookEnabled) {
-            sendNotification("${presence.label ?: presence.name} has arrived at the ${location}", recipients)
+            sendNotificationToContacts("${presence.label ?: presence.name} has arrived at the ${location}", recipients)
         }
         else {
             sendSms(phone1, "${presence.label ?: presence.name} has arrived at the ${location}")
@@ -48,7 +48,7 @@ def presenceHandler(evt) {
 		log.debug "${presence.label ?: presence.name} has left the ${location}"
 
         if (location.contactBookEnabled) {
-            sendNotification("${presence.label ?: presence.name} has left the ${location}", recipients)
+            sendNotificationToContacts("${presence.label ?: presence.name} has left the ${location}", recipients)
         }
         else {
             sendSms(phone1, "${presence.label ?: presence.name} has left the ${location}")

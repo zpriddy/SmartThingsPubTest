@@ -39,7 +39,7 @@ def alertHandler(evt) {
 		log.debug msg
 
         if (location.contactBookEnabled) {
-            sendNotification(msg, recipients)
+            sendNotificationToContacts(msg, recipients)
         }
         else {
 

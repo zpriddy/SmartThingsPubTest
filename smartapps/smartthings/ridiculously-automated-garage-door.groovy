@@ -80,7 +80,7 @@ def doorOpenCheck()
 				log.info msg
 
                 if (location.contactBookEnabled) {
-                    sendNotification(msg, recipients)
+                    sendNotificationToContacts(msg, recipients)
                 }
                 else {
                     sendPush msg

@@ -54,7 +54,7 @@ def scheduleCheck()
 	} else {
         if (location.contactBookEnabled) {
             log.debug "Feeder was not opened since $midnight, texting contacts:${recipients?.size()}"
-            sendNotification("No one has fed the dog", recipients)
+            sendNotificationToContacts("No one has fed the dog", recipients)
         }
         else {
             log.debug "Feeder was not opened since $midnight, texting $phone1"

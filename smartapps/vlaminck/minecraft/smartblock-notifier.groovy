@@ -321,7 +321,7 @@ def notifyUser(pageName, messageToSend) {
 
 	} else {
         if (location.contactBookEnabled) {
-            sendNotification(messageToSend, recipients)
+            sendNotificationToContacts(messageToSend, recipients)
         }
         else {
 

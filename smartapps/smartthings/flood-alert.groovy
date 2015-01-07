@@ -49,7 +49,7 @@ def waterWetHandler(evt) {
 		log.debug "$alarm is wet, texting $phone"
 
 		if (location.contactBookEnabled) {
-			sendNotification(msg, recipients)
+			sendNotificationToContacts(msg, recipients)
 		}
 		else {
 			sendPush(msg)

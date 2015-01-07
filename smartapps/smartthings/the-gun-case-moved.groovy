@@ -45,7 +45,7 @@ def accelerationActiveHandler(evt) {
 		log.debug "SMS already sent to $phone1 within the last $deltaSeconds seconds"
 	} else {
         if (location.contactBookEnabled) {
-            sendNotification("Gun case has moved!", recipients)
+            sendNotificationToContacts("Gun case has moved!", recipients)
         }
         else {
             log.debug "$accelerationSensor has moved, texting $phone1"

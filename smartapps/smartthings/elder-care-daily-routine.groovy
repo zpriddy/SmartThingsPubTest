@@ -59,7 +59,7 @@ def scheduleCheck()
 		log.debug msg
 
 		if (location.contactBookEnabled) {
-			sendNotification(msg, recipients)
+			sendNotificationToContacts(msg, recipients)
 		}
 		else {
 			if (phone1) {

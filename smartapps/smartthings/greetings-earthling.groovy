@@ -82,7 +82,7 @@ private getPerson(evt)
 
 private send(msg) {
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         if (sendPushMessage != "No") {

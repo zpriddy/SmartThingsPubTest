@@ -85,7 +85,7 @@ def sendTextMessage() {
 	def openMinutes = maxOpenTime * (state.smsHistory?.size() ?: 1)
 	def msg = "Your ${multisensor.label ?: multisensor.name} has been open for more than ${openMinutes} minutes!"
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         if (phone) {

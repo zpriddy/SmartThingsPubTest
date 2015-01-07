@@ -110,7 +110,7 @@ private everyoneIsAway()
 private send(msg) {
 	if (location.contactBookEnabled) {
         log.debug("sending notifications to: ${recipients?.size()}")
-		sendNotification(msg, recipients)
+		sendNotificationToContacts(msg, recipients)
 	}
 	else  {
 		if (sendPushMessage != "No") {

@@ -47,7 +47,7 @@ def scheduleCheck()
 
     if (location.contactBookEnabled) {
         log.debug "Texting reminder: ($message) to contacts:${recipients?.size()}"
-        sendNotification(message, recipients)
+        sendNotificationToContacts(message, recipients)
     }
     else {
 
