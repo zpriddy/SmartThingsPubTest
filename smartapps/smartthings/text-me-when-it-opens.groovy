@@ -39,7 +39,7 @@ def contactOpenHandler(evt) {
 	log.trace "$evt.value: $evt, $settings"
 	log.debug "$contact1 was opened, texting $phone1"
     if (location.contactBookEnabled) {
-        sendNotification("Your ${contact1.label ?: contact1.name} was opened", recipients)
+        sendNotificationToContacts("Your ${contact1.label ?: contact1.name} was opened", recipients)
     }
     else {
         sendSms(phone1, "Your ${contact1.label ?: contact1.name} was opened")

@@ -49,7 +49,7 @@ def sendNotification(device, value) {
 	log.debug "Low battery detected, sending message: '$msg', push:$pushNotification, phone:$phone, contacts:${recipients?.size()}"
 
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
 

@@ -96,7 +96,7 @@ private sendMessage() {
 	def msg = "Please remember to take your medicine"
 	log.info msg
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         if (phone1) {

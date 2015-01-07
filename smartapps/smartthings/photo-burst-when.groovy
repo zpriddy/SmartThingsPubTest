@@ -69,7 +69,7 @@ def sendMessage(evt) {
 	}
 
     if (location.contactBookEnabled) {
-        sendNotification(messageText, recipients)
+        sendNotificationToContacts(messageText, recipients)
     }
     else {
         sendPush(messageText)

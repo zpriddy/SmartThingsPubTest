@@ -49,7 +49,7 @@ def scheduleCheck() {
 		def open = sensors.findAll { it?.latestValue("contact") == 'open' }
 		if (open) {
             if (location.contactBookEnabled) {
-                sendNotification("A storm is a coming and the following things are open: ${open.join(', ')}", recipients)
+                sendNotificationToContacts("A storm is a coming and the following things are open: ${open.join(', ')}", recipients)
             }
             else {
                 sendSms(phone, "A storm is a coming and the following things are open: ${open.join(', ')}")

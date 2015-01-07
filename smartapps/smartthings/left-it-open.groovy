@@ -87,7 +87,7 @@ void sendMessage()
 	def msg = "${contact.displayName} has been left open for ${minutes} minutes."
 	log.info msg
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         if (phone) {

@@ -66,7 +66,7 @@ def presence(evt)
 def sendMessage(msg) {
 
     if (location.contactBookEnabled) {
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         if (spam == "Yes") {

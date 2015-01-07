@@ -53,7 +53,7 @@ def motionActiveHandler(evt) {
 		} else {
             if (location.contactBookEnabled) {
                 log.debug "$motion1 has moved while you were out, sending notifications to: ${recipients?.size()}"
-                sendNotification("${motion1.label} ${motion1.name} moved while you were out", recipients)
+                sendNotificationToContacts("${motion1.label} ${motion1.name} moved while you were out", recipients)
             }
             else {
                 log.debug "$motion1 has moved while you were out, texting $phone1"

@@ -98,7 +98,7 @@ def zipcodeIsValid() {
 private send(message) {
     if (location.contactBookEnabled) {
         log.debug("sending notifications to: ${recipients?.size()}")
-        sendNotification(msg, recipients)
+        sendNotificationToContacts(msg, recipients)
     }
     else {
         sendPush message

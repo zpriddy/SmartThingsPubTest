@@ -46,7 +46,7 @@ def accelerationActiveHandler(evt) {
 	} else {
         if (location.contactBookEnabled) {
             log.debug "$accelerationSensor has moved, texting contacts: ${recipients?.size()}"
-            sendNotification("${accelerationSensor.label ?: accelerationSensor.name} moved", recipients)
+            sendNotificationToContacts("${accelerationSensor.label ?: accelerationSensor.name} moved", recipients)
         }
         else {
             log.debug "$accelerationSensor has moved, texting $phone1"

@@ -393,7 +393,7 @@ private handleCompletionSwitches() {
 private handleCompletionMessaging() {
 	if (completionMessage) {
 		if (location.contactBookEnabled) {
-			sendNotification(completionMessage, recipients)
+			sendNotificationToContacts(completionMessage, recipients)
 		} else {
 			if (completionPhoneNumber) {
 				sendSms(completionPhoneNumber, completionMessage)

@@ -33,7 +33,7 @@ def processEvent(evt) {
 		def msg = evt.description
 		log.debug "A Hub is inactive, sending message: '$msg', push:$pushNotification, phone:$phone"
         if (location.contactBookEnabled) {
-            sendNotification(msg, recipients)
+            sendNotificationToContacts(msg, recipients)
         }
         else {
             if (pushNotification) {
