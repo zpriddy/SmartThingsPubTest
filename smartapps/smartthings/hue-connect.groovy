@@ -2,9 +2,7 @@
  *  Hue Service Manager
  *
  *  Author: SmartThings
- *  sendNotificationEvent("Log.info - ${bulb.value.name}")
  */
- 
 definition(
     name: "Hue (Connect)",
     namespace: "smartthings",
@@ -300,6 +298,7 @@ def addBridge() {
 	}
 }
 
+
 def locationHandler(evt) {
 	def description = evt.description
 	def hub = evt?.hubId
@@ -475,7 +474,7 @@ private def parseEventMessage(String description) {
 
 def doDeviceSync(){
 	log.debug "Doing Hue Device Sync!"
-	runIn(300, "doDeviceSync" , [overwrite: false]) //schedule to run again in 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //schedule to run again in 15 minutes
 
 	//shrink the large bulb lists
 	convertBulbListToMap()
@@ -490,6 +489,10 @@ def doDeviceSync(){
 }
 
 // CHILD DEVICE METHODS
+
+
+////////////////////////////////////////////
+//CHILD DEVICE METHODS
 /////////////////////////////////////
 
 def parse(childDevice, description) {

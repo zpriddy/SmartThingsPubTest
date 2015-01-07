@@ -20,7 +20,7 @@ preferences {
 
 private discoverAllWemoTypes()
 {
-	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1/urn:Belkin:device:lightswitch:1", physicalgraph.device.Protocol.LAN))
+	sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:Belkin:device:insight:1/urn:Belkin:device:controllee:1/urn:Belkin:device:sensor:1/urn:Belkin:device:lightswitch:1", physicalgraph.device.Protocol.LAN))
 }
 
 private getFriendlyName(String deviceNetworkId) {
@@ -160,7 +160,7 @@ def installed() {
 
 	runIn(5, "subscribeToDevices") //initial subscriptions delayed by 5 seconds
 	runIn(10, "refreshDevices") //refresh devices, delayed by 10 seconds
-	runIn(300, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //setup ip:port syncing every 15 minutes
 
 	// SUBSCRIBE responses come back with TIMEOUT-1801 (30 minutes), so we refresh things a bit before they expire (29 minutes)
 	runIn(1740, "refresh", [overwrite: false])
@@ -319,8 +319,9 @@ def locationHandler(evt) {
 	def hub = evt?.hubId
 	def parsedEvent = parseDiscoveryMessage(description)
 	parsedEvent << ["hub":hub]
+    log.debug parsedEvent
 
-	if (parsedEvent?.ssdpTerm?.contains("Belkin:device:controllee")) {
+	if (parsedEvent?.ssdpTerm?.contains("Belkin:device:controllee") || parsedEvent?.ssdpTerm?.contains("Belkin:device:insight")) {
 
 		def switches = getWemoSwitches()
 
@@ -435,8 +436,21 @@ def locationHandler(evt) {
 		def headerString = new String(parsedEvent.headers.decodeBase64())
 		def bodyString = new String(parsedEvent.body.decodeBase64())
 		def body = new XmlSlurper().parseText(bodyString)
-
 		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:controllee:1"))
+		{
+			def switches = getWemoSwitches()
+			def wemoSwitch = switches.find {it?.key?.contains(body?.device?.UDN?.text())}
+			if (wemoSwitch)
+			{
+				wemoSwitch.value << [name:body?.device?.friendlyName?.text(), verified: true]
+			}
+			else
+			{
+				log.error "/setup.xml returned a wemo device that didn't exist"
+			}
+		}
+
+		if (body?.device?.deviceType?.text().startsWith("urn:Belkin:device:insight:1"))
 		{
 			def switches = getWemoSwitches()
 			def wemoSwitch = switches.find {it?.key?.contains(body?.device?.UDN?.text())}
@@ -548,7 +562,7 @@ private def parseDiscoveryMessage(String description) {
 
 def doDeviceSync(){
 	log.debug "Doing Device Sync!"
-	runIn(300, "doDeviceSync" , [overwrite: false]) //schedule to run again in 5 minutes
+	runIn(900, "doDeviceSync" , [overwrite: false]) //schedule to run again in 15 minutes
 
 	if(!state.subscribe) {
 		subscribe(location, null, locationHandler, [filterEvents:false])

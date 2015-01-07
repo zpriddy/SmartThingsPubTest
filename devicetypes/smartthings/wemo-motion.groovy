@@ -102,19 +102,21 @@ private String convertHexToIP(hex) {
 }
 
 private getHostAddress() {
-	def parts = device.deviceNetworkId.split(":")
-	def ip, port
-	if (parts.length == 2) {
-		ip = parts[0]
-		port = parts[1]
-	} else {
-		ip = getDeviceDataByName("ip")
-		port = getDeviceDataByName("port")
+	def ip = getDataValue("ip")
+	def port = getDataValue("port")
+
+	if (!ip || !port) {
+		def parts = device.deviceNetworkId.split(":")
+		if (parts.length == 2) {
+			ip = parts[0]
+			port = parts[1]
+		} else {
+			log.warn "Can't figure out ip and port for device: ${device.id}"
+		}
 	}
+	log.debug "Using ip: ${ip} and port: ${port} for device: ${device.id}"
 	return convertHexToIP(ip) + ":" + convertHexToInt(port)
 }
-
-
 
 ////////////////////////////
 def refresh() {

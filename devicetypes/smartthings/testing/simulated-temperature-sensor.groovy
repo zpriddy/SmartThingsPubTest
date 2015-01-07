@@ -19,6 +19,7 @@ metadata {
 
 		command "up"
 		command "down"
+        command "setTemperature", ["number"]
 	}
 
 
@@ -67,5 +68,9 @@ def up() {
 def down() {
 	def ts = device.currentState("temperature")
 	def value = ts ? ts.integerValue - 1 : 72 
+	sendEvent(name:"temperature", value: value)
+}
+
+def setTemperature(value) {
 	sendEvent(name:"temperature", value: value)
 }

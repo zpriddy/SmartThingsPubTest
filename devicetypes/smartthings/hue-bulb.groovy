@@ -28,9 +28,6 @@ metadata {
 	standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 		state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
 	}
-	standardTile("nextLevel", "device.level", inactiveLabel: false, decoration: "flat") {
-		state "default", label:'Level', action:"nextLevel", icon:"st.illuminance.illuminance.light"
-	}
 	controlTile("rgbSelector", "device.color", "color", height: 3, width: 3, inactiveLabel: false) {
 		state "color", action:"setAdjustedColor"
 	}
@@ -54,7 +51,7 @@ metadata {
 	}
 
 	main(["switch"])
-	details(["switch", "levelSliderControl", "rgbSelector", "refresh", "nextLevel"])
+	details(["switch", "levelSliderControl", "rgbSelector", "refresh"])
 
 }
 

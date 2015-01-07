@@ -134,6 +134,13 @@ def inputPage() {
 			input(type: "time", name: "timeRequired", title: "required:true", required: true, multiple: false)
 			input(type: "time", name: "timeWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
 		}
+        section("contact-book") {
+            input("recipients", "contact", title: "Notify", description: "Send notifications to") {
+                input(type: "phone", name: "phone", title: "Send text message to", required: false, multiple: false)
+                input(type: "boolean", name: "boolean", title: "Send push notification", required: false, multiple: false)
+
+            }
+        }
 	}
 }
 
@@ -207,22 +214,22 @@ def iconPage() {
 def hrefPage() {
 	dynamicPage(name: "hrefPage", title: "Every 'href' type") {
 		section("page") {
-			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, page: "deadEnd")
-			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, page: "deadEnd", description: "Don't make hrefs required")
-			href(name: "hrefComplete", title: "state:complete", required: false, multiple: false, page: "deadEnd", state: "complete")
-			href(name: "hrefWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", page: "deadEnd",)
+			href(name: "hrefPage", title: "required:false, multiple:false", required: false, multiple: false, page: "deadEnd")
+			href(name: "hrefPageRequired", title: "required:true", required: true, multiple: false, page: "deadEnd", description: "Don't make hrefs required")
+			href(name: "hrefPageComplete", title: "state:complete", required: false, multiple: false, page: "deadEnd", state: "complete")
+			href(name: "hrefPageWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", page: "deadEnd",)
 		}
 		section("external") {
-			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, style: "external", url: "http://smartthings.com/")
-			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, style: "external", url: "http://smartthings.com/", description: "Don't make hrefs required")
-			href(name: "hrefComplete", title: "state:complete", required: false, multiple: true, style: "external", url: "http://smartthings.com/", state: "complete")
-			href(name: "hrefWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
+			href(name: "hrefExternal", title: "required:false, multiple:false", required: false, multiple: false, style: "external", url: "http://smartthings.com/")
+			href(name: "hrefExternalRequired", title: "required:true", required: true, multiple: false, style: "external", url: "http://smartthings.com/", description: "Don't make hrefs required")
+			href(name: "hrefExternalComplete", title: "state:complete", required: false, multiple: true, style: "external", url: "http://smartthings.com/", state: "complete")
+			href(name: "hrefExternalWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
 		}
 		section("embedded") {
-			href(name: "href", title: "required:false, multiple:false", required: false, multiple: false, style: "embedded", url: "http://smartthings.com/")
-			href(name: "hrefRequired", title: "required:true", required: true, multiple: false, style: "embedded", url: "http://smartthings.com/", description: "Don't make hrefs required")
-			href(name: "hrefComplete", title: "state:complete", required: false, multiple: true, style: "embedded", url: "http://smartthings.com/", state: "complete")
-			href(name: "hrefWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
+			href(name: "hrefEmbedded", title: "required:false, multiple:false", required: false, multiple: false, style: "embedded", url: "http://smartthings.com/")
+			href(name: "hrefEmbeddedRequired", title: "required:true", required: true, multiple: false, style: "embedded", url: "http://smartthings.com/", description: "Don't make hrefs required")
+			href(name: "hrefEmbeddedComplete", title: "state:complete", required: false, multiple: true, style: "embedded", url: "http://smartthings.com/", state: "complete")
+			href(name: "hrefEmbeddedWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", url: "http://smartthings.com/")
 		}
 	}
 }

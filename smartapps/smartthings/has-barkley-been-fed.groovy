@@ -21,7 +21,9 @@ preferences {
 		input "time1", "time", title: "When?"
 	}
 	section("Text me if I forget...") {
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -50,7 +52,13 @@ def scheduleCheck()
 	if (feederOpened) {
 		log.debug "Feeder was opened since $midnight, no SMS required"
 	} else {
-		log.debug "Feeder was not opened since $midnight, texting $phone1"
-		sendSms(phone1, "No one has fed the dog")
+        if (location.contactBookEnabled) {
+            log.debug "Feeder was not opened since $midnight, texting contacts:${recipients?.size()}"
+            sendNotification("No one has fed the dog", recipients)
+        }
+        else {
+            log.debug "Feeder was not opened since $midnight, texting $phone1"
+            sendSms(phone1, "No one has fed the dog")
+        }
 	}
 }

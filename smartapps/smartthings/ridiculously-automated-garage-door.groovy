@@ -28,7 +28,9 @@ preferences {
 		input "doorSensor", "capability.contactSensor", title: "Which sensor?"
 		input "doorSwitch", "capability.momentary", title: "Which switch?"
 		input "openThreshold", "number", title: "Warn when open longer than (optional)",description: "Number of minutes", required: false
-		input "phone", "phone", title: "Warn with text message (optional)", description: "Phone Number", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Warn with text message (optional)", description: "Phone Number", required: false
+        }
 	}
 	section("Car(s) using this garage door") {
 		input "cars", "capability.presenceSensor", title: "Presence sensor", description: "Which car(s)?", multiple: true, required: false
@@ -76,10 +78,16 @@ def doorOpenCheck()
 			if (!state.openDoorNotificationSent && now() - currentState.date.time > thresholdMinutes * 60 *1000) {
 				def msg = "${doorSwitch.displayName} was been open for ${thresholdMinutes} minutes"
 				log.info msg
-				sendPush msg
-				if (phone) {
-					sendSms phone, msg
-				}
+
+                if (location.contactBookEnabled) {
+                    sendNotification(msg, recipients)
+                }
+                else {
+                    sendPush msg
+                    if (phone) {
+                        sendSms phone, msg
+                    }
+                }
 				state.openDoorNotificationSent = true
 			}
 		}
@@ -109,8 +117,8 @@ def carPresence(evt)
 		else {
 			if (doorSensor.currentContact == "closed") {
 				openDoor()
-				sendPush "Opening garage door due to arrival of ${car.displayName}"
-				state.appOpenedDoor = now()
+                sendPush "Opening garage door due to arrival of ${car.displayName}"
+                state.appOpenedDoor = now()
 			}
 			else {
 				log.debug "door already open"
@@ -122,7 +130,8 @@ def carPresence(evt)
 		if (doorSensor.currentContact == "open") {
 			closeDoor()
 			log.debug "Closing ${doorSwitch.displayName} after departure"
-			sendPush("Closing ${doorSwitch.displayName} after departure")
+            sendPush("Closing ${doorSwitch.displayName} after departure")
+
 		}
 		else {
 			log.debug "Not closing ${doorSwitch.displayName} because its already closed"

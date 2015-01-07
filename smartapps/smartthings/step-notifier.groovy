@@ -18,9 +18,9 @@ definition(
     namespace: "smartthings",
     author: "SmartThings",
     description: "Use a step tracker device to track daily step goals and trigger various device actions when your goals are met!",
-	category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+    category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png"
 )
 
 preferences {
@@ -38,12 +38,12 @@ def setupNotifications() {
     
     dynamicPage(name: "setupNotifications", title: "Configure Your Goal Notifications.", install: true, uninstall: true) {	
     
-		section("Select your Jawbone UP24") {
-			input "jawbone", "device.jawboneUser", title: "Jawbone UP24", required: true, multiple: false
+		section("Select your Jawbone UP") {
+			input "jawbone", "device.jawboneUser", title: "Jawbone UP", required: true, multiple: false
 		}
            
      	section("Notify Me When"){
-			input "thresholdType", "enum", title: "Select When to Notify", required: false, defaultValue: "Goal Reached", options: [["Goal":"Goal Reached"],["Threshold":"Exceed Specific Number of Steps"]], refreshAfterSelection:true
+			input "thresholdType", "enum", title: "Select When to Notify", required: false, defaultValue: "Goal Reached", options: [["Goal":"Goal Reached"],["Threshold":"Specific Number of Steps"]], refreshAfterSelection:true
             if (settings.thresholdType) {
                 if (settings.thresholdType == "Threshold") {
                 	input "threshold", "number", title: "Enter Step Threshold", description: "Number", required: true
@@ -52,8 +52,10 @@ def setupNotifications() {
 		}
         
 		section("Via a push notification and/or an SMS message"){
-			input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
-			input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", options: ["None","Push","SMS","Both"]
+            input("recipients", "contact", title: "Send notifications to") {
+                input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
+                input "notificationType", "enum", title: "Select Notification", required: false, defaultValue: "None", options: ["None", "Push", "SMS", "Both"]
+            }
 		}
         
         section("Flash the Lights") {
@@ -192,16 +194,10 @@ def stepHandler(evt) {
     state.steps = steps
     
     def stepGoal
-    def stepMessage
-    
-    if (settings.thresholdType == "Goal") {
+    if (settings.thresholdType == "Goal")
     	stepGoal = state.goal
-        stepMessage = "You achieved your Step Goal (${stepGoal}) for today with ${steps} steps ! Congratulations!"
-    }
-    else {
+    else
     	stepGoal = settings.threshold
-        stepMessage = "You've just reached ${stepGoal} steps! Keep it up!"      
-    }
     
     if ((state.lastSteps < stepGoal) && (state.steps >= stepGoal)) { // only trigger when crossing through the goal threshold
     
@@ -209,12 +205,18 @@ def stepHandler(evt) {
     
     	if (settings.notificationType != "None") { // Push or SMS Notification requested
 
-			def options = [
-				method: settings.notificationType.toLowerCase(),
-				phone: settings.phone
-			]
-            
-            sendNotification(stepMessage, options)
+            if (location.contactBookEnabled) {
+                sendNotificationToContacts(stepMessage, recipients)
+            }
+            else {
+
+                def options = [
+                    method: settings.notificationType.toLowerCase(),
+                    phone: settings.phone
+                ]
+
+                sendNotification(stepMessage, options)
+            }
         }
         
         if (settings.sonos) { // play a song on the Sonos as requested

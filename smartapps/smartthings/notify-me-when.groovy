@@ -31,8 +31,10 @@ preferences {
 		input "messageText", "text", title: "Message Text", required: false
 	}
 	section("Via a push notification and/or an SMS message"){
-		input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
-		input "pushAndPhone", "enum", title: "Both Push and SMS?", required: false, options: ["Yes","No"]
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "phone", title: "Phone Number (for SMS, optional)", required: false
+            input "pushAndPhone", "enum", title: "Both Push and SMS?", required: false, options: ["Yes", "No"]
+        }
 	}
 	section("Minimum time between messages (optional, defaults to every message)") {
 		input "frequency", "decimal", title: "Minutes", required: false
@@ -81,14 +83,20 @@ private sendMessage(evt) {
 	def msg = messageText ?: defaultText(evt)
 	log.debug "$evt.name:$evt.value, pushAndPhone:$pushAndPhone, '$msg'"
 
-	if (!phone || pushAndPhone != "No") {
-		log.debug "sending push"
-		sendPush(msg)
-	}
-	if (phone) {
-		log.debug "sending SMS"
-		sendSms(phone, msg)
-	}
+    if (location.contactBookEnabled) {
+        sendNotification(msg, recipients)
+    }
+    else {
+
+        if (!phone || pushAndPhone != "No") {
+            log.debug "sending push"
+            sendPush(msg)
+        }
+        if (phone) {
+            log.debug "sending SMS"
+            sendSms(phone, msg)
+        }
+    }
 	if (frequency) {
 		state[evt.deviceId] = now()
 	}

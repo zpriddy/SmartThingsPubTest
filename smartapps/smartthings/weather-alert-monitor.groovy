@@ -12,9 +12,11 @@ preferences {
 		input "weather", "device.SmartweatherStationTile"
 	}
 	section ("In addition to push notifications, send text alerts to...") {
-		input "phone1", "phone", title: "Phone Number 1", required: false
-		input "phone2", "phone", title: "Phone Number 2", required: false
-		input "phone3", "phone", title: "Phone Number 3", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone Number 1", required: false
+            input "phone2", "phone", title: "Phone Number 2", required: false
+            input "phone3", "phone", title: "Phone Number 3", required: false
+        }
 	}
 }
 
@@ -36,16 +38,22 @@ def alertHandler(evt) {
 		def msg = "Weather Alert! $evt.descriptionText"
 		log.debug msg
 
-		sendPush msg
+        if (location.contactBookEnabled) {
+            sendNotification(msg, recipients)
+        }
+        else {
 
-		if (settings.phone1) {
-			sendSms phone1, msg
-		}
-		if (settings.phone2) {
-			sendSms phone2, msg
-		}
-		if (settings.phone3) {
-			sendSms phone3, msg
-		}
+            sendPush msg
+
+            if (settings.phone1) {
+                sendSms phone1, msg
+            }
+            if (settings.phone2) {
+                sendSms phone2, msg
+            }
+            if (settings.phone3) {
+                sendSms phone3, msg
+            }
+        }
 	}
 }

@@ -134,8 +134,10 @@ def messageBuilderPage(params) {
 
 def smartPhoneNotificationSection(pageName) {
 	section("SmartPhone notifications") {
-		input(name: "${pageName}WantsPush", title: "Push Notification", description: null, type: "bool", required: false, defaultValue: "false")
-		input(name: "${pageName}WantsSms", title: "Text Message", description: "phone number", type: "phone", required: false)
+        input("recipients", "contact", title: "Send notifications to") {
+            input(name: "${pageName}WantsPush", title: "Push Notification", description: null, type: "bool", required: false, defaultValue: "false")
+            input(name: "${pageName}WantsSms", title: "Text Message", description: "phone number", type: "phone", required: false)
+        }
 		input(name: "${pageName}WantsHH", title: "Hello Home only", description: null, type: "bool", required: false)
 	}
 }
@@ -318,20 +320,25 @@ def notifyUser(pageName, messageToSend) {
 		sendNotificationEvent(messageToSend)
 
 	} else {
+        if (location.contactBookEnabled) {
+            sendNotification(messageToSend, recipients)
+        }
+        else {
 
-		def wantsPush = app."${pageName}WantsPush"
-		log.debug "wantsPush = ${wantsPush}"
-		if (wantsPush && wantsPush != "false") {
-			log.debug "sending push"
-			sendPush(messageToSend)
-		}
+            def wantsPush = app."${pageName}WantsPush"
+            log.debug "wantsPush = ${wantsPush}"
+            if (wantsPush && wantsPush != "false") {
+                log.debug "sending push"
+                sendPush(messageToSend)
+            }
 
-		def wantsSms = app."${pageName}WantsSms"
-		log.debug "wantsSms = ${wantsSms}"
-		if (wantsSms) {
-			log.debug "sending sms to: ${wantsSms}"
-			sendSms(wantsSms, messageToSend)
-		}
+            def wantsSms = app."${pageName}WantsSms"
+            log.debug "wantsSms = ${wantsSms}"
+            if (wantsSms) {
+                log.debug "sending sms to: ${wantsSms}"
+                sendSms(wantsSms, messageToSend)
+            }
+        }
 	}
 
 	def username = app."${pageName}ChatUsername"

@@ -5,7 +5,7 @@
  *  Date: 2013-12-19
  */
 definition(
-	name: "Jawbone UP24 (Connect)",
+	name: "Jawbone UP (Connect)",
 	namespace: "juano2310",
 	author: "Juan Pablo Risso",
 	description: "Connect your Jawbone UP to SmartThings",
@@ -281,6 +281,8 @@ def validateCurrentToken() {
 				}
             }
         }
+	} catch (java.net.SocketTimeoutException e) {
+		log.warn "Connection timed out, not much we can do here"
 	}
 }
 
@@ -467,7 +469,6 @@ def hookEventHandler() {
             	childDevice?.generateSleepingEvent(false) 
                 break 
             case "creation": 
-                childDevice?.generateSleepingEvent(false)  
                 childDevice?.sendEvent(name:"steps", value: 0)
           		break
             case "updation":

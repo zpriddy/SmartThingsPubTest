@@ -8,6 +8,8 @@ metadata {
 		capability "Configuration"
 		capability "Polling"
 		capability "Sensor"
+		
+		attribute "thermostatFanState", "string"
 
 		command "switchMode"
 		command "switchFanMode"
@@ -30,20 +32,20 @@ metadata {
 		status "fanOn"			: "command: 4403, payload: 01"
 		status "fanCirculate"	: "command: 4403, payload: 06"
 
-		status "heat 60"        : "command: 4303, payload: 01 01 3C"
-		status "heat 68"        : "command: 4303, payload: 01 01 44"
-		status "heat 72"        : "command: 4303, payload: 01 01 48"
+		status "heat 60"        : "command: 4303, payload: 01 09 3C"
+		status "heat 68"        : "command: 4303, payload: 01 09 44"
+		status "heat 72"        : "command: 4303, payload: 01 09 48"
 
-		status "cool 72"        : "command: 4303, payload: 02 01 48"
-		status "cool 76"        : "command: 4303, payload: 02 01 4C"
-		status "cool 80"        : "command: 4303, payload: 02 01 50"
+		status "cool 72"        : "command: 4303, payload: 02 09 48"
+		status "cool 76"        : "command: 4303, payload: 02 09 4C"
+		status "cool 80"        : "command: 4303, payload: 02 09 50"
 
-		status "temp 58"        : "command: 3105, payload: 01 22 02 44"
-		status "temp 62"        : "command: 3105, payload: 01 22 02 6C"
-		status "temp 70"        : "command: 3105, payload: 01 22 02 BC"
-		status "temp 74"        : "command: 3105, payload: 01 22 02 E4"
-		status "temp 78"        : "command: 3105, payload: 01 22 03 0C"
-		status "temp 82"        : "command: 3105, payload: 01 22 03 34"
+		status "temp 58"        : "command: 3105, payload: 01 2A 02 44"
+		status "temp 62"        : "command: 3105, payload: 01 2A 02 6C"
+		status "temp 70"        : "command: 3105, payload: 01 2A 02 BC"
+		status "temp 74"        : "command: 3105, payload: 01 2A 02 E4"
+		status "temp 78"        : "command: 3105, payload: 01 2A 03 0C"
+		status "temp 82"        : "command: 3105, payload: 01 2A 03 34"
 
 		status "idle"			: "command: 4203, payload: 00"
 		status "heating"		: "command: 4203, payload: 01"
@@ -219,6 +221,22 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatoperatingstatev1.Thermosta
 			break
 	}
 	map.name = "thermostatOperatingState"
+	map
+}
+
+def zwaveEvent(physicalgraph.zwave.commands.thermostatfanstatev1.ThermostatFanStateReport cmd) {
+	def map = [name: "thermostatFanState", unit: ""]
+	switch (cmd.fanOperatingState) {
+		case 0:
+			map.value = "idle"
+			break
+		case 1:
+			map.value = "running"
+			break
+		case 2:
+			map.value = "running high"
+			break
+	}
 	map
 }
 
@@ -445,7 +463,7 @@ def getModeMap() { [
 	"heat": 1,
 	"cool": 2,
 	"auto": 3,
-	"emergency heat": 4
+	"emergencyHeat": 4
 ]}
 
 def setThermostatMode(String value) {

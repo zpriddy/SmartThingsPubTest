@@ -19,7 +19,8 @@ definition(
     name: "Jawbone Panic Button",
     namespace: "juano2310",
     author: "Juan Risso",
-    description: "Holding the button on the Jawbone UP24 will send a text massage alerting someone of a potential emergency.",
+    category: "SmartThings Labs",
+    description: "Holding the button on the Jawbone UP will send a text massage alerting someone of a potential emergency.",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up.png",
 	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/jawbone-up@2x.png",
 )

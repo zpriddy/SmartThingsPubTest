@@ -115,8 +115,7 @@ def parse(description) {
 	def results = []
 	try {
 
-
-		def msg = parseSoapMessage(description)
+		def msg = parseLanMessage(description)
 		if (msg.headers)
 		{
 			def hdr = msg.header.split('\n')[0]
@@ -563,7 +562,6 @@ def playTrackAndResume(uri, duration, volume=null) {
 		if (level) {
 			log.trace "Stopping and setting level to $volume"
 			result << sonosAction("Stop")
-			result << delayAction(1000)
 			result << setLocalLevel(level)
 		}
 
@@ -572,7 +570,7 @@ def playTrackAndResume(uri, duration, volume=null) {
 		result << sonosAction("Play")
 
 		if (currentTrack) {
-			def delayTime = ((duration as Integer) * 1000)+1500
+			def delayTime = ((duration as Integer) * 1000)+3000
 			if (level) {
 				delayTime += 1000
 			}
@@ -617,7 +615,6 @@ def playTrackAndRestore(uri, duration, volume=null) {
 		if (level) {
 			log.trace "Stopping and setting level to $volume"
 			result << sonosAction("Stop")
-			result << delayAction(1000)
 			result << setLocalLevel(level)
 		}
 
@@ -626,7 +623,7 @@ def playTrackAndRestore(uri, duration, volume=null) {
 		result << sonosAction("Play")
 
 		if (currentTrack) {
-			def delayTime = ((duration as Integer) * 1000)+1500
+			def delayTime = ((duration as Integer) * 1000)+3000
 			if (level) {
 				delayTime += 1000
 			}
@@ -664,7 +661,6 @@ def playSoundAndTrack(soundUri, duration, trackData, volume=null) {
 		if (level) {
 			log.trace "Stopping and setting level to $volume"
 			result << sonosAction("Stop")
-			result << delayAction(1000)
 			result << setLocalLevel(level)
 		}
 
@@ -672,7 +668,7 @@ def playSoundAndTrack(soundUri, duration, trackData, volume=null) {
 		result << setTrack(soundUri)
 		result << sonosAction("Play")
 
-		def delayTime = ((duration as Integer) * 1000)+1500
+		def delayTime = ((duration as Integer) * 1000)+3000
 		result << delayAction(delayTime)
 		log.trace "Delaying $delayTime ms before resumption"
 
@@ -691,7 +687,6 @@ def playTrackAtVolume(String uri, volume) {
 	coordinate({
 		def result = []
 		result << sonosAction("Stop")
-		result << delayAction(1000)
 		result << setLocalLevel(volume as Integer)
 		result << setTrack(uri, metaData)
 		result << sonosAction("Play")
@@ -791,7 +786,6 @@ def restoreTrack(Map trackData = null) {
 def playText(String msg) {
 	coordinate({
 		def result = setText(msg)
-		//result << delayAction(500)
 		result << sonosAction("Play")
 	}, {it.playText(msg)})
 }
@@ -822,23 +816,15 @@ def unsubscribe() {
 	log.trace "unsubscribe()"
 	def result = [
 		unsubscribeAction("/MediaRenderer/AVTransport/Event", device.getDataValue('subscriptionId')),
-		//delayAction(500),
 		unsubscribeAction("/MediaRenderer/RenderingControl/Event", device.getDataValue('subscriptionId')),
-		//delayAction(500),
 		unsubscribeAction("/ZoneGroupTopology/Event", device.getDataValue('subscriptionId')),
-		//delayAction(500),
-
+		
 		unsubscribeAction("/MediaRenderer/AVTransport/Event", device.getDataValue('subscriptionId1')),
-		//delayAction(500),
 		unsubscribeAction("/MediaRenderer/RenderingControl/Event", device.getDataValue('subscriptionId1')),
-		//delayAction(500),
 		unsubscribeAction("/ZoneGroupTopology/Event", device.getDataValue('subscriptionId1')),
-		//delayAction(500),
-
+		
 		unsubscribeAction("/MediaRenderer/AVTransport/Event", device.getDataValue('subscriptionId2')),
-		//delayAction(500),
 		unsubscribeAction("/MediaRenderer/RenderingControl/Event", device.getDataValue('subscriptionId2')),
-		//delayAction(500),
 		unsubscribeAction("/ZoneGroupTopology/Event", device.getDataValue('subscriptionId2'))
 	]
 	updateDataValue("subscriptionId", "")

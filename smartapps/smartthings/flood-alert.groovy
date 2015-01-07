@@ -17,8 +17,10 @@ preferences {
 	section("When there's water detected...") {
 		input "alarm", "capability.waterSensor", title: "Where?"
 	}
-	section("Text me at...") {
-		input "phone", "phone", title: "Phone number?", required: false
+	section("Send a notification to...") {
+		input("recipients", "contact", title: "Recipients", description: "Send notifications to") {
+			input "phone", "phone", title: "Phone number?", required: false
+		}
 	}
 }
 
@@ -45,9 +47,15 @@ def waterWetHandler(evt) {
 	} else {
 		def msg = "${alarm.displayName} is wet!"
 		log.debug "$alarm is wet, texting $phone"
-		sendPush(msg)
-		if (phone) {
-			sendSms(phone, msg)
+
+		if (location.contactBookEnabled) {
+			sendNotification(msg, recipients)
+		}
+		else {
+			sendPush(msg)
+			if (phone) {
+				sendSms(phone, msg)
+			}
 		}
 	}
 }

@@ -155,7 +155,7 @@ def receiveToken() {
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>${getVendorName()} Connection</title>
-        <style type="text/css">        
+        <style type="text/css">
             * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';
@@ -229,7 +229,7 @@ def receivedToken() {
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Withings Connection</title>
-        <style type="text/css">        
+        <style type="text/css">
             * { box-sizing: border-box; }
             @font-face {
                 font-family: 'Swiss 721 W01 Thin';

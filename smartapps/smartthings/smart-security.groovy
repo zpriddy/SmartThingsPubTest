@@ -24,14 +24,16 @@ preferences {
 	}
 	section("Alarm settings and actions") {
 		input "alarms", "capability.alarm", title: "Which Alarm(s)", multiple: true, required: false
-		input "silent", "text", title: "Silent alarm only (Yes/No)"
+        input "silent", "enum", options: ["Yes","No"], title: "Silent alarm only (Yes/No)"
 		input "seconds", "number", title: "Delay in seconds before siren sounds"
 		input "lights", "capability.switch", title: "Flash these lights (optional)", multiple: true, required: false
 		input "newMode", "mode", title: "Change to this mode (optional)", required: false
 	}
 	section("Notify others (optional)") {
 		input "textMessage", "text", title: "Send this message", multiple: false, required: false
-		input "phone", "text", title: "To this phone", multiple: false, required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone", "text", title: "To this phone", multiple: false, required: false
+        }
 	}
 	section("Arm system when residents quiet for (default 3 minutes)") {
 		input "residentsQuietThreshold", "number", title: "Time in minutes", required: false
@@ -212,6 +214,7 @@ private startAlarmSequence()
 	else {
 		state.alarmActive = true
 		log.debug "starting alarm sequence"
+
 		sendPush("Potential intruder detected!")
 
 		if (newMode) {
@@ -221,9 +224,14 @@ private startAlarmSequence()
 		if (silentAlarm()) {
 			log.debug "Silent alarm only"
 			alarms?.strobe()
-			if (phone) {
-				sendSms(phone, textMessage ?: "Potential intruder detected")
-			}
+            if (location.contactBookEnabled) {
+                sendNotification(textMessage ?: "Potential intruder detected", recipients)
+            }
+            else {
+                if (phone) {
+                    sendSms(phone, textMessage ?: "Potential intruder detected")
+                }
+            }
 		}
 		else {
 			def delayTime = seconds
@@ -247,9 +255,14 @@ def soundSiren()
 {
 	if (state.alarmActive) {
 		log.debug "Sounding siren"
-		if (phone) {
-			sendSms(phone, textMessage ?: "Potential intruder detected")
-		}
+        if (location.contactBookEnabled) {
+            sendNotification(textMessage ?: "Potential intruder detected", recipients)
+        }
+        else {
+            if (phone) {
+                sendSms(phone, textMessage ?: "Potential intruder detected")
+            }
+        }
 		alarms?.both()
 		if (lights) {
 			log.debug "continue flashing lights"

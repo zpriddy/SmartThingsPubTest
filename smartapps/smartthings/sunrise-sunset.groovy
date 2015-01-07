@@ -38,8 +38,10 @@ preferences {
 		input "zipCode", "text", required: false
 	}
 	section( "Notifications" ) {
-		input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
-		input "phoneNumber", "phone", title: "Send a text message?", required: false
+        input("recipients", "contact", title: "Send notifications to") {
+            input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
+            input "phoneNumber", "phone", title: "Send a text message?", required: false
+        }
 	}
 
 }
@@ -58,7 +60,7 @@ def initialize() {
 	subscribe(location, "position", locationPositionChange)
 	subscribe(location, "sunriseTime", sunriseSunsetTimeHandler)
 	subscribe(location, "sunsetTime", sunriseSunsetTimeHandler)
-	
+
 	astroCheck()
 }
 
@@ -80,27 +82,31 @@ def astroCheck() {
 	def setTime = s.sunset
 	log.debug "riseTime: $riseTime"
 	log.debug "setTime: $setTime"
-	
+
 	if (state.riseTime != riseTime.time) {
-		state.riseTime = riseTime.time
-		
 		unschedule("sunriseHandler")
+
 		if(riseTime.before(now)) {
-			riseTime.next()
+			riseTime = riseTime.next()
 		}
+
+		state.riseTime = riseTime.time
+
 		log.info "scheduling sunrise handler for $riseTime"
-		runDaily(riseTime, sunriseHandler)
+		schedule(riseTime, sunriseHandler)
 	}
-   
+
 	if (state.setTime != setTime.time) {
-		state.setTime = setTime.time
 		unschedule("sunsetHandler")
 
 	    if(setTime.before(now)) {
-	        setTime.next()
+		    setTime = setTime.next()
 	    }
-	    log.info "scheduling sunset handler for $setTime"
-	    runDaily(setTime, sunsetHandler)
+
+		state.setTime = setTime.time
+
+		log.info "scheduling sunset handler for $setTime"
+	    schedule(setTime, sunsetHandler)
 	}
 }
 
@@ -139,15 +145,21 @@ def changeMode(newMode) {
 }
 
 private send(msg) {
-	if ( sendPushMessage != "No" ) {
-		log.debug( "sending push message" )
-		sendPush( msg )
-	}
+    if (location.contactBookEnabled) {
+        log.debug("sending notifications to: ${recipients?.size()}")
+        sendNotification(msg, recipients)
+    }
+    else {
+        if (sendPushMessage != "No") {
+            log.debug("sending push message")
+            sendPush(msg)
+        }
 
-	if ( phoneNumber ) {
-		log.debug( "sending text message" )
-		sendSms( phoneNumber, msg )
-	}
+        if (phoneNumber) {
+            log.debug("sending text message")
+            sendSms(phoneNumber, msg)
+        }
+    }
 
 	log.debug msg
 }

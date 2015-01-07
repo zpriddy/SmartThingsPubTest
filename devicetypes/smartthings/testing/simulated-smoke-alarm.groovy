@@ -4,8 +4,6 @@ metadata {
 		capability "Smoke Detector"
 		capability "Sensor"
 
-		attribute "alarmState", "string"
-        
         command "smoke"
         command "test"
         command "clear"
@@ -16,7 +14,7 @@ metadata {
 	}
 
 	tiles {
-		standardTile("smoke", "device.smoke", width: 2, height: 2) {
+		standardTile("main", "device.smoke", width: 2, height: 2) {
 			state("clear", label:"Clear", icon:"st.alarm.smoke.clear", backgroundColor:"#ffffff", action:"smoke")
 			state("detected", label:"Smoke!", icon:"st.alarm.smoke.smoke", backgroundColor:"#e86d13", action:"clear")
 			state("tested", label:"Test", icon:"st.alarm.smoke.test", backgroundColor:"#e86d13", action:"clear")
@@ -30,8 +28,8 @@ metadata {
  		standardTile("reset", "device.smoke", inactiveLabel: false, decoration: "flat") {
 			state "default", label:'Clear', action:"clear"
 		}
-        main "smoke"
-		details(["smoke", "smoke", "test", "clear"])
+        main "main"
+		details(["main", "smoke", "test", "clear"])
 	}
 }
 
@@ -41,15 +39,15 @@ def parse(String description) {
 
 def smoke() {
 	log.debug "smoke()"
-	sendEvent(name: "smoke", value: "detected", descriptionText: "$device.displayName detected smoke!")
+	sendEvent(name: "smoke", value: "detected", descriptionText: "$device.displayName smoke detected!")
 }
 
 def test() {
 	log.debug "test()"
-	sendEvent(name: "smoke", value: "tested", descriptionText: "$device.displayName smoke detector tested")
+	sendEvent(name: "smoke", value: "tested", descriptionText: "$device.displayName tested")
 }
 
 def clear() {
 	log.debug "clear()"
-	sendEvent(name: "smoke", value: "clear", descriptionText: "$device.displayName smoke detector clear")
+	sendEvent(name: "smoke", value: "clear", descriptionText: "$device.displayName clear")
 }

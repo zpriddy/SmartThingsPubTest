@@ -18,7 +18,9 @@ preferences {
 		input "accelerationSensor", "capability.accelerationSensor", title: "Where?"
 	}
 	section("Text me at...") {
-		input "phone1", "phone", title: "Phone number?"
+        input("recipients", "contact", title: "Send notifications to") {
+            input "phone1", "phone", title: "Phone number?"
+        }
 	}
 }
 
@@ -42,7 +44,13 @@ def accelerationActiveHandler(evt) {
 	if (alreadySentSms) {
 		log.debug "SMS already sent to $phone1 within the last $deltaSeconds seconds"
 	} else {
-		log.debug "$accelerationSensor has moved, texting $phone1"
-		sendSms(phone1, "${accelerationSensor.label ?: accelerationSensor.name} moved")
+        if (location.contactBookEnabled) {
+            log.debug "$accelerationSensor has moved, texting contacts: ${recipients?.size()}"
+            sendNotification("${accelerationSensor.label ?: accelerationSensor.name} moved", recipients)
+        }
+        else {
+            log.debug "$accelerationSensor has moved, texting $phone1"
+            sendSms(phone1, "${accelerationSensor.label ?: accelerationSensor.name} moved")
+        }
 	}
 }
