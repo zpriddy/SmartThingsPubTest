@@ -10,7 +10,6 @@ metadata {
 		capability "Switch Level"
 		capability "Actuator"
 		capability "Switch"
-		capability "Polling"
 		capability "Refresh"
 		capability "Sensor"
 	}
@@ -19,11 +18,11 @@ metadata {
 		// TODO: define status and reply messages here
 	}
 
-	standardTile("switch", "device.switch", width: 1, height: 1, canChangeIcon: true) {
-		state "on", label:'${name}', action:"switch.off", icon:"st.switches.switch.on", backgroundColor:"#79b821", nextState:"turningOff"
-		state "off", label:'${name}', action:"switch.on", icon:"st.switches.switch.off", backgroundColor:"#ffffff", nextState:"turningOn"
-		state "turningOn", label:'${name}', icon:"st.switches.switch.on", backgroundColor:"#79b821"
-		state "turningOff", label:'${name}', icon:"st.switches.switch.off", backgroundColor:"#ffffff"
+	standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true) {
+		state "on", label:'${name}', action:"switch.off", icon:"st.lights.philips.hue-single", backgroundColor:"#79b821", nextState:"turningOff"
+		state "off", label:'${name}', action:"switch.on", icon:"st.lights.philips.hue-single", backgroundColor:"#ffffff", nextState:"turningOn"
+		state "turningOn", label:'${name}', action:"switch.off", icon:"st.lights.philips.hue-single", backgroundColor:"#79b821", nextState:"turningOff"
+		state "turningOff", label:'${name}', action:"switch.on", icon:"st.lights.philips.hue-single", backgroundColor:"#ffffff", nextState:"turningOn"
 	}
 	standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
 		state "default", label:"", action:"refresh.refresh", icon:"st.secondary.refresh"
