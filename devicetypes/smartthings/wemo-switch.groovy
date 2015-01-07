@@ -89,7 +89,6 @@ def parse(String description) {
 	result
 }
 
-////////////////////////////
 private getTime() {
 	// This is essentially System.currentTimeMillis()/1000, but System is disallowed by the sandbox.
 	((new GregorianCalendar().time.time / 1000l).toInteger()).toString()
@@ -124,7 +123,7 @@ private getHostAddress() {
 	return convertHexToIP(ip) + ":" + convertHexToInt(port)
 }
 
-////////////////////////////
+
 def on() {
 	log.debug "Executing 'on'"
 def turnOn = new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
@@ -141,8 +140,9 @@ Content-Length: 333
 	</m:SetBinaryState>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>""", physicalgraph.device.Protocol.LAN)
+sendEvent(name: "switch", value: "on")
 }
-////////////////////////////
+
 def off() {
 	log.debug "Executing 'off'"
 
@@ -160,6 +160,7 @@ Content-Length: 333
 	</m:SetBinaryState>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>""", physicalgraph.device.Protocol.LAN)
+sendEvent(name: "switch", value: "off")
 }
 
 /*def refresh() {
