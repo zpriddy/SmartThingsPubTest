@@ -126,6 +126,7 @@ private getHostAddress() {
 
 def on() {
 	log.debug "Executing 'on'"
+    sendEvent(name: "switch", value: "on")
 def turnOn = new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
 SOAPAction: "urn:Belkin:service:basicevent:1#SetBinaryState"
 Host: ${getHostAddress()}
@@ -140,12 +141,11 @@ Content-Length: 333
 	</m:SetBinaryState>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>""", physicalgraph.device.Protocol.LAN)
-sendEvent(name: "switch", value: "on")
 }
 
 def off() {
 	log.debug "Executing 'off'"
-
+	sendEvent(name: "switch", value: "off")
 	def turnOff = new physicalgraph.device.HubAction("""POST /upnp/control/basicevent1 HTTP/1.1
 SOAPAction: "urn:Belkin:service:basicevent:1#SetBinaryState"
 Host: ${getHostAddress()}
@@ -160,7 +160,6 @@ Content-Length: 333
 	</m:SetBinaryState>
 </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>""", physicalgraph.device.Protocol.LAN)
-sendEvent(name: "switch", value: "off")
 }
 
 /*def refresh() {
@@ -181,13 +180,11 @@ User-Agent: CyberGarage-HTTP/1.0
 </s:Envelope>""", physicalgraph.device.Protocol.LAN)
 }*/
 
-////////////////////////////
 def refresh() {
 	log.debug "Executing WeMo Switch 'subscribe', then 'timeSyncResponse', then 'poll'"
 	[subscribe(), timeSyncResponse(), poll()]
 }
 
-////////////////////////////
 def subscribe(hostAddress) {
 log.debug "Executing 'subscribe()'"
 def address = getCallBackAddress()
