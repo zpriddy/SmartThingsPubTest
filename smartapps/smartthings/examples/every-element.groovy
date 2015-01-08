@@ -14,13 +14,13 @@
  *
  */
 definition(
-    name: "Every Element",
-    namespace: "smartthings/examples",
-    author: "SmartThings",
-    description: "Every element demonstration app",
-    category: "SmartThings Internal",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
+	name: "Every Element",
+	namespace: "smartthings/examples",
+	author: "SmartThings",
+	description: "Every element demonstration app",
+	category: "SmartThings Internal",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
@@ -34,7 +34,9 @@ preferences {
 	page(name: "hrefPage")
 	page(name: "buttonsPage")
 	page(name: "imagePage")
+	page(name: "videoPage")
 	page(name: "deadEnd", title: "Nothing to see here, move along.", content: "foo")
+	page(name: "flattenedPage")
 }
 
 def firstPage() {
@@ -49,6 +51,10 @@ def firstPage() {
 			href(page: "hrefPage", title: "Element: 'href'")
 			href(page: "buttonsPage", title: "Element: 'buttons'")
 			href(page: "imagePage", title: "Element: 'image'")
+			href(page: "videoPage", title: "Element: 'video'")
+		}
+		section() {
+			href(page: "flattenedPage", title: "All of the above elements on a single page")
 		}
 	}
 }
@@ -134,21 +140,20 @@ def inputPage() {
 			input(type: "time", name: "timeRequired", title: "required:true", required: true, multiple: false)
 			input(type: "time", name: "timeWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
 		}
-        section("contact-book") {
-            input("recipients", "contact", title: "Notify", description: "Send notifications to") {
-                input(type: "phone", name: "phone", title: "Send text message to", required: false, multiple: false)
-                input(type: "boolean", name: "boolean", title: "Send push notification", required: false, multiple: false)
-
-            }
-        }
+		section("contact-book") {
+			input("recipients", "contact", title: "Notify", description: "Send notifications to") {
+				input(type: "phone", name: "phone", title: "Send text message to", required: false, multiple: false)
+				input(type: "boolean", name: "boolean", title: "Send push notification", required: false, multiple: false)
+			}
+		}
 	}
 }
 
 def appPage() {
 	dynamicPage(name: "appPage", title: "Every 'app' type") {
-    section {
-      paragraph "These won't work unless you create a child SmartApp to link to... Sorry."
-    }
+		section {
+			paragraph "These won't work unless you create a child SmartApp to link to... Sorry."
+		}
 		section("app") {
 			app(
 				name: "app",
@@ -273,10 +278,33 @@ def buttonsPage() {
 def imagePage() {
 	dynamicPage(name: "imagePage", title: "Every 'image' type") { // TODO: finish thise
 		section("image") {
-			image "http://www.deargrumpycat.com/wp-content/uploads/2013/02/Grumpy-Cat1.jpg"
+			image "http://f.cl.ly/items/1k1S0A0m3805402o3O12/20130915-191127.jpg"
 			image(name: "imageWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
 		}
 	}
+}
+
+def videoPage() {
+	dynamicPage(name: "imagePage", title: "Every 'image' type") { // TODO: finish this
+		section("video") {
+			// TODO: update this when there is a videoElement method
+			element(name: "videoElement", element: "video", type: "video", title: "this is a video!", description: "I am setting long title and descriptions to test the offset", required: false, image: "http://ec2-54-161-144-215.compute-1.amazonaws.com:8081/jesse/cam1/54aafcd1c198347511c26321.jpg", video: "http://ec2-54-161-144-215.compute-1.amazonaws.com:8081/jesse/cam1/54aafcd1c198347511c2631f.mp4")
+		}
+	}
+}
+
+def flattenedPage() {
+	def allSections = []
+	firstPage().sections.each { section ->
+		section.body.each { hrefElement ->
+			if (hrefElement.page != "flattenedPage") {
+				allSections += "${hrefElement.page}"().sections
+			}
+		}
+	}
+	def flattenedPage = dynamicPage(name: "flattenedPage", title: "All elements in one page!") {}
+	flattenedPage.sections = allSections
+	return flattenedPage
 }
 
 def foo() {
