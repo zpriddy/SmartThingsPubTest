@@ -39,6 +39,9 @@
  *  Change 6:	2014-10-17 (twackford)
  *					a. added uninstallFromChildDevice to handle removing from settings                   
  *
+ *  Change 7:	2015-01-08 (nohr)
+ *					a. use new runEvery5Minutes schedule to spread out load of all TCP Bulbs (Connect) apps
+ *
  *
  ******************************************************************************
  *                                   Code
@@ -143,7 +146,7 @@ def initialize() {
 	if (selectedBulbs) {
 		addBulbs()
 	}
-    schedule("* 0/5 * * * ?", updateGatewayIP)
+	runEvery5Minutes("updateGatewayIP")
 }
 
 def uninstalled()
