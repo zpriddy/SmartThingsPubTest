@@ -389,7 +389,7 @@ def initialize() {
 	delete.each { deleteChildDevice(it.deviceNetworkId) }
 
 	// Do the initial poll and schedule it to run every minute
-	schedule("0 */5 * * * ?", poll)
+	runEvery5Minutes()
     poll()
 }
 
