@@ -71,6 +71,37 @@ def inputPage() {
 			input(type: "enum", name: "enumRequired", title: "required:true", required: true, multiple: false, options: ["one", "two", "three"])
 			input(type: "enum", name: "enumMultiple", title: "multiple:true", required: false, multiple: true, options: ["one", "two", "three"])
 			input(type: "enum", name: "enumWithImage", title: "This element has an image and a long title.", description: "I am setting long title and descriptions to test the offset", required: false, multiple: true, options: ["one", "two", "three"], image: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png")
+			input(type: "enum", name: "enumWithGroupedOptions", title: "groupedOptions", description: "This enum has grouped options", required: false, multiple: true, groupedOptions: [
+				[
+					title : "the group title that is displayed",
+					order : 0, // the order of the group; 0-based
+					image : "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png", // not yet supported
+					values: [
+						[
+							key  : "the value that will be placed in SmartApp settings.", // such as a device id
+							value: "the title of the selectable option that is displayed", // such as a device name
+							order: 0 // the order of the option
+						]
+					]
+				],
+				[
+					title : "the second group title that is displayed",
+					order : 1, // the order of the group; 0-based
+					image : null, // not yet supported
+					values: [
+						[
+							key  : "some_device_id",
+							value: "some_device_name",
+							order: 1 // the order of the option. This option will appear second in the list even though it is the first option defined in this map
+						],
+						[
+							key  : "some_other_device_id",
+							value: "some_other_device_name",
+							order: 0 // the order of the option. This option will appear first in the list even though it is not the first option defined in this map
+						]
+					]
+				]
+			])
 		}
 		section("text") {
 			input(type: "text", name: "text", title: "required:false, multiple:false", required: false, multiple: false)
