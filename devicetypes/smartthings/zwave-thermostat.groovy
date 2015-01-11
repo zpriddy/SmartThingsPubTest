@@ -78,7 +78,7 @@ metadata {
 			state "heat", label:'${name}', action:"switchMode", nextState:"to_cool"
 			state "cool", label:'${name}', action:"switchMode", nextState:"..."
 			state "auto", label:'${name}', action:"switchMode", nextState:"..."
-			state "emergencyHeat", label:'${name}', action:"switchMode", nextState:"..."
+			state "emergency heat", label:'${name}', action:"switchMode", nextState:"..."
 			state "to_heat", label: "heat", action:"switchMode", nextState:"to_cool"
 			state "to_cool", label: "cool", action:"switchMode", nextState:"..."
 			state "...", label: "...", action:"off", nextState:"off"
@@ -250,7 +250,7 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatmodev2.ThermostatModeRepor
 			map.value = "heat"
 			break
 		case physicalgraph.zwave.commands.thermostatmodev2.ThermostatModeReport.MODE_AUXILIARY_HEAT:
-			map.value = "emergencyHeat"
+			map.value = "emergency heat"
 			break
 		case physicalgraph.zwave.commands.thermostatmodev2.ThermostatModeReport.MODE_COOL:
 			map.value = "cool"
@@ -285,7 +285,7 @@ def zwaveEvent(physicalgraph.zwave.commands.thermostatmodev2.ThermostatModeSuppo
 	def supportedModes = ""
 	if(cmd.off) { supportedModes += "off " }
 	if(cmd.heat) { supportedModes += "heat " }
-	if(cmd.auxiliaryemergencyHeat) { supportedModes += "emergencyHeat " }
+	if(cmd.auxiliaryemergencyHeat) { supportedModes += "emergency heat " }
 	if(cmd.cool) { supportedModes += "cool " }
 	if(cmd.auto) { supportedModes += "auto " }
 
@@ -390,7 +390,7 @@ def configure() {
 }
 
 def modes() {
-	["off", "heat", "cool", "auto", "emergencyHeat"]
+	["off", "heat", "cool", "auto", "emergency heat"]
 }
 
 def switchMode() {
@@ -463,7 +463,7 @@ def getModeMap() { [
 	"heat": 1,
 	"cool": 2,
 	"auto": 3,
-	"emergencyHeat": 4
+	"emergency heat": 4
 ]}
 
 def setThermostatMode(String value) {

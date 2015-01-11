@@ -232,7 +232,7 @@ def heat() {
 
 def emergencyHeat() {
 	log.debug "emergencyHeat"
-	sendEvent("name":"thermostatMode", "value":"emergencyHeat")
+	sendEvent("name":"thermostatMode", "value":"emergency heat")
 	"st wattr 0x${device.deviceNetworkId} 1 0x201 0x1C 0x30 {05}"
 }
 
