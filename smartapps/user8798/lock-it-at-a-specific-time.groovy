@@ -15,7 +15,7 @@
  */
 definition(
     name: "Lock it at a specific time",
-    namespace: "lock_it",
+    namespace: "user8798",
     author: "Erik Thayer",
     description: "Make sure a door is locked at a specific time.  Option to add door contact sensor to only lock if closed.",
     category: "Safety & Security",
