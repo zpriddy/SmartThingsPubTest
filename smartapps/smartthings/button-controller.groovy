@@ -98,6 +98,10 @@ def getButtonSections(buttonNumber) {
             input "sirens_${buttonNumber}_held", "capability.alarm", title: "Held", multiple: true, required: false
         }
 
+		section("Custom Message") {
+			input "textMessage_${buttonNumber}", "text", title: "Message", required: false
+		}
+
         section("Push Notifications") {
             input "notifications_${buttonNumber}_pushed","bool" ,title: "Pushed", required: false, defaultValue: false
             input "notifications_${buttonNumber}_held", "bool", title: "Held", required: false, defaultValue: false
@@ -187,13 +191,13 @@ def executeHandlers(buttonNumber, value) {
 	def phrase = find('phrase', buttonNumber, value)
 	if (phrase != null) location.helloHome.execute(phrase)
 
-    def notifications = find('notifications', buttonNumber, value)
-    log.debug $notifications
-    if (notifications != null) sendPush( "Button $buttonNumber was pressed" )
+	def textMessage = findMsg('textMessage', buttonNumber)
 
-    def phone = find('phone', buttonNumber, value)
-    log.debug $phone
-    if (phone != null) sendSms(phone, "Button $buttonNumber was pressed")
+	def notifications = find('notifications', buttonNumber, value)
+	if (notifications != null) sendPush(textMessage ?: "Button $buttonNumber was pressed" )
+
+	def phone = find('phone', buttonNumber, value)
+	if (phone != null) sendSms(phone, textMessage ?:"Button $buttonNumber was pressed")
 
     def sirens = find('sirens', buttonNumber, value)
     if (sirens != null) toggle(sirens)
@@ -201,6 +205,16 @@ def executeHandlers(buttonNumber, value) {
 
 def find(type, buttonNumber, value) {
 	def preferenceName = type + "_" + buttonNumber + "_" + value
+	def pref = settings[preferenceName]
+	if(pref != null) {
+		log.debug "Found: $pref for $preferenceName"
+	}
+
+	return pref
+}
+
+def findMsg(type, buttonNumber) {
+	def preferenceName = type + "_" + buttonNumber
 	def pref = settings[preferenceName]
 	if(pref != null) {
 		log.debug "Found: $pref for $preferenceName"
