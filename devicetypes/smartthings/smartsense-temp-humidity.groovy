@@ -212,6 +212,15 @@ def refresh()
 	]
 }
 
+def updated() {
+	log.debug "sending humidity reporting values"
+	[
+     "raw 0xFC45 {04 DF C2 08 06 00 00 00 21 64 00 2C 01 64}", "delay 200",
+     "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+    ]
+}
+        
+
 def configure() {
 
 	String zigbeeId = swapEndianHex(device.hub.zigbeeId)
@@ -219,14 +228,20 @@ def configure() {
 	def configCmds = [	
   
         
-        "zcl global send-me-a-report 1 0x20 0x20 0x3600 0xfffe {0100}", "delay 500",
+        "zcl global send-me-a-report 1 0x20 0x20 300 3600 {0100}", "delay 500",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
         
-        "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${zigbeeId}} {}", "delay 1000",
+        "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        
+        "raw 0xFC45 {04 DF C2 08 06 00 00 00 21 2C 01 10 0E 64}", "delay 200",
+        "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
+        
+        "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 1 {${device.zigbeeId}} {}"
 	]
-    return configCmds + refresh() // send refresh cmds as part of config
+    return configCmds // + refresh() // send refresh cmds as part of config
 }
 
 private hex(value) {

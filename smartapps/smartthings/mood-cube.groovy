@@ -20,7 +20,7 @@
 definition(
 	name: "Mood Cube",
 	namespace: "smartthings",
-	author: "Bob Florian",
+	author: "SmartThings",
 	description: "Set your lighting by rotating a cube containing a SmartSense Multi",
 	category: "SmartThings Labs",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/App-LightUpMyWorld.png",
