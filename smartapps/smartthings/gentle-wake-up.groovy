@@ -33,7 +33,7 @@ def rootPage() {
 	dynamicPage(name: "rootPage", title: "", install: true, uninstall: true) {
 
 		section {
-			input(name: "dimmers", type: "capability.switchLevel", title: "Dimmers", description: null, multiple: true, required: true, refreshAfterSelection: true)
+			input(name: "dimmers", type: "capability.switchLevel", title: "Dimmers", description: null, multiple: true, required: true, submitOnChange: true)
 		}
 
 		if (dimmers) {
@@ -125,7 +125,7 @@ def schedulingPage() {
 		}
 
 		section {
-			input(name: "modeStart", title: "Start when entering this mode", type: "mode", required: false, mutliple: false, refreshAfterSelection: true)
+			input(name: "modeStart", title: "Start when entering this mode", type: "mode", required: false, mutliple: false, submitOnChange: true)
 			if (modeStart) {
 				input(name: "modeStop", title: "Stop when leaving '${modeStart}' mode", type: "bool", required: false)
 			}
@@ -142,7 +142,7 @@ def completionPage() {
 	dynamicPage(name: "completionPage", title: "Completion Rules") {
 
 		section("Switches") {
-			input(name: "completionSwitches", type: "capability.switch", title: "Set these switches", description: null, required: false, multiple: true, refreshAfterSelection: true)
+			input(name: "completionSwitches", type: "capability.switch", title: "Set these switches", description: null, required: false, multiple: true, submitOnChange: true)
 			if (completionSwitches || androidClient()) {
 				input(name: "completionSwitchesState", type: "enum", title: "To", description: null, required: false, multiple: false, options: ["on", "off"], style: "segmented", defaultValue: "on")
 				input(name: "completionSwitchesLevel", type: "number", title: "Optionally, Set Dimmer Levels To", description: null, required: false, multiple: false, range: "(0..99)")
