@@ -35,8 +35,9 @@ preferences {
 }
 
 mappings {
-	path("/receivedToken") 		{ action:[ POST: "receivedToken", 			GET: "receivedToken"] }
-	path("/receiveToken") 		{ action:[ POST: "receiveToken", 			GET: "receiveToken"] }
+	path("/receivedToken") 		{ action:[ POST: "receivedToken",	GET: "receivedToken"] }
+	path("/receiveToken") 		{ action:[ POST: "receiveToken",	GET: "receiveToken"] }
+	path("/auth") 						{ action:[ GET : "auth"] }
 }
 
 def authPage() {
@@ -50,10 +51,8 @@ def authPage() {
 			createAccessToken()
 			description = "Tap to enter Credentials."
 
-			def redirectUrl = oauthInitUrl()
-
 			return dynamicPage(name: "Credentials", title: "Authorize Connection", nextPage:"listDevices", uninstall: true, install:false) {
-				section { href url:redirectUrl, style:"embedded", required:false, title:"Connect to ${getVendorName()}:", description:description }
+				section { href url:buildRedirectUrl("auth"), style:"embedded", required:false, title:"Connect to ${getVendorName()}:", description:description }
 			}
 		} else {
 			description = "Tap 'Next' to proceed"
@@ -77,6 +76,10 @@ To update your Hub, access Location Settings in the Main Menu (tap the gear next
 		}
 
 	}
+}
+
+def auth() {
+	redirect location: oauthInitUrl()
 }
 
 def oauthInitUrl() {
