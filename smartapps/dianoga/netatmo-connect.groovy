@@ -391,9 +391,10 @@ def initialize() {
 	log.debug "Delete: $delete"
 	delete.each { deleteChildDevice(it.deviceNetworkId) }
 
-	// Do the initial poll and schedule it to run every minute
-	runEvery5Minutes()
-    poll()
+	// Do the initial poll
+	poll()
+	// Schedule it to run every 5 minutes
+	runEvery5Minutes("poll")
 }
 
 def uninstalled() {
