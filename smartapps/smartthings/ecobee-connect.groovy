@@ -662,69 +662,69 @@ private refreshAuthToken() {
 	log.debug "refreshing auth token"
 	debugEvent("refreshing OAUTH token")
 
-	def stcid = getSmartThingsClientId()
+	if(!atomicState.refreshToken) {
+		log.warn "Can not refresh OAuth token since there is no refreshToken stored"
+	} else {
+		def stcid = getSmartThingsClientId()
 
-	def refreshParams = [
-		method: 'POST',
-		uri: "https://api.ecobee.com",
-		path: "/token",
-		query: [grant_type:'refresh_token', code:"${atomicState.refreshToken}", client_id:stcid],
+		def refreshParams = [
+				method: 'POST',
+				uri   : "https://api.ecobee.com",
+				path  : "/token",
+				query : [grant_type: 'refresh_token', code: "${atomicState.refreshToken}", client_id: stcid],
 
-		//data?.refreshToken
-	]
+				//data?.refreshToken
+		]
 
-	log.debug refreshParams
+		log.debug refreshParams
 
-	//changed to httpPost
-	try{
-		def jsonMap
-		httpPost(refreshParams) { resp ->
+		//changed to httpPost
+		try {
+			def jsonMap
+			httpPost(refreshParams) { resp ->
 
-			if(resp.status == 200)
-			{
-				log.debug "Token refreshed...calling saved RestAction now!"
+				if(resp.status == 200) {
+					log.debug "Token refreshed...calling saved RestAction now!"
 
-				debugEvent("Token refreshed ... calling saved RestAction now!")
+					debugEvent("Token refreshed ... calling saved RestAction now!")
 
-				log.debug resp
+					log.debug resp
 
-				jsonMap = resp.data
+					jsonMap = resp.data
 
-				if (resp.data) {
+					if(resp.data) {
 
-					log.debug resp.data
-					debugEvent ("Response = ${resp.data}")
+						log.debug resp.data
+						debugEvent("Response = ${resp.data}")
 
-					atomicState.refreshToken = resp?.data?.refresh_token
-					atomicState.authToken = resp?.data?.access_token
+						atomicState.refreshToken = resp?.data?.refresh_token
+						atomicState.authToken = resp?.data?.access_token
 
-					debugEvent ("Refresh Token = ${atomicState.refreshToken}")
-					debugEvent ("OAUTH Token = ${atomicState.authToken}")
+						debugEvent("Refresh Token = ${atomicState.refreshToken}")
+						debugEvent("OAUTH Token = ${atomicState.authToken}")
 
-					if (atomicState.action && atomicState.action != "") {
-						log.debug "Executing next action: ${atomicState.action}"
+						if(atomicState.action && atomicState.action != "") {
+							log.debug "Executing next action: ${atomicState.action}"
 
-						"{atomicState.action}"()
+							"{atomicState.action}"()
 
-						//remove saved action
-						atomicState.action = ""
+							//remove saved action
+							atomicState.action = ""
+						}
+
 					}
-
+					atomicState.action = ""
+				} else {
+					log.debug "refresh failed ${resp.status} : ${resp.status.code}"
 				}
-				atomicState.action = ""
 			}
-			else
-			{
-				log.debug "refresh failed ${resp.status} : ${resp.status.code}"
-			}
-		}
 
-		// atomicState.refreshToken = jsonMap.refresh_token
-		// atomicState.authToken = jsonMap.access_token
-	}
-	catch(Exception e)
-	{
-		log.debug "caught exception refreshing auth token: " + e
+			// atomicState.refreshToken = jsonMap.refresh_token
+			// atomicState.authToken = jsonMap.access_token
+		}
+		catch(Exception e) {
+			log.debug "caught exception refreshing auth token: " + e
+		}
 	}
 }
 
