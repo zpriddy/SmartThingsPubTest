@@ -29,8 +29,7 @@ preferences {
 }
 
 def selectPhrases() {
-	def configured = (settings.sleepPhrase && settings.wakePhrase && settings.jawbone)
-    dynamicPage(name: "selectPhrases", title: "Configure Your Jawbone Phrases.", install: configured, uninstall: true) {		
+    dynamicPage(name: "selectPhrases", title: "Configure Your Jawbone Phrases.", install: true, uninstall: true) {		
 		section("Select your Jawbone UP") {
 			input "jawbone", "device.jawboneUser", title: "Jawbone UP", required: true, multiple: false,  refreshAfterSelection:true
 		}
@@ -40,8 +39,8 @@ def selectPhrases() {
         	phrases.sort()
 			section("Hello Home Actions") {
 				log.trace phrases
-				input "sleepPhrase", "enum", title: "Enter Sleep Mode (Bedtime) Phrase", required: true, options: phrases,  refreshAfterSelection:true
-				input "wakePhrase", "enum", title: "Exit Sleep Mode (Waking Up) Phrase", required: true, options: phrases,  refreshAfterSelection:true
+				input "sleepPhrase", "enum", title: "Enter Sleep Mode (Bedtime) Phrase", required: false, options: phrases,  refreshAfterSelection:true
+				input "wakePhrase", "enum", title: "Exit Sleep Mode (Waking Up) Phrase", required: false, options: phrases,  refreshAfterSelection:true
 			}
 		}
     }
@@ -75,14 +74,14 @@ def initialize() {
 }
 
 def jawboneHandler(evt) {
-
 	log.debug "In Jawbone Event Handler, Event Name = ${evt.name}, Value = ${evt.value}"
-
-	if (evt.value == "sleeping") {
+	if (evt.value == "sleeping" && sleepPhrase) {
+    	log.debug "Sleeping"
         sendNotificationEvent("Sleepy Time performing \"${sleepPhrase}\" for you as requested.")
     	location.helloHome.execute(settings.sleepPhrase)
     }
-    else {
+    else if (evt.value == "not sleeping" && wakePhrase) {
+    	log.debug "Awake"
         sendNotificationEvent("Sleepy Time performing \"${wakePhrase}\" for you as requested.")
 		location.helloHome.execute(settings.wakePhrase)
     }
