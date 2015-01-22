@@ -61,7 +61,7 @@ def authPage()
 		}
 		else
 		{
-			description = "Required" // Worth differentiating here vs. not having atomicState.authToken? 
+			description = "Required" // Worth differentiating here vs. not having atomicState.authToken?
 			oauthTokenProvided = false
 		}
 	}
@@ -244,7 +244,7 @@ def initialize() {
 def oauthInitUrl()
 {
 	log.debug "oauthInitUrl"
-	// def oauth_url = "https://api.ecobee.com/authorize?response_type=code&client_id=qqwy6qo0c2lhTZGytelkQ5o8vlHgRsrO&redirect_uri=http://localhost/&scope=smartRead,smartWrite&state=abc123" 
+	// def oauth_url = "https://api.ecobee.com/authorize?response_type=code&client_id=qqwy6qo0c2lhTZGytelkQ5o8vlHgRsrO&redirect_uri=http://localhost/&scope=smartRead,smartWrite&state=abc123"
 	def stcid = getSmartThingsClientId();
 
 	atomicState.oauthInitState = UUID.randomUUID().toString()
@@ -413,7 +413,7 @@ def pollChild( child )
 		{
 			log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-			// TODO: flag device as in error state 
+			// TODO: flag device as in error state
 			// child.errorState = true
 
 			return null
@@ -441,7 +441,7 @@ def pollChild( child )
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId}"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -469,7 +469,7 @@ def availableModes(child)
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -502,7 +502,7 @@ def currentMode(child)
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -526,12 +526,12 @@ def pollChildren()
 
 	def jsonRequestBody = '{"selection":{"selectionType":"thermostats","selectionMatch":"' + thermostatIdsString + '","includeExtendedRuntime":"true","includeSettings":"true","includeRuntime":"true"}}'
 
-	// // TODO: test this: 
-	// 
+	// // TODO: test this:
+	//
 	// def jsonRequestBody = toJson([
 	//	selection:[
-	//		selectionType: "thermostats", 
-	//		   selectionMatch: getChildDeviceIdsString(), 
+	//		selectionType: "thermostats",
+	//		   selectionMatch: getChildDeviceIdsString(),
 	//		   includeRuntime: true
 	//	   ]
 	// ])
