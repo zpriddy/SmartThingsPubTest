@@ -27,11 +27,20 @@ preferences {
 }
 
 mappings {
+	path("/auth") {
+		action: [
+		  GET: "auth"
+		]
+	}
 	path("/swapToken") {
 		action: [
 			GET: "swapToken"
 		]
 	}
+}
+
+def auth() {
+	redirect location: oauthInitUrl()
 }
 
 def authPage()
@@ -66,7 +75,7 @@ def authPage()
 		}
 	}
 
-	def redirectUrl = oauthInitUrl()
+	def redirectUrl = buildRedirectUrl("auth")
 
 	log.debug "RedirectUrl = ${redirectUrl}"
 
@@ -260,11 +269,11 @@ def oauthInitUrl()
 	return "https://api.ecobee.com/authorize?" + toQueryString(oauthParams)
 }
 
-def buildRedirectUrl()
+def buildRedirectUrl(action = "swapToken")
 {
 	log.debug "buildRedirectUrl"
 	// return serverUrl + "/api/smartapps/installations/${app.id}/token/${atomicState.accessToken}"
-	return serverUrl + "/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}/swapToken"
+	return serverUrl + "/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}/${action}"
 }
 
 def swapToken()
