@@ -147,7 +147,7 @@ def getEcobeeThermostats()
 			if (resp.status == 500 && resp.data.status.code == 14)
 			{
 				log.debug "Storing the failed action to try later"
-				data.action = "getEcobeeThermostats"
+				atomicState.action = "getEcobeeThermostats"
 				log.debug "Refreshing your auth_token!"
 				refreshAuthToken()
 			}
@@ -594,7 +594,7 @@ def pollChildren()
 				if (resp.status == 500 && resp.data.status.code == 14)
 				{
 					log.debug "Storing the failed action to try later"
-					data.action = "pollChildren";
+					atomicState.action = "pollChildren";
 					log.debug "Refreshing your auth_token!"
 					refreshAuthToken()
 				}
@@ -701,17 +701,17 @@ private refreshAuthToken() {
 					debugEvent ("Refresh Token = ${atomicState.refreshToken}")
 					debugEvent ("OAUTH Token = ${atomicState.authToken}")
 
-					if (data?.action && data?.action != "") {
-						log.debug data.action
+					if (atomicState.action && atomicState.action != "") {
+						log.debug "Executing next action: ${atomicState.action}"
 
-						"{data.action}"()
+						"{atomicState.action}"()
 
 						//remove saved action
-						data.action = ""
+						atomicState.action = ""
 					}
 
 				}
-				data.action = ""
+				atomicState.action = ""
 			}
 			else
 			{
