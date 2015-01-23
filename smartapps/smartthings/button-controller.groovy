@@ -194,7 +194,7 @@ def executeHandlers(buttonNumber, value) {
 	def textMessage = findMsg('textMessage', buttonNumber)
 
 	def notifications = find('notifications', buttonNumber, value)
-	if (notifications != false) sendPush(textMessage ?: "Button $buttonNumber was pressed" )
+	if (notifications.toBoolean()) sendPush(textMessage ?: "Button $buttonNumber was pressed" )
 
 	def phone = find('phone', buttonNumber, value)
 	if (phone != null) sendSms(phone, textMessage ?:"Button $buttonNumber was pressed")
