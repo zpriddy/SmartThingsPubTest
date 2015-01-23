@@ -27,11 +27,20 @@ preferences {
 }
 
 mappings {
+	path("/auth") {
+		action: [
+		  GET: "auth"
+		]
+	}
 	path("/swapToken") {
 		action: [
 			GET: "swapToken"
 		]
 	}
+}
+
+def auth() {
+	redirect location: oauthInitUrl()
 }
 
 def authPage()
@@ -61,12 +70,12 @@ def authPage()
 		}
 		else
 		{
-			description = "Required" // Worth differentiating here vs. not having atomicState.authToken? 
+			description = "Required" // Worth differentiating here vs. not having atomicState.authToken?
 			oauthTokenProvided = false
 		}
 	}
 
-	def redirectUrl = oauthInitUrl()
+	def redirectUrl = buildRedirectUrl("auth")
 
 	log.debug "RedirectUrl = ${redirectUrl}"
 
@@ -147,7 +156,7 @@ def getEcobeeThermostats()
 			if (resp.status == 500 && resp.data.status.code == 14)
 			{
 				log.debug "Storing the failed action to try later"
-				data.action = "getEcobeeThermostats"
+				atomicState.action = "getEcobeeThermostats"
 				log.debug "Refreshing your auth_token!"
 				refreshAuthToken()
 			}
@@ -244,7 +253,7 @@ def initialize() {
 def oauthInitUrl()
 {
 	log.debug "oauthInitUrl"
-	// def oauth_url = "https://api.ecobee.com/authorize?response_type=code&client_id=qqwy6qo0c2lhTZGytelkQ5o8vlHgRsrO&redirect_uri=http://localhost/&scope=smartRead,smartWrite&state=abc123" 
+	// def oauth_url = "https://api.ecobee.com/authorize?response_type=code&client_id=qqwy6qo0c2lhTZGytelkQ5o8vlHgRsrO&redirect_uri=http://localhost/&scope=smartRead,smartWrite&state=abc123"
 	def stcid = getSmartThingsClientId();
 
 	atomicState.oauthInitState = UUID.randomUUID().toString()
@@ -260,11 +269,11 @@ def oauthInitUrl()
 	return "https://api.ecobee.com/authorize?" + toQueryString(oauthParams)
 }
 
-def buildRedirectUrl()
+def buildRedirectUrl(action = "swapToken")
 {
 	log.debug "buildRedirectUrl"
 	// return serverUrl + "/api/smartapps/installations/${app.id}/token/${atomicState.accessToken}"
-	return serverUrl + "/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}/swapToken"
+	return serverUrl + "/api/token/${atomicState.accessToken}/smartapps/installations/${app.id}/${action}"
 }
 
 def swapToken()
@@ -413,7 +422,7 @@ def pollChild( child )
 		{
 			log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-			// TODO: flag device as in error state 
+			// TODO: flag device as in error state
 			// child.errorState = true
 
 			return null
@@ -441,7 +450,7 @@ def pollChild( child )
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId}"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -469,7 +478,7 @@ def availableModes(child)
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -502,7 +511,7 @@ def currentMode(child)
 	{
 		log.error "ERROR: Device connection removed? no data for ${child.device.deviceNetworkId} after polling"
 
-		// TODO: flag device as in error state 
+		// TODO: flag device as in error state
 		// child.errorState = true
 
 		return null
@@ -526,12 +535,12 @@ def pollChildren()
 
 	def jsonRequestBody = '{"selection":{"selectionType":"thermostats","selectionMatch":"' + thermostatIdsString + '","includeExtendedRuntime":"true","includeSettings":"true","includeRuntime":"true"}}'
 
-	// // TODO: test this: 
-	// 
+	// // TODO: test this:
+	//
 	// def jsonRequestBody = toJson([
 	//	selection:[
-	//		selectionType: "thermostats", 
-	//		   selectionMatch: getChildDeviceIdsString(), 
+	//		selectionType: "thermostats",
+	//		   selectionMatch: getChildDeviceIdsString(),
 	//		   includeRuntime: true
 	//	   ]
 	// ])
@@ -594,7 +603,7 @@ def pollChildren()
 				if (resp.status == 500 && resp.data.status.code == 14)
 				{
 					log.debug "Storing the failed action to try later"
-					data.action = "pollChildren";
+					atomicState.action = "pollChildren";
 					log.debug "Refreshing your auth_token!"
 					refreshAuthToken()
 				}
@@ -662,69 +671,69 @@ private refreshAuthToken() {
 	log.debug "refreshing auth token"
 	debugEvent("refreshing OAUTH token")
 
-	def stcid = getSmartThingsClientId()
+	if(!atomicState.refreshToken) {
+		log.warn "Can not refresh OAuth token since there is no refreshToken stored"
+	} else {
+		def stcid = getSmartThingsClientId()
 
-	def refreshParams = [
-		method: 'POST',
-		uri: "https://api.ecobee.com",
-		path: "/token",
-		query: [grant_type:'refresh_token', code:"${atomicState.refreshToken}", client_id:stcid],
+		def refreshParams = [
+				method: 'POST',
+				uri   : "https://api.ecobee.com",
+				path  : "/token",
+				query : [grant_type: 'refresh_token', code: "${atomicState.refreshToken}", client_id: stcid],
 
-		//data?.refreshToken
-	]
+				//data?.refreshToken
+		]
 
-	log.debug refreshParams
+		log.debug refreshParams
 
-	//changed to httpPost
-	try{
-		def jsonMap
-		httpPost(refreshParams) { resp ->
+		//changed to httpPost
+		try {
+			def jsonMap
+			httpPost(refreshParams) { resp ->
 
-			if(resp.status == 200)
-			{
-				log.debug "Token refreshed...calling saved RestAction now!"
+				if(resp.status == 200) {
+					log.debug "Token refreshed...calling saved RestAction now!"
 
-				debugEvent("Token refreshed ... calling saved RestAction now!")
+					debugEvent("Token refreshed ... calling saved RestAction now!")
 
-				log.debug resp
+					log.debug resp
 
-				jsonMap = resp.data
+					jsonMap = resp.data
 
-				if (resp.data) {
+					if(resp.data) {
 
-					log.debug resp.data
-					debugEvent ("Response = ${resp.data}")
+						log.debug resp.data
+						debugEvent("Response = ${resp.data}")
 
-					atomicState.refreshToken = resp?.data?.refresh_token
-					atomicState.authToken = resp?.data?.access_token
+						atomicState.refreshToken = resp?.data?.refresh_token
+						atomicState.authToken = resp?.data?.access_token
 
-					debugEvent ("Refresh Token = ${atomicState.refreshToken}")
-					debugEvent ("OAUTH Token = ${atomicState.authToken}")
+						debugEvent("Refresh Token = ${atomicState.refreshToken}")
+						debugEvent("OAUTH Token = ${atomicState.authToken}")
 
-					if (data?.action && data?.action != "") {
-						log.debug data.action
+						if(atomicState.action && atomicState.action != "") {
+							log.debug "Executing next action: ${atomicState.action}"
 
-						"{data.action}"()
+							"{atomicState.action}"()
 
-						//remove saved action
-						data.action = ""
+							//remove saved action
+							atomicState.action = ""
+						}
+
 					}
-
+					atomicState.action = ""
+				} else {
+					log.debug "refresh failed ${resp.status} : ${resp.status.code}"
 				}
-				data.action = ""
 			}
-			else
-			{
-				log.debug "refresh failed ${resp.status} : ${resp.status.code}"
-			}
-		}
 
-		// atomicState.refreshToken = jsonMap.refresh_token
-		// atomicState.authToken = jsonMap.access_token
-	}
-	catch(Exception e)
-	{
-		log.debug "caught exception refreshing auth token: " + e
+			// atomicState.refreshToken = jsonMap.refresh_token
+			// atomicState.authToken = jsonMap.access_token
+		}
+		catch(Exception e) {
+			log.debug "caught exception refreshing auth token: " + e
+		}
 	}
 }
 
