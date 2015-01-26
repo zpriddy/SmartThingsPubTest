@@ -20,15 +20,15 @@ metadata {
 		capability "Refresh"
 		capability "Temperature Measurement"
 		capability "Relative Humidity Measurement"
- 
- 
+
+
 		fingerprint endpointId: "01", inClusters: "0001,0003,0020,0402,0B05,FC45", outClusters: "0019,0003"
 	}
- 
+
 	simulator {
- 
+
 	}
- 
+
 	tiles {
 		valueTile("temperature", "device.temperature", inactiveLabel: false, width: 2, height: 2) {
 			state "temperature", label:'${currentValue}°',
@@ -45,7 +45,7 @@ metadata {
 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
 			state "humidity", label:'${currentValue}% humidity', unit:""
 		}
- 
+
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
 			state "battery", label:'${currentValue}% battery', unit:""/*, backgroundColors:[
 				[value: 5, color: "#BC2323"],
@@ -54,16 +54,16 @@ metadata {
 				[value: 16, color: "#FFFFFF"]
 			]*/
 		}
-        
+
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
- 
+
 		main "temperature", "humidity"
 		details(["temperature","humidity","refresh"])
 	}
 }
- 
+
 def parse(String description) {
 	log.debug "description: $description"
 
@@ -77,11 +77,11 @@ def parse(String description) {
 	else if (description?.startsWith('temperature: ') || description?.startsWith('humidity: ')) {
 		map = parseCustomMessage(description)
 	}
- 
+
 	log.debug "Parse returned $map"
 	return map ? createEvent(map) : null
 }
- 
+
 private Map parseCatchAllMessage(String description) {
     Map resultMap = [:]
     def cluster = zigbee.parse(description)
@@ -114,7 +114,7 @@ private Map parseCatchAllMessage(String description) {
 private boolean shouldProcessMessage(cluster) {
     // 0x0B is default response indicating message got through
     // 0x07 is bind message
-    boolean ignoredMessage = cluster.profileId != 0x0104 || 
+    boolean ignoredMessage = cluster.profileId != 0x0104 ||
         cluster.command == 0x0B ||
         cluster.command == 0x07 ||
         (cluster.data.size() > 0 && cluster.data.first() == 0x3e)
@@ -128,14 +128,14 @@ private int getCatchallBatteryPercentage(int value) {
     def pct = (volts - minVolts) / (maxVolts - minVolts)
     return (int) pct * 100
 }
- 
+
 private Map parseReportAttributeMessage(String description) {
 	Map descMap = (description - "read attr - ").split(",").inject([:]) { map, param ->
 		def nameAndValue = param.split(":")
 		map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
 	}
 	log.debug "Desc Map: $descMap"
- 
+
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
 		log.debug "TEMP"
@@ -152,24 +152,24 @@ private Map parseReportAttributeMessage(String description) {
 		resultMap.name = "humidity"
 		resultMap.value = getReportAttributeHumidity(descMap.value)
 	}
- 
+
 	return resultMap
 }
- 
+
 def getReportAttributeHumidity(String value) {
     def humidity = null
     if (value?.trim()) {
         try {
         	// value is hex with no decimal
             def pct = Integer.parseInt(value.trim(), 16) / 100
-            humidity = String.format('%3.0f', pct)
+            humidity = String.format('%.0f', pct)
         } catch(NumberFormatException nfe) {
             log.debug "Error converting $value to humidity"
         }
     }
     return humidity
 }
- 
+
 private Map parseCustomMessage(String description) {
 	def name = null
 	def value = null
@@ -189,7 +189,7 @@ private Map parseCustomMessage(String description) {
 	def unit = name == "temperature" ? getTemperatureScale() : (name == "humidity" ? "%" : null)
 	return [name: name, value: value, unit: unit]
 }
- 
+
 def getTemperature(value) {
 	def celsius = Integer.parseInt(value, 16) / 100
 	if(getTemperatureScale() == "C"){
@@ -203,7 +203,7 @@ def refresh()
 {
 	log.debug "refresh temperature, humidity, and battery"
 	[
-		
+
 		"zcl mfg-code 0xC2DF", "delay 1000",
 		"zcl global read 0xFC45 0", "delay 1000",
 		"send 0x${device.deviceNetworkId} 1 1", "delay 1000",
@@ -219,24 +219,24 @@ def updated() {
      "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
     ]
 }
-        
+
 
 def configure() {
 
 	String zigbeeId = swapEndianHex(device.hub.zigbeeId)
 	log.debug "Confuguring Reporting and Bindings."
-	def configCmds = [	
-  
-        
+	def configCmds = [
+
+
         "zcl global send-me-a-report 1 0x20 0x20 300 3600 {0100}", "delay 500",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
-        
+
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
-        
+
         "raw 0xFC45 {04 DF C2 08 06 00 00 00 21 2C 01 10 0E 64}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
-        
+
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 1 {${device.zigbeeId}} {}"

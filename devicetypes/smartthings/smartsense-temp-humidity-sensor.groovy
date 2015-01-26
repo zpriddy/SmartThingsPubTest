@@ -53,20 +53,20 @@ metadata {
 		valueTile("humidity", "device.humidity", inactiveLabel: false) {
 			state "humidity", label:'${currentValue}% humidity', unit:""
 		}
- 
+
 		valueTile("battery", "device.battery", decoration: "flat", inactiveLabel: false) {
 			state "battery", label:'${currentValue}% battery'
 		}
-        
+
         standardTile("refresh", "device.refresh", inactiveLabel: false, decoration: "flat") {
 			state "default", action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
- 
+
 		main "temperature", "humidity"
 		details(["temperature","humidity","battery","refresh"])
 	}
 }
- 
+
 def parse(String description) {
 	log.debug "description: $description"
 
@@ -80,11 +80,11 @@ def parse(String description) {
 	else if (description?.startsWith('temperature: ') || description?.startsWith('humidity: ')) {
 		map = parseCustomMessage(description)
 	}
- 
+
 	log.debug "Parse returned $map"
 	return map ? createEvent(map) : null
 }
- 
+
 private Map parseCatchAllMessage(String description) {
     Map resultMap = [:]
     def cluster = zigbee.parse(description)
@@ -115,7 +115,7 @@ private Map parseCatchAllMessage(String description) {
 private boolean shouldProcessMessage(cluster) {
     // 0x0B is default response indicating message got through
     // 0x07 is bind message
-    boolean ignoredMessage = cluster.profileId != 0x0104 || 
+    boolean ignoredMessage = cluster.profileId != 0x0104 ||
         cluster.command == 0x0B ||
         cluster.command == 0x07 ||
         (cluster.data.size() > 0 && cluster.data.first() == 0x3e)
@@ -128,7 +128,7 @@ private Map parseReportAttributeMessage(String description) {
 		map += [(nameAndValue[0].trim()):nameAndValue[1].trim()]
 	}
 	log.debug "Desc Map: $descMap"
- 
+
 	Map resultMap = [:]
 	if (descMap.cluster == "0402" && descMap.attrId == "0000") {
 		def value = getTemperature(descMap.value)
@@ -141,24 +141,24 @@ private Map parseReportAttributeMessage(String description) {
 		def value = getReportAttributeHumidity(descMap.value)
 		resultMap = getHumidityResult(value)
 	}
- 
+
 	return resultMap
 }
- 
+
 def getReportAttributeHumidity(String value) {
     def humidity = null
     if (value?.trim()) {
         try {
         	// value is hex with no decimal
             def pct = Integer.parseInt(value.trim(), 16) / 100
-            humidity = String.format('%3.0f', pct).trim()
+            humidity = String.format('%.0f', pct)
         } catch(NumberFormatException nfe) {
             log.debug "Error converting $value to humidity"
         }
     }
     return humidity
 }
- 
+
 private Map parseCustomMessage(String description) {
 	Map resultMap = [:]
 	if (description?.startsWith('temperature: ')) {
@@ -176,7 +176,7 @@ private Map parseCustomMessage(String description) {
 	}
 	return resultMap
 }
- 
+
 def getTemperature(value) {
 	def celsius = Integer.parseInt(value, 16).shortValue() / 100
 	if(getTemperatureScale() == "C"){
@@ -189,11 +189,11 @@ def getTemperature(value) {
 private Map getBatteryResult(rawValue) {
 	log.debug 'Battery'
 	def linkText = getLinkText(device)
-    
+
     def result = [
     	name: 'battery'
     ]
-    
+
 	def volts = rawValue / 10
 	def descriptionText
 	if (volts > 3.5) {
@@ -239,7 +239,7 @@ def refresh()
 {
 	log.debug "refresh temperature, humidity, and battery"
 	[
-		
+
 		"zcl mfg-code 0xC2DF", "delay 1000",
 		"zcl global read 0xFC45 0", "delay 1000",
 		"send 0x${device.deviceNetworkId} 1 1", "delay 1000",
@@ -253,18 +253,18 @@ def configure() {
 
 	String zigbeeId = swapEndianHex(device.hub.zigbeeId)
 	log.debug "Confuguring Reporting and Bindings."
-	def configCmds = [	
-  
-        
+	def configCmds = [
+
+
         "zcl global send-me-a-report 1 0x20 0x20 600 3600 {0100}", "delay 500",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1000",
-        
+
         "zcl global send-me-a-report 0x402 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
-        
+
         "zcl global send-me-a-report 0xFC45 0 0x29 300 3600 {6400}", "delay 200",
         "send 0x${device.deviceNetworkId} 1 1", "delay 1500",
-        
+
         "zdo bind 0x${device.deviceNetworkId} 1 1 0xFC45 {${device.zigbeeId}} {}", "delay 1000",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 0x402 {${device.zigbeeId}} {}", "delay 500",
 		"zdo bind 0x${device.deviceNetworkId} 1 1 1 {${device.zigbeeId}} {}"
