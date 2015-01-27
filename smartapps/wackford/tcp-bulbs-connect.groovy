@@ -32,9 +32,7 @@ definition(
 preferences {
 	def msg = """Tap 'Next' after you have entered in your TCP Mobile remote credentials.
 
-Once your credentials are accepted, SmartThings will scan your TCP installation for Bulbs. It will also find Rooms if the Room has two or more Bulbs.
-
-If you choose a Room in the device list, SmartThings will create a 'Room' device which will allow you to control the Room as a group."""
+Once your credentials are accepted, SmartThings will scan your TCP installation for Bulbs."""
 
 	page(name: "selectDevices", title: "Connect Your TCP Lights to SmartThings", install: false, uninstall: true, nextPage: "chooseBulbs") {
 		section("TCP Connected Remote Credentials") {
