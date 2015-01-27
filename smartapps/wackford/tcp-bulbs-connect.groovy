@@ -1,511 +1,437 @@
-/*
- *  Tcp Bulbs (Connect)
+/**
+ *  TCP Bulbs (Connect)
  *
- *  Author: todd@wackford.net
+ *  Copyright 2014 Todd Wackford
  *
- ******************************************************************************
- *                        Setup Namespace & OAuth
- ******************************************************************************
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
  *
- * Namespace:			"wackford"
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * OAuth:				"Enabled"
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
  *
- ******************************************************************************
- *                                 Changes
- ******************************************************************************
- *
- *  Change 1:	2014-03-06
- *					Initial Release
- *
- *  Change 2:	2014-03-15
- *					a. Documented Header
- *					b. Fixed on()/off() during level changes			
- *					c. Minor code cleanup and UI changes
- *
- *  Change 3:   2014-04-02 (lieberman) 	
- *                  a. Added RoomGetCarousel to poll()
- * 					b. Added checks in locationHandler() to sync ST status with TCP status
- *
- *  Change 4:   2014-05-02 (twackford) 	
- *                  a. Added current power usage functionality
- *
- *  Change 5:	2014-10-02 (twackford)
- *					a. Fixed on/off tile update
- *					b. Fixed var type issues with power calculations
- *					c. Added IP checker for DHCP environments
- *					d. Added delete device that is not selected in bulb picker
- *
- *  Change 6:	2014-10-17 (twackford)
- *					a. added uninstallFromChildDevice to handle removing from settings                   
- *
- *  Change 7:	2015-01-08 (nohr)
- *					a. use new runEvery5Minutes schedule to spread out load of all TCP Bulbs (Connect) apps
- *
- *
- ******************************************************************************
- *                                   Code
- ******************************************************************************
  */
 
+import java.security.MessageDigest;
 
-// Automatically generated. Make future change here.
+private apiUrl() { "https://tcp.greenwavereality.com/gwr/gop.php?" }
+
 definition(
-    name: "Tcp Bulbs (Connect)",
-    namespace: "wackford",
-    author: "SmartThings",
-    description: "Connect your TCP bulbs to SmartThings.",
-    category: "SmartThings Labs",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp@2x.png"
+	name: "Tcp Bulbs (Connect)",
+	namespace: "wackford",
+	author: "Todd Wackford",
+	description: "Connect your TCP bulbs to SmartThings using Cloud to Cloud integration. You must create a remote login acct on TCP Mobile App.",
+	category: "SmartThings Labs",
+	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp.png",
+	iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp@2x.png"
 )
 
+
 preferences {
-	page(name:"Gateway", title: "Begin Connected by TCP Device Discovery", content: "discoverGateway", nextPage: "bulbDiscovery", install: false)
-	page(name:"bulbDiscovery", title:"TCP Device Setup", content:"bulbDiscovery", refreshTimeout:5)
-}
+	def msg = """Tap 'Next' after you have entered in your TCP Mobile remote credentials.
 
-def updateGatewayIP() {
-	log.debug "Checking to see if IP changed"
-    sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:greenwavereality-com:service:gop:1", physicalgraph.device.Protocol.LAN))
-}
+Once your credentials are accepted, SmartThings will scan your TCP installation for Bulbs. It will also find Rooms if the Room has two or more Bulbs.
 
-def discoverGateway() {
-	log.debug "In discoverGateway"
-	if(canInstallLabs()) {
-		state.subscribe = false
-		state.gateway = []
+If you choose a Room in the device list, SmartThings will create a 'Room' device which will allow you to control the Room as a group."""
 
-		if(!state.subscribe) {
-			subscribe(location, null, locationHandler, [filterEvents:false])
-			state.subscribe = true
-		}
-
-		//send out the search for the gateway, we'll pick up response in locationEvt
-		sendHubCommand(new physicalgraph.device.HubAction("lan discovery urn:greenwavereality-com:service:gop:1", physicalgraph.device.Protocol.LAN))
-
-		bulbDiscovery()
-	}
-	else
-	{
-		def upgradeNeeded = """To use SmartThings Labs, your Hub should be completely up to date.
-
-To update your Hub, access Location Settings in the Main Menu (tap the gear next to your location name), select your Hub, and choose "Update Hub"."""
-
-
-		return dynamicPage(name:"Gateway", title:"Upgrade needed!", nextPage:"", install:false, uninstall: true) {
-			section {
-				paragraph "$upgradeNeeded"
-			}
-		}
-
-	}
-}
-
-private bulbDiscovery() {
-	log.debug "In bulbDiscovery"
-
-	def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,power,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
-
-	def qParams = [
-		cmd: "GWRBatch",
-		data: "${data}",
-		fmt: "xml"
-	]
-
-	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-
-	// Check for bulbs 
-	state.bulbs = state.bulbs ?: [:]
-
-
-	if (state.bulbs.size() == 0) {
-		sendCommand(cmd)
-	}
-
-	def options = bulbsDiscovered() ?: []
-	def numFound = options.size() ?: 0
-
-	return dynamicPage(name:"bulbDiscovery", title:"Discovering TCP Bulbs!", nextPage:"", refreshInterval: 3, install:true, uninstall: true) {
-		section("Please wait while we look for TCP Bulbs: ${numFound} discovered") {
-			input "selectedBulbs", "enum", required:false, title:"Tap here to select bulbs to setup", multiple:true, options:options
+	page(name: "selectDevices", title: "Connect Your TCP Lights to SmartThings", install: false, uninstall: true, nextPage: "chooseBulbs") {
+		section("TCP Connected Remote Credentials") {
+			input "username", "text", title: "Enter TCP Remote Email/UserName", required: true
+			input "password", "text", title: "Enter TCP Remote Password", required: true
+			paragraph msg
 		}
 	}
+
+	page(name: "chooseBulbs", title: "Choose Bulbs to Control With SmartThings", content: "initialize")
 }
 
 def installed() {
-	initialize();
+	debugOut "Installed with settings: ${settings}"
+
+	unschedule()
+	unsubscribe()
+
+	setupBulbs()
+
+	def sec = Math.round(Math.floor(Math.random() * 50)) + 5 // :05 to :55 for seconds
+	def min = Math.round(Math.floor(Math.random() * 5))
+	def cron = "$sec $min/5 * * * ?"
+	log.debug "schedule('$cron', syncronizeDevices)"
+	schedule(cron, syncronizeDevices)
 }
 
 def updated() {
-	unschedule()
-	initialize();
-}
+	debugOut "Updated with settings: ${settings}"
 
-def initialize() {
-	if (selectedBulbs) {
-		addBulbs()
-	}
-	runEvery5Minutes("updateGatewayIP")
+	unschedule()
+
+	setupBulbs()
+
+	def sec = Math.round(Math.floor(Math.random() * 50)) + 5 // :05 to :55 for seconds
+	def min = Math.round(Math.floor(Math.random() * 5))
+	def cron = "$sec $min/5 * * * ?"
+	log.debug "schedule('$cron', syncronizeDevices)"
+	schedule(cron, syncronizeDevices)
 }
 
 def uninstalled()
 {
-    unschedule()
+	unschedule() //in case we have hanging runIn()'s
 }
 
-def addBulbs() {
-	log.debug " in addBulbs"
+private removeChildDevices(delete)
+{
+	debugOut "deleting ${delete.size()} bulbs"
+	debugOut "deleting ${delete}"
+	delete.each {
+		deleteChildDevice(it.device.deviceNetworkId)
+	}
+}
 
-	def bulbs = getBulbs()
-	def name  = "Dimmer Switch"
+def uninstallFromChildDevice(childDevice)
+{
+	def errorMsg = "uninstallFromChildDevice was called and "
+	if (!settings.selectedBulbs) {
+		debugOut errorMsg += "had empty list passed in"
+		return
+	}
+
+	def dni = childDevice.device.deviceNetworkId
+
+	if ( !dni ) {
+		debugOut errorMsg += "could not find dni of device"
+		return
+	}
+
+	def newDeviceList = settings.selectedBulbs - dni
+	app.updateSetting("selectedBulbs", newDeviceList)
+
+	debugOut errorMsg += "completed succesfully"
+}
+
+
+def setupBulbs() {
+	debugOut "In setupBulbs"
+
+	def bulbs = state.devices
 	def deviceFile = "TCP Bulb"
 
-	selectedBulbs.each { dni ->
-		def d = getChildDevice(dni)
+	selectedBulbs.each { did ->
+		//see if this is a selected bulb and install it if not already
+		def d = getChildDevice(did)
+
 		if(!d) {
-			def newBulb = bulbs.find { (it.value.id) == dni }
+			def newBulb = bulbs.find { (it.did) == did }
+			d = addChildDevice("wackford", deviceFile, did, null, [name: "${newBulb?.name}", label: "${newBulb?.name}", completedSetup: true])
 
-			d = addChildDevice("wackford", deviceFile, dni, null, [name: "${name}", label: "${newBulb?.value.name}", completedSetup: true])
-
-			if (newBulb?.value.state == "1")   //set ST device state as we find the TCP state to be
-				d.on()
-			else
-				d.off()
-
-			d.setLevel(newBulb?.value.level)
+			/*if ( isRoom(did) ) { //change to the multi light group icon for a room device
+				d.setIcon("switch", "on",  "st.lights.multi-light-bulb-on")
+				d.setIcon("switch", "off",  "st.lights.multi-light-bulb-off")
+				d.save()
+			}*/
 
 		} else {
-			log.debug "We already added this device"
+			debugOut "We already added this device"
 		}
 	}
 
 	// Delete any that are no longer in settings
 	def delete = getChildDevices().findAll { !selectedBulbs?.contains(it.deviceNetworkId) }
 	removeChildDevices(delete)
+
+	//we want to ensure syncronization between rooms and bulbs
+	//syncronizeDevices()
 }
 
-private removeChildDevices(delete)
-{
-	log.debug "deleting ${delete.size()} bulbs"
-    log.debug "deleting ${delete}"
-	delete.each {
-		deleteChildDevice(it.device.deviceNetworkId)
+def initialize() {
+
+	state.token = ""
+
+	getToken()
+
+	if ( state.token == "error" ) {
+		return dynamicPage(name:"chooseBulbs", title:"TCP Login Failed!\r\nTap 'Done' to try again", nextPage:"", install:false, uninstall: false) {
+			section("") {}
+		}
+	} else {
+		"we're good to go"
+		debugOut "We have Token."
+	}
+
+	//getGatewayData() //we really don't need anything from the gateway
+
+	deviceDiscovery()
+
+	def options = devicesDiscovered() ?: []
+
+	def msg = """Tap 'Done' after you have selected the desired devices."""
+
+	return dynamicPage(name:"chooseBulbs", title:"TCP and SmarThings Connected!", nextPage:"", install:true, uninstall: true) {
+		section("Tap Below to View Device List") {
+			input "selectedBulbs", "enum", required:false, title:"Select Bulb/Fixture", multiple:true, options:options
+			paragraph msg
+		}
 	}
 }
 
-def uninstallFromChildDevice(childDevice) //called from child and will remove from settings
-{
-	log.debug "in uninstallFromChildDevice"
+def deviceDiscovery() {
+	def data = "<gip><version>1</version><token>${state.token}</token></gip>"
 
-    //now remove the child from settings. Unselects from list of devices, not delete
-    log.debug "Settings size = ${settings['selectedBulbs']}"
-    
-    if (!settings['selectedBulbs']) //empty list, bail
-    	return
-    
-    def newDeviceList = settings['selectedBulbs'] - childDevice.device.deviceNetworkId
-    app.updateSetting("selectedBulbs", newDeviceList)
+	def Params = [
+		cmd: "RoomGetCarousel",
+		data: "${data}",
+		fmt: "json"
+	]
+
+	def cmd = toQueryString(Params)
+
+	def rooms = ""
+
+	apiPost(cmd) { response ->
+		rooms = response.data.gip.room
+	}
+
+	debugOut "rooms data = ${rooms}"
+
+	def devices = []
+	def bulbIndex = 1
+	def lastRoomName = null
+	def deviceList = []
+
+	if ( rooms[1] == null ) {
+		def roomId = rooms.rid
+		def roomName = rooms.name
+		devices  = rooms.device
+		if ( devices[1] != null ) {
+			debugOut "Room Device Data: did:${roomId} roomName:${roomName}"
+			//deviceList += ["name" : "${roomName}", "did" : "${roomId}", "type" : "room"]
+			devices.each({
+				debugOut "Bulb Device Data: did:${it?.did} room:${roomName} BulbName:${it?.name}"
+				deviceList += ["name" : "${roomName} ${it?.name}", "did" : "${it?.did}", "type" : "bulb"]
+			})
+		} else {
+			debugOut "Bulb Device Data: did:${it?.did} room:${roomName} BulbName:${it?.name}"
+			deviceList += ["name" : "${roomName} ${it?.name}", "did" : "${it?.did}", "type" : "bulb"]
+		}
+	} else {
+		rooms.each({
+			devices  = it.device
+			def roomName = it.name
+			if ( devices[1] != null ) {
+				def roomId = it?.rid
+				debugOut "Room Device Data: did:${roomId} roomName:${roomName}"
+				//deviceList += ["name" : "${roomName}", "did" : "${roomId}", "type" : "room"]
+				devices.each({
+					debugOut "Bulb Device Data: did:${it?.did} room:${roomName} BulbName:${it?.name}"
+					deviceList += ["name" : "${roomName} ${it?.name}", "did" : "${it?.did}", "type" : "bulb"]
+				})
+			} else {
+				debugOut "Bulb Device Data: did:${devices?.did} room:${roomName} BulbName:${devices?.name}"
+				deviceList += ["name" : "${roomName} ${devices?.name}", "did" : "${devices?.did}", "type" : "bulb"]
+			}
+		})
+	}
+	devices = ["devices" : deviceList]
+	state.devices = devices.devices
 }
 
-def getBulbs()
-{
-	state.bulbs = state.bulbs ?: [:]
-}
-
-Map bulbsDiscovered() {
-	def bulbs =  getBulbs()
-	log.debug bulbs
+Map devicesDiscovered() {
+	def devices =  state.devices
 	def map = [:]
-	if (bulbs instanceof java.util.Map) {
-		bulbs.each {
-			def value = "${it?.value?.name}"
-			def key = it?.value?.id
+	if (devices instanceof java.util.Map) {
+		devices.each {
+			def value = "${it?.name}"
+			def key = it?.did
 			map["${key}"] = value
 		}
 	} else { //backwards compatable
-		bulbs.each {
+		devices.each {
 			def value = "${it?.name}"
-			def key = it?.id
+			def key = it?.did
 			map["${key}"] = value
 		}
 	}
 	map
 }
 
+def getGatewayData() {
+	debugOut "In getGatewayData"
+
+	def data = "<gip><version>1</version><token>${state.token}</token></gip>"
+
+	def qParams = [
+		cmd: "GatewayGetInfo",
+		data: "${data}",
+		fmt: "json"
+	]
+
+	def cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		debugOut "the gateway reponse is ${response.data.gip.gateway}"
+	}
+
+}
+
+def getToken() {
+
+	state.token = ""
+
+	def hashedPassword = generateMD5(password)
+
+	def data = "<gip><version>1</version><email>${username}</email><password>${hashedPassword}</password></gip>"
+
+	def qParams = [
+		cmd: "GWRLogin",
+		data: "${data}",
+		fmt: "json"
+	]
+
+	def cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		def status = response.data.gip.rc
+
+		//sendNotificationEvent("Get token status ${status}")
+
+		if ( status != "200" ) {//success code = 200
+			def errorText = response.data.gip.error
+			debugOut "Error logging into TCP Gateway. Error = ${errorText}"
+			state.token = "error"
+		} else {
+			state.token = response.data.gip.token
+		}
+	}
+}
+
+def apiPost(String data, Closure callback) {
+	//debugOut "In apiPost with data: ${data}"
+	def params = [
+		uri: apiUrl(),
+		body: data
+	]
+
+	httpPost(params) {
+		response ->
+			def rc = response.data.gip.rc
+
+			if ( rc == "200" ) {
+				debugOut ("Return Code = ${rc} = Command Succeeded.")
+				callback.call(response)
+
+			} else if ( rc == "401" ) {
+				debugOut "Return Code = ${rc} = Error: User not logged in!" //Error code from gateway
+				log.debug "Refreshing Token"
+				getToken()
+				//callback.call(response) //stubbed out so getToken works (we had race issue)
+
+			} else {
+				log.error "Return Code = ${rc} = Error!" //Error code from gateway
+				sendNotificationEvent("TCP Lighting is having Communication Errors. Error code = ${rc}. Check that TCP Gateway is online")
+				callback.call(response)
+			}
+	}
+}
+
+
+//this is not working. TCP power reporting is broken. Leave it here for future fix
 def calculateCurrentPowerUse(deviceCapability, usePercentage) {
-	log.debug "In calculateCurrentPowerUse()"
-    
-    log.debug "deviceCapability: ${deviceCapability}"
-    log.debug "usePercentage: ${usePercentage}"
-    
-    def calcPower = usePercentage * 1000
-    def reportPower = calcPower.round(1) as String
-    reportPower += " Watt(s)"
-    
-    log.debug "report power = ${reportPower}"
-    
-    return reportPower
+	debugOut "In calculateCurrentPowerUse()"
+
+	debugOut "deviceCapability: ${deviceCapability}"
+	debugOut "usePercentage: ${usePercentage}"
+
+	def calcPower = usePercentage * 1000
+	def reportPower = calcPower.round(1) as String
+
+	debugOut "report power = ${reportPower}"
+
+	return reportPower
 }
 
-def locationHandler(evt) {
-	log.debug "In locationHandler()"
+def generateSha256(String s) {
 
-	def description = evt.description
-	def hub = evt?.hubId
-
-	def parsedEvent = parseEventMessage(description)
-	parsedEvent << ["hub":hub]
-
-	if (parsedEvent.ssdpTerm?.contains("urn:greenwavereality-com:service:gop:1"))
-	{
-		//stuff the gateway data
-		state.gateway = []
-		state.gateway = ([ 	'ip' 		: parsedEvent.ip,
-                            'port'    	: "0050", //tcp returns zeros for some reason, dunno
-							'type'   	: 'gateway',
-							'dni'     	: parsedEvent.ssdpUSN,
-							'path'		: parsedEvent.ssdpPath
-		])
-	}
-
-	if (parsedEvent.headers && parsedEvent.body)
-	{
-		def headerString = new String(parsedEvent.headers.decodeBase64())
-		def bodyString = new String(parsedEvent.body.decodeBase64())
-
-		def type = (headerString =~ /Content-Type:.*/) ? (headerString =~ /Content-Type:.*/)[0] : null
-
-		def body = new XmlSlurper().parseText(bodyString)
-
-		def devices = []
-		def bulbIndex = 1
-		def lastRoomName = null
-
-		body.gwrcmd.gdata.gip.'*'.each({
-
-			if (it.name() == 'room')
-			{
-				def roomName = it.name.text()
-				it.'*'.each({
-					if ( roomName != lastRoomName ) {
-						bulbIndex = 1 //reset counter for names
-					}
-					if (it.name() == 'device')
-					{
-						if (state.bulbs == null) {
-							state.bulbs = [:]
-						}
-                        
-                        def bulbDid =             it.did.text() as String
-		         		def bulbState =           it.state.text()
-                		def bulbLevel =           it.level.text()
-                        def bulbPowerCapability = it.other.bulbpower.text()// as Integer                       
-                        def bulbPowerPercentage = it.power.text() as Double
-                        def bulbPower = calculateCurrentPowerUse(bulbPowerCapability, bulbPowerPercentage)
-                        
-                        def theBulb = getChildDevice( bulbDid )
-
-						if ( theBulb ) {
-							log.debug( "bulb exists in state and the bulb's state is ${bulbState}" )
-							def currentBulbState = theBulb.currentValue("switch")
-							def currentBulbLevel = theBulb.currentValue( "level" ) as Integer
-                            sendEvent( bulbDid, [name: "power", value: bulbPower] )
-                            
-							if ( currentBulbState == "on" && bulbState == "0" ) {
-								log.debug( "ST thinks the bulb is on, but TCP says the bulb is off" )
-								sendEvent( bulbDid, [name: "switch",value:"off"] )
-                                sendEvent( bulbDid, [name: "power", value: "0 Watt(s)"] )
-							}
-                            
-							if ( currentBulbState == "off" && bulbState == "1" ) {
-								log.debug( "ST thinks the bulb is off, but TCP says the bulb is on" )
-								sendEvent( bulbDid, [name: "switch",value:"on"] )
-                                sendEvent( bulbDid, [name: "power", value: bulbPower] )
-							}
-                            
-							if ( currentBulbLevel != bulbLevel ) {
-								log.debug( "ST thinks the bulb level is ${currentBulbLevel} but TCP says the level is ${bulbLevel}" )
-								sendEvent( bulbDid, [name: "level", value: bulbLevel] )
-								sendEvent( bulbDid, [name: "switch.setLevel", value:bulbLevel] )
-								sendEvent( bulbDid, [name: "power", value: bulbPower] )
-							}
-						} else {
-							state.bulbs[it.did.text()] = [id 	: it.did.text(),
-								                          name 	: "${roomName} ${it.name.text()} ${bulbIndex}",
-								                          state	: bulbState,
-								                          level : bulbLevel,
-                                                          power : bulbPower ]
-							lastRoomName = roomName
-							bulbIndex++
-                        }
-					}
-				});
-			}
-		})
-	}
+	MessageDigest digest = MessageDigest.getInstance("SHA-256")
+	digest.update(s.bytes)
+	new BigInteger(1, digest.digest()).toString(16).padLeft(40, '0')
 }
 
-private def parseEventMessage(Map event) {
-	//handles  attribute events
-	return event
+def generateMD5(String s) {
+	MessageDigest digest = MessageDigest.getInstance("MD5")
+	digest.update(s.bytes);
+	new BigInteger(1, digest.digest()).toString(16).padLeft(32, '0')
 }
 
-private def parseEventMessage(String description) {
-	def event = [:]
-	def parts = description.split(',')
-	parts.each { part ->
-		part = part.trim()
-
-		if (part.startsWith('devicetype:')) {
-			def valueString = part.split(":")[1].trim()
-			event.devicetype = valueString
-		}
-		else if (part.startsWith('mac:')) {
-			def valueString = part.split(":")[1].trim()
-			if (valueString) {
-				event.mac = valueString
-			}
-		}
-		else if (part.startsWith('networkAddress:')) {
-			def valueString = part.split(":")[1].trim()
-			if (valueString) {
-				event.ip = valueString
-			}
-		}
-		else if (part.startsWith('deviceAddress:')) {
-			def valueString = part.split(":")[1].trim()
-			if (valueString) {
-				event.port = valueString
-			}
-		}
-		else if (part.startsWith('ssdpPath:')) {
-			def valueString = part.split(":")[1].trim()
-			if (valueString) {
-				event.ssdpPath = valueString
-			}
-		}
-		else if (part.startsWith('ssdpUSN:')) {
-			part -= "ssdpUSN:"
-			def valueString = part.trim()
-			if (valueString) {
-				event.ssdpUSN = valueString
-			}
-		}
-		else if (part.startsWith('ssdpTerm:')) {
-			part -= "ssdpTerm:"
-			def valueString = part.trim()
-			if (valueString) {
-				event.ssdpTerm = valueString
-			}
-		}
-		else if (part.startsWith('headers')) {
-			part -= "headers:"
-			def valueString = part.trim()
-			if (valueString) {
-				event.headers = valueString
-			}
-		}
-		else if (part.startsWith('body')) {
-			part -= "body:"
-			def valueString = part.trim()
-			if (valueString) {
-				event.body = valueString
-			}
-		}
-	}
-	event
-}
-
-private sendCommand(data)
-{
-	def deviceNetworkId = state.gateway.ip + ":" + state.gateway.port
-
-	sendHubCommand(new physicalgraph.device.HubAction("""GET $data HTTP/1.1\r\nHOST: $deviceNetworkId\r\n\r\n""", physicalgraph.device.Protocol.LAN, "${deviceNetworkId}"))
-}
-
-/**************************************************************************
- Child Device Call In Methods
- **************************************************************************/
-def on(childDevice) {
-	log.debug "Got On request from child device"
-
-	def dni = childDevice.device.deviceNetworkId
-
-	def data = "<gip><version>1</version><token>1234567890</token><did>${dni}</did><value>1</value></gip>"
-
-	def qParams = [
-		cmd: "DeviceSendCommand",
-		data: "${data}",
-		fmt: "xml"
-	]
-
-	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-
-	sendCommand(cmd)
-}
-
-def off(childDevice) {
-	log.debug "Got Off request from child device"
-
-	def dni = childDevice.device.deviceNetworkId
-
-	def data = "<gip><version>1</version><token>1234567890</token><did>${dni}</did><value>0</value></gip>"
-
-	def qParams = [
-		cmd: "DeviceSendCommand",
-		data: "${data}",
-		fmt: "xml"
-	]
-    
-    sendEvent( dni, [name: "power", value: "0 Watt(s)"] )
-
-	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-	sendCommand(cmd)
-}
-
-def setLevel(childDevice, value) {
-	log.debug "Got setLevel request from child device"
-
-	def dni = childDevice.device.deviceNetworkId
-
-	def data = "<gip><version>1</version><token>1234567890</token><did>${dni}</did><value>${value}</value><type>level</type></gip>"
-
-	def qParams = [
-		cmd: "DeviceSendCommand",
-		data: "${data}",
-		fmt: "xml"
-	]
-
-	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-
-	sendCommand(cmd)
-    
-    poll()
-}
-
-def poll(childDevice) {
-	log.debug "In poll()"
-    def data = "<gwrcmds><gwrcmd><gcmd>RoomGetCarousel</gcmd><gdata><gip><fields>name,power,control,status</fields></gip></gdata></gwrcmd></gwrcmds>"
-
-	def qParams = [
-		cmd: "GWRBatch",
-		data: "${data}",
-		fmt: "xml"
-	]
-
-	def cmd = "/gwr/gop.php?" + toQueryString(qParams)
-	sendCommand(cmd)
-}
-
-/******************************************************************************
- Helper Methods
- ******************************************************************************/
 String toQueryString(Map m) {
 	return m.collect { k, v -> "${k}=${URLEncoder.encode(v.toString())}" }.sort().join("&")
 }
 
+def checkDevicesOnline(bulbs) {
+	debugOut "In checkDevicesOnline()"
+
+	def onlineBulbs = []
+	def thisBulb = []
+
+	bulbs.each {
+		def dni = it?.did
+		thisBulb = it
+
+		def data = "<gip><version>1</version><token>${state.token}</token><did>${dni}</did></gip>"
+
+		def qParams = [
+			cmd: "DeviceGetInfo",
+			data: "${data}",
+			fmt: "json"
+		]
+
+		def cmd = toQueryString(qParams)
+
+		def bulbData = []
+
+		apiPost(cmd) { response ->
+			bulbData = response.data.gip
+		}
+
+		if ( bulbData?.offline == "1" ) {
+			debugOut "${it?.name} is offline with offline value of ${bulbData?.offline}"
+
+		} else {
+			debugOut "${it?.name} is online with offline value of ${bulbData?.offline}"
+			onlineBulbs += thisBulb
+		}
+	}
+	return onlineBulbs
+}
+
+def syncronizeDevices() {
+	debugOut "In syncronizeDevices"
+
+	def update = getChildDevices().findAll { selectedBulbs?.contains(it.deviceNetworkId) }
+
+	update.each {
+		def dni = getChildDevice( it.deviceNetworkId )
+		debugOut "dni = ${dni}"
+
+		if (isRoom(dni)) {
+			pollRoom(dni)
+		} else {
+			poll(dni)
+		}
+	}
+}
+
+boolean isRoom(dni) {
+	def device = state.devices.find() {(( it.type == 'room') && (it.did == "${dni}"))}
+}
+
+boolean isBulb(dni) {
+	def device = state.devices.find() {(( it.type == 'bulb') && (it.did == "${dni}"))}
+}
+
 def debugEvent(message, displayEvent) {
+
 	def results = [
 		name: "appdebug",
 		descriptionText: message,
@@ -513,19 +439,225 @@ def debugEvent(message, displayEvent) {
 	]
 	log.debug "Generating AppDebug Event: ${results}"
 	sendEvent (results)
+
 }
 
-private Boolean canInstallLabs()
-{
-	return hasAllHubsOver("000.011.00603")
+def debugOut(msg) {
+	//log.debug msg
+	//sendNotificationEvent(msg) //Uncomment this for troubleshooting only
 }
 
-private Boolean hasAllHubsOver(String desiredFirmware)
-{
-	return realHubFirmwareVersions.every { fw -> fw >= desiredFirmware }
+
+/**************************************************************************
+ Child Device Call In Methods
+ **************************************************************************/
+def on(childDevice) {
+	debugOut "On request from child device"
+
+	def dni = childDevice.device.deviceNetworkId
+	def data = ""
+	def cmd = ""
+
+	if ( isRoom(dni) ) { // this is a room, not a bulb
+		data = "<gip><version>1</version><token>$state.token</token><rid>${dni}</rid><type>power</type><value>1</value></gip>"
+		cmd = "RoomSendCommand"
+	} else {
+		data = "<gip><version>1</version><token>$state.token</token><did>${dni}</did><type>power</type><value>1</value></gip>"
+		cmd = "DeviceSendCommand"
+	}
+
+	def qParams = [
+		cmd: cmd,
+		data: "${data}",
+		fmt: "json"
+	]
+
+	cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		debugOut "ON result: ${response.data}"
+	}
+
+	//we want to ensure syncronization between rooms and bulbs
+	//runIn(2, "syncronizeDevices")
 }
 
-private List getRealHubFirmwareVersions()
-{
-	return location.hubs*.firmwareVersionString.findAll { it }
+def off(childDevice) {
+	debugOut "Off request from child device"
+
+	def dni = childDevice.device.deviceNetworkId
+	def data = ""
+	def cmd = ""
+
+	if ( isRoom(dni) ) { // this is a room, not a bulb
+		data = "<gip><version>1</version><token>$state.token</token><rid>${dni}</rid><type>power</type><value>0</value></gip>"
+		cmd = "RoomSendCommand"
+	} else {
+		data = "<gip><version>1</version><token>$state.token</token><did>${dni}</did><type>power</type><value>0</value></gip>"
+		cmd = "DeviceSendCommand"
+	}
+
+	def qParams = [
+		cmd: cmd,
+		data: "${data}",
+		fmt: "json"
+	]
+
+	cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		debugOut "${response.data}"
+	}
+
+	//we want to ensure syncronization between rooms and bulbs
+	//runIn(2, "syncronizeDevices")
+}
+
+def setLevel(childDevice, value) {
+	debugOut "setLevel request from child device"
+
+	def dni = childDevice.device.deviceNetworkId
+	def data = ""
+	def cmd = ""
+
+	if ( isRoom(dni) ) { // this is a room, not a bulb
+		data = "<gip><version>1</version><token>${state.token}</token><rid>${dni}</rid><type>level</type><value>${value}</value></gip>"
+		cmd = "RoomSendCommand"
+	} else {
+		data = "<gip><version>1</version><token>${state.token}</token><did>${dni}</did><type>level</type><value>${value}</value></gip>"
+		cmd = "DeviceSendCommand"
+	}
+
+	def qParams = [
+		cmd: cmd,
+		data: "${data}",
+		fmt: "json"
+	]
+
+	cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		debugOut "${response.data}"
+	}
+
+	//we want to ensure syncronization between rooms and bulbs
+	//runIn(2, "syncronizeDevices")
+}
+
+// Really not called from child, but called from poll() if it is a room
+def pollRoom(dni) {
+	debugOut "In pollRoom"
+	def data = ""
+	def cmd = ""
+	def roomDeviceData = []
+
+	data = "<gip><version>1</version><token>${state.token}</token><rid>${dni}</rid><fields>name,power,control,status,state</fields></gip>"
+	cmd = "RoomGetDevices"
+
+	def qParams = [
+		cmd: cmd,
+		data: "${data}",
+		fmt: "json"
+	]
+
+	cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		roomDeviceData = response.data.gip
+	}
+
+	debugOut "Room Data: ${roomDeviceData}"
+
+	def totalPower = 0
+	def totalLevel = 0
+	def cnt = 0
+	def onCnt = 0 //used to tally on/off states
+
+	roomDeviceData.device.each({
+		if ( getChildDevice(it.did) ) {
+			totalPower += it.other.bulbpower.toInteger()
+			totalLevel += it.level.toInteger()
+			onCnt += it.state.toInteger()
+			cnt += 1
+		}
+	})
+
+	def avgLevel = totalLevel/cnt
+	def usingPower = totalPower * (avgLevel / 100) as float
+	def room = getChildDevice( dni )
+
+	//the device is a room but we use same type file
+	sendEvent( dni, [name: "setBulbPower",value:"${totalPower}"] ) //used in child device calcs
+
+	//if all devices in room are on, room is on
+	if ( cnt == onCnt ) { // all devices are on
+		sendEvent( dni, [name: "switch",value:"on"] )
+		sendEvent( dni, [name: "power",value:usingPower.round(1)] )
+
+	} else { //if any device in room is off, room is off
+		sendEvent( dni, [name: "switch",value:"off"] )
+		sendEvent( dni, [name: "power",value:0.0] )
+	}
+
+	debugOut "Room Using Power: ${usingPower.round(1)}"
+}
+
+def poll(childDevice) {
+	debugOut "In poll() with ${childDevice}"
+
+
+	def dni = childDevice.device.deviceNetworkId
+
+	def bulbData = []
+	def data = ""
+	def cmd = ""
+
+	if ( isRoom(dni) ) { // this is a room, not a bulb
+		pollRoom(dni)
+		return
+	}
+
+	data = "<gip><version>1</version><token>${state.token}</token><did>${dni}</did></gip>"
+	cmd = "DeviceGetInfo"
+
+	def qParams = [
+		cmd: cmd,
+		data: "${data}",
+		fmt: "json"
+	]
+
+	cmd = toQueryString(qParams)
+
+	apiPost(cmd) { response ->
+		bulbData = response.data.gip
+	}
+
+	debugOut "This Bulbs Data Return = ${bulbData}"
+
+	def bulb = getChildDevice( dni )
+
+	//set the devices power max setting to do calcs within the device type
+	if ( bulbData.other.bulbpower )
+		sendEvent( dni, [name: "setBulbPower",value:"${bulbData.other.bulbpower}"] )
+
+	if (( bulbData.state == "1" ) && ( bulb?.currentValue("switch") != "on" ))
+		sendEvent( dni, [name: "switch",value:"on"] )
+
+	if (( bulbData.state == "0" ) && ( bulb?.currentValue("switch") != "off" ))
+		sendEvent( dni, [name: "switch",value:"off"] )
+
+	//if ( bulbData.level != bulb?.currentValue("level")) {
+	//	sendEvent( dni, [name: "level",value: "${bulbData.level}"] )
+	//    sendEvent( dni, [name: "setLevel",value: "${bulbData.level}"] )
+	//}
+
+	if (( bulbData.state == "1" ) && ( bulbData.other.bulbpower )) {
+		def levelSetting = bulbData.level as float
+		def bulbPowerMax = bulbData.other.bulbpower as float
+		def calculatedPower = bulbPowerMax * (levelSetting / 100)
+		sendEvent( dni, [name: "power", value: calculatedPower.round(1)] )
+	}
+
+	if (( bulbData.state == "0" ) && ( bulbData.other.bulbpower ))
+		sendEvent( dni, [name: "power", value: 0.0] )
 }
