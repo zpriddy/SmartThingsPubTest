@@ -39,7 +39,7 @@ If you choose a Room in the device list, SmartThings will create a 'Room' device
 	page(name: "selectDevices", title: "Connect Your TCP Lights to SmartThings", install: false, uninstall: true, nextPage: "chooseBulbs") {
 		section("TCP Connected Remote Credentials") {
 			input "username", "text", title: "Enter TCP Remote Email/UserName", required: true
-			input "password", "text", title: "Enter TCP Remote Password", required: true
+			input "password", "password", title: "Enter TCP Remote Password", required: true
 			paragraph msg
 		}
 	}
