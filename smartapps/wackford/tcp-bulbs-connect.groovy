@@ -166,7 +166,7 @@ def initialize() {
 
 	def msg = """Tap 'Done' after you have selected the desired devices."""
 
-	return dynamicPage(name:"chooseBulbs", title:"TCP and SmarThings Connected!", nextPage:"", install:true, uninstall: true) {
+	return dynamicPage(name:"chooseBulbs", title:"TCP and SmartThings Connected!", nextPage:"", install:true, uninstall: true) {
 		section("Tap Below to View Device List") {
 			input "selectedBulbs", "enum", required:false, title:"Select Bulb/Fixture", multiple:true, options:options
 			paragraph msg
