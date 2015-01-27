@@ -21,7 +21,7 @@ private apiUrl() { "https://tcp.greenwavereality.com/gwr/gop.php?" }
 definition(
 	name: "Tcp Bulbs (Connect)",
 	namespace: "wackford",
-	author: "Todd Wackford",
+	author: "SmartThings",
 	description: "Connect your TCP bulbs to SmartThings using Cloud to Cloud integration. You must create a remote login acct on TCP Mobile App.",
 	category: "SmartThings Labs",
 	iconUrl: "https://s3.amazonaws.com/smartapp-icons/Partner/tcp.png",
