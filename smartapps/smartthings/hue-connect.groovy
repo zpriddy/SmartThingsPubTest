@@ -513,19 +513,25 @@ def parse(childDevice, description) {
                 	if (bulb.value.state.reachable) {
                         sendEvent(d.deviceNetworkId, [name: "switch", value: bulb.value?.state?.on ? "on" : "off"])
                         sendEvent(d.deviceNetworkId, [name: "level", value: Math.round(bulb.value.state.bri * 100 / 255)])
-                        sendEvent(d.deviceNetworkId, [name: "saturation", value: Math.round(bulb.value.state.sat * 100 / 255)])
-                        sendEvent(d.deviceNetworkId, [name: "hue", value: Math.min(Math.round(bulb.value.state.hue * 100 / 65535), 65535)])
+												def hue = Math.min(Math.round(bulb.value.state.hue * 100 / 65535), 65535) as int
+												def sat = Math.round(bulb.value.state.sat * 100 / 255) as int
+												def hex = colorUtil.hslToHex(hue, sat)
+												sendEvent(d.deviceNetworkId, [name: "color", value: hex])
                     } else {
-                        sendEvent(d.deviceNetworkId, [name: "switch", value: "off"])
+												sendEvent(d.deviceNetworkId, [name: "color", value: hex])
+												sendEvent(d.deviceNetworkId, [name: "switch", value: "off"])
                         sendEvent(d.deviceNetworkId, [name: "level", value: 100])
-                        sendEvent(d.deviceNetworkId, [name: "saturation", value: 56])
-                        sendEvent(d.deviceNetworkId, [name: "hue", value: 23])
-					}                    
+												def hue = 23
+												def sat = 56
+												def hex = colorUtil.hslToHex(23, 56)
+												sendEvent(d.deviceNetworkId, [name: "color", value: hex])
+										}
                 }
            }     
 		}
 		else
 		{ //put response
+			def hsl = [:]
 			body.each { payload ->
 				log.debug $payload
 				if (payload?.success)
@@ -534,6 +540,7 @@ def parse(childDevice, description) {
 					def eventType
 					body?.success[0].each { k,v ->
 						childDeviceNetworkId += k.split("/")[2]
+						hsl.childDeviceNetworkId = childDeviceNetworkId
 						eventType = k.split("/")[4]
 						log.debug "eventType: $eventType"
 						switch(eventType) {
@@ -544,10 +551,10 @@ def parse(childDevice, description) {
 								sendEvent(childDeviceNetworkId, [name: "level", value: Math.round(v * 100 / 255)])
 								break
 							case "sat":
-								sendEvent(childDeviceNetworkId, [name: "saturation", value: Math.round(v * 100 / 255)])
+								hsl.saturation = Math.round(v * 100 / 255) as int
 								break
 							case "hue":
-								sendEvent(childDeviceNetworkId, [name: "hue", value: Math.min(Math.round(v * 100 / 65535), 65535)])
+								hsl.hue = Math.min(Math.round(v * 100 / 65535), 65535) as int
 								break
 						}
 					}
@@ -559,6 +566,12 @@ def parse(childDevice, description) {
 				}
 
 			}
+
+			if (hsl.hue && hsl.saturation && hsl.childDeviceNetworkId) {
+				def hex = colorUtil.hslToHex(hsl.hue, hsl.saturation)
+				sendEvent(hsl.childDeviceNetworkId, [name: "color", value: hex])
+			}
+
 		}
 	} else {
 		log.debug "parse - got something other than headers,body..."
