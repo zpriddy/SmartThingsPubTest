@@ -121,14 +121,14 @@ def receiveToken(redirectUrl = null) {
     }
 
 	setup()
-	if (redirectUrl) {
-		def message = """
-			<p>Your Jawbone Account is now connected to SmartThings!</p>
-			<p>You are being redirected...</p>
-		"""
-		connectionStatus(message, redirectUrl)
-	} else {
+	if (state.JawboneAccessToken) {
 		success()
+	} else {
+		def message = """
+			<p>The connection could not be established!</p>
+			<p>Click 'Done' to return to the menu.</p>
+		"""
+		connectionStatus(message)
 	}
 }
 
