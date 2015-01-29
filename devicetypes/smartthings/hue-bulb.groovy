@@ -123,15 +123,11 @@ def setColor(value) {
 	log.debug "setColor: ${value}"
 	parent.setColor(this, value)
 
-	// TODO: convert hue and saturation to hex and just send a color event
-	if (value.hue) {
-		sendEvent(name: "hue", value: value.hue)
-	}
-	if (value.saturation) {
-		sendEvent(name: "saturation", value: value.saturation)
-	}
 	if (value.hex) {
 		sendEvent(name: "color", value: value.hex)
+	} else if (value.hue && value.saturation) {
+		def hex = colorUtil.hslToHex(value.hue, value.saturation)
+		sendEvent(name: "color", value: hex)
 	}
 
 	if (value.level) {
