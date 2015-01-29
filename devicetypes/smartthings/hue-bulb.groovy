@@ -87,7 +87,7 @@ def off() {
 }
 
 def poll() {
-	parent.poll(this)
+	parent.poll()
 }
 
 def nextLevel() {
@@ -152,7 +152,7 @@ def save() {
 
 def refresh() {
 	log.debug "Executing 'refresh'"
-	parent.poll(this)
+	parent.poll()
 }
 
 def adjustOutgoingHue(percent) {
