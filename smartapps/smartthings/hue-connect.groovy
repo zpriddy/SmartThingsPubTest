@@ -540,7 +540,7 @@ def parse(childDevice, description) {
 					def eventType
 					body?.success[0].each { k,v ->
 						childDeviceNetworkId += k.split("/")[2]
-						hsl.childDeviceNetworkId = childDeviceNetworkId
+						if (!hsl[childDeviceNetworkId]) hsl[childDeviceNetworkId] = [:]
 						eventType = k.split("/")[4]
 						log.debug "eventType: $eventType"
 						switch(eventType) {
@@ -551,10 +551,10 @@ def parse(childDevice, description) {
 								sendEvent(childDeviceNetworkId, [name: "level", value: Math.round(v * 100 / 255)])
 								break
 							case "sat":
-								hsl.saturation = Math.round(v * 100 / 255) as int
+								hsl[childDeviceNetworkId].saturation = Math.round(v * 100 / 255) as int
 								break
 							case "hue":
-								hsl.hue = Math.min(Math.round(v * 100 / 65535), 65535) as int
+								hsl[childDeviceNetworkId].hue = Math.min(Math.round(v * 100 / 65535), 65535) as int
 								break
 						}
 					}
@@ -567,9 +567,12 @@ def parse(childDevice, description) {
 
 			}
 
-			if (hsl.hue && hsl.saturation && hsl.childDeviceNetworkId) {
-				def hex = colorUtil.hslToHex(hsl.hue, hsl.saturation)
-				sendEvent(hsl.childDeviceNetworkId, [name: "color", value: hex])
+			hsl.each { childDeviceNetworkId, hueSat ->
+				if (hueSat.hue && hueSat.saturation) {
+					def hex = colorUtil.hslToHex(hueSat.hue, hueSat.saturation)
+					log.debug "sending ${hueSat} for ${childDeviceNetworkId} as ${hex}"
+					sendEvent(hsl.childDeviceNetworkId, [name: "color", value: hex])
+				}
 			}
 
 		}
