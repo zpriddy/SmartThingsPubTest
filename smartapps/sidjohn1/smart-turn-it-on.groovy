@@ -27,10 +27,10 @@ preferences {
 		input "dayOne", "enum", title:"Select Days", required: true, multiple:true, metadata: [values: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']]
 	}
 	section("At what time?") {
-		input "timeOne", "time", title: "Select Time", required: true, multiple: true
+		input name: "timeOne", title: "Select Time", type: "time", required: true
 	}
 	section("For how long?") {
-		input "timeTwo", "number", title: "Number of minutes", required: true, multiple: false
+		input name: "timeTwo", title: "Number of minutes", type: "number", required: true
 	}
 }
 
@@ -70,4 +70,4 @@ log.debug "Start"
     
 def turnOff() {
 	switchOne.off()
-} 
+}
