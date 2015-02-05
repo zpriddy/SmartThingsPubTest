@@ -165,11 +165,13 @@ def off() {
 }
 
 def setLevel(value) {
+    value = value as Integer
     def level = Math.min(value as Integer, 99)
 	delayBetween ([zwave.basicV1.basicSet(value: level).format(), zwave.switchMultilevelV1.switchMultilevelGet().format()], 5000)
 }
 
 def setLevel(value, duration) {
+    value = value as Integer
     def level = Math.min(value as Integer, 99)
 	def dimmingDuration = duration < 128 ? duration : 128 + Math.round(duration / 60)
 	zwave.switchMultilevelV2.switchMultilevelSet(value: level, dimmingDuration: dimmingDuration).format()
