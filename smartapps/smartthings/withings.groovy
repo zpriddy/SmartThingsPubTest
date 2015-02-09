@@ -289,6 +289,7 @@ def load() {
 }
 
 Map getJsonFromUrl(String url) {
+	return [:] // stop making requests to Withings API. This entire SmartApp will be replaced with a fix
 	def jsonString
 	httpGet(uri: url) { resp ->
 		jsonString = resp.data.toString()
@@ -343,6 +344,8 @@ def getMeasurement(Date since=null) {
 }
 
 String get(measurementRestAction) {
+	return "" // stop making requests to Withings API. This entire SmartApp will be replaced with a fix
+
 	def httpGetParams = [
 		uri: measurementRestAction.endpoint,
 		path: measurementRestAction.path,
