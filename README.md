@@ -1,2 +1,4 @@
-# SmartThingsPubTest
-Test repository
+SmartThings
+===========
+
+Repository of open source SmartApps and SmartDevice Types.
